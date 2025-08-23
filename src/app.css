@@ -1,8 +1,1 @@
 @import "tailwindcss";
-
-@layer utilities {
-	div[data-input-text]:has(input:focus)
-	{
-		@apply border-lime-500;
-	}
-}
