@@ -1,0 +1,41 @@
+{
+	"name": "game-full",
+	"private": true,
+	"version": "0.0.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "vite build",
+		"preview": "vite preview",
+		"server:start": "node --enable-source-maps --env-file=.env build/index.js",
+		"server:dev": "tsx --watch --tsconfig tsconfig.node.json --env-file=.env server/index.ts",
+		"server:build": "node esbuild.config.ts",
+		"check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
+		"format": "prettier --check --write src"
+	},
+	"devDependencies": {
+		"@sveltejs/vite-plugin-svelte": "^6.1.1",
+		"@tailwindcss/vite": "^4.1.12",
+		"@tsconfig/svelte": "^5.0.4",
+		"@types/express": "^5.0.3",
+		"@types/node": "^24.3.0",
+		"esbuild": "^0.25.9",
+		"prettier": "^3.6.2",
+		"prettier-plugin-css-order": "^2.1.2",
+		"prettier-plugin-svelte": "^3.4.0",
+		"prettier-plugin-tailwindcss": "^0.6.14",
+		"svelte": "^5.38.1",
+		"svelte-check": "^4.3.1",
+		"tailwindcss": "^4.1.12",
+		"tsx": "^4.20.4",
+		"typescript": "~5.8.3",
+		"vite": "^7.1.2"
+	},
+	"dependencies": {
+		"@colyseus/schema": "^3.0.56",
+		"@colyseus/ws-transport": "^0.16.5",
+		"@dimforge/rapier3d-compat": "^0.18.2",
+		"colyseus": "^0.16.4",
+		"express": "^5.1.0"
+	}
+}
