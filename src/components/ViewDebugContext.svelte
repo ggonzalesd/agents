@@ -12,7 +12,7 @@
 {#snippet itemMessage(message: DebugItemMessage)}
 	<div
 		class={[
-			'max-w-xs overflow-hidden rounded break-words shadow-lg transition-transform starting:scale-50',
+			'max-w-xs origin-top overflow-hidden rounded break-words shadow-lg transition-transform starting:scale-50',
 			{
 				info: 'bg-zinc-900 text-white',
 				warning: 'bg-yellow-950 text-white',
