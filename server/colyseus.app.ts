@@ -1,6 +1,6 @@
 import { type createServer } from 'node:http';
 
-import { Server } from 'colyseus';
+import { matchMaker, Server } from 'colyseus';
 import { WebSocketTransport } from '@colyseus/ws-transport';
 
 import { MainRoom } from '$/game/main.room';
@@ -12,7 +12,12 @@ export const applyColyseusApplication = (
 		transport: new WebSocketTransport({
 			server,
 		}),
+		gracefullyShutdown: true,
 	});
 
 	colyseus.define('main-room', MainRoom);
+
+	setTimeout(() => {
+		matchMaker.createRoom('main-room', { id: 'main-room' });
+	});
 };

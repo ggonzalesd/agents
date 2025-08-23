@@ -2,6 +2,11 @@ import type { createServer } from 'node:http';
 import { join } from 'node:path';
 
 import express from 'express';
+import morgan from 'morgan';
+
+import { errorHandlerFactory } from '$/middlewares/errorHandler.middleware';
+
+import roomRoute from '$/routes/room.route';
 
 export const applyHttpApplication = (
 	server: ReturnType<typeof createServer>,
@@ -11,9 +16,35 @@ export const applyHttpApplication = (
 
 	app.disable('x-powered-by');
 
+	app.use(morgan('dev'));
+
 	app.use(express.json());
 	app.use(express.urlencoded({ extended: true }));
 
-	// STATIC
+	app.get('/health', (_, res) => {
+		res.json({
+			ok: true,
+			message: 'Healthy',
+			data: null,
+		});
+	});
+
 	app.use(express.static(join(process.cwd(), 'dist')));
+
+	const group = express.Router();
+	{
+		app.use('/api/v1', group);
+
+		group.use('/room', roomRoute);
+	}
+
+	app.use((_, res) => {
+		res.status(404).json({
+			ok: false,
+			message: 'Not found',
+			data: null,
+		});
+	});
+
+	app.use(errorHandlerFactory());
 };

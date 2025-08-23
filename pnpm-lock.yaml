@@ -20,9 +20,18 @@ importers:
       colyseus:
         specifier: ^0.16.4
         version: 0.16.4(@colyseus/auth@0.16.6(@colyseus/core@0.16.19(@colyseus/schema@3.0.56))(express@5.1.0))(@colyseus/core@0.16.19(@colyseus/schema@3.0.56))(@colyseus/redis-driver@0.16.1(@colyseus/schema@3.0.56))(@colyseus/redis-presence@0.16.4(@colyseus/schema@3.0.56))(@colyseus/schema@3.0.56)(@colyseus/uwebsockets-transport@0.16.9(@colyseus/core@0.16.19(@colyseus/schema@3.0.56)))(@colyseus/ws-transport@0.16.5(@colyseus/core@0.16.19(@colyseus/schema@3.0.56)))
+      colyseus.js:
+        specifier: ^0.16.19
+        version: 0.16.19
       express:
         specifier: ^5.1.0
         version: 5.1.0
+      morgan:
+        specifier: ^1.10.1
+        version: 1.10.1
+      zod:
+        specifier: ^4.1.0
+        version: 4.1.0
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^6.1.1
@@ -36,6 +45,9 @@ importers:
       '@types/express':
         specifier: ^5.0.3
         version: 5.0.3
+      '@types/morgan':
+        specifier: ^1.9.10
+        version: 1.9.10
       '@types/node':
         specifier: ^24.3.0
         version: 24.3.0
@@ -93,6 +105,10 @@ packages:
 
   '@colyseus/greeting-banner@2.0.6':
     resolution: {integrity: sha512-65nK7KnJn6g3ArtJqNfVX+Mx7xTlBka04kSwloLP7s24UpCEaK7bMGRLgkzfnysARzlVh1eV4jynBWZN82dYwQ==}
+
+  '@colyseus/httpie@2.0.1':
+    resolution: {integrity: sha512-JvABMZzPLiyrUsVj3ElXGORRDTu+NKzXHWd1uV1R1SThAKMm06cVW6bOyADARD65bs8JJoHNNbUkW8KoRvRDzA==}
+    engines: {node: '>=10'}
 
   '@colyseus/msgpackr@1.11.2':
     resolution: {integrity: sha512-MuwPFhizFKC3zmGfy0fpo+kcnZdNdnQHFVjw81v4WXHCelDeCX8yNRVtuEm8kGlHqq7qiASLC0pu0RPqYOhxXg==}
@@ -569,6 +585,9 @@ packages:
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
 
+  '@types/morgan@1.9.10':
+    resolution: {integrity: sha512-sS4A1zheMvsADRVfT0lYbJ4S9lmsey8Zo2F7cnbYjWHP67Q0AwMYuuzLlkIM2N8gAbb9cubhIVFwcIN2XyYCkA==}
+
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
@@ -617,6 +636,10 @@ packages:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
     engines: {node: '>= 0.4'}
 
+  basic-auth@2.0.1:
+    resolution: {integrity: sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==}
+    engines: {node: '>= 0.8'}
+
   bn.js@4.12.2:
     resolution: {integrity: sha512-n4DSx829VRTRByMRGdjQ9iqsN0Bh4OolPsFnaZBLcbi8iXcB+kJ9s7EnRt4wILZNV3kPLHkRVfOc/HvhC3ovDw==}
 
@@ -661,6 +684,10 @@ packages:
   cluster-key-slot@1.1.2:
     resolution: {integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==}
     engines: {node: '>=0.10.0'}
+
+  colyseus.js@0.16.19:
+    resolution: {integrity: sha512-48cVPt5+21R79itIHpcJplMFt7HEks5chxPXtM9l+AvmFjfXO8UykIV4j+fYyKaJu6EB14AbBH0AnTvpQqnAEg==}
+    engines: {node: '>= 12.x'}
 
   colyseus@0.16.4:
     resolution: {integrity: sha512-2SSfWj/onUD5l1rtayApOTFoKgk7/3T5Br+eOazpA9nk08G6IuUIeHXy1KJcruRwUf+ROndddiUC5qbSIPZySQ==}
@@ -1124,6 +1151,10 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  morgan@1.10.1:
+    resolution: {integrity: sha512-223dMRJtI/l25dJKWpgij2cMtywuG/WiUKXdvwfbhGKBhy1puASqXwFzmWZ7+K73vUPoR7SS2Qz2cI/g9MKw0A==}
+    engines: {node: '>= 0.8.0'}
+
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
     engines: {node: '>=4'}
@@ -1164,6 +1195,10 @@ packages:
   object-inspect@1.13.4:
     resolution: {integrity: sha512-W67iLl4J2EXEGTbfeHCffrjDfitvLANg0UlX3wFUUSTx92KXRFegMHUVgSqE+wvhAbi4WqjGg9czysTV2Epbew==}
     engines: {node: '>= 0.4'}
+
+  on-finished@2.3.0:
+    resolution: {integrity: sha512-ikqdkGAAyf/X/gPhXGvfgAytDZtDbr+bkNUJ0N9h5MI/dmdgCs3l6hoHrcUv41sRKew3jIwrp4qQDXiK99Utww==}
+    engines: {node: '>= 0.8'}
 
   on-finished@2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
@@ -1352,6 +1387,9 @@ packages:
     resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
     engines: {node: '>=6'}
 
+  safe-buffer@5.1.2:
+    resolution: {integrity: sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==}
+
   safe-buffer@5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
 
@@ -1443,6 +1481,9 @@ packages:
   toidentifier@1.0.1:
     resolution: {integrity: sha512-o5sSPKEkg/DIQNmH43V0/uerLrpzVedkUh8tGNvaeXpfpuwjKenlSox/2O/BTlZUtEe+JG7s5YhEz608PlAHRA==}
     engines: {node: '>=0.6'}
+
+  tslib@2.8.1:
+    resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
   tsx@4.20.4:
     resolution: {integrity: sha512-yyxBKfORQ7LuRt/BQKBXrpcq59ZvSW0XxwfjAt3w2/8PmdxaFzijtMhTawprSHhpzeM5BgU2hXHG3lklIERZXg==}
@@ -1562,6 +1603,9 @@ packages:
   zimmerframe@1.1.2:
     resolution: {integrity: sha512-rAbqEGa8ovJy4pyBxZM70hg4pE6gDgaQ0Sl9M3enG3I0d6H4XSAM3GeNGLKnsBpuijUow064sf7ww1nutC5/3w==}
 
+  zod@4.1.0:
+    resolution: {integrity: sha512-UWxluYj2IDX9MHRXTMbB/2eeWrAMmmMSESM+MfT9MQw8U1qo9q5ASW08anoJh6AJ7pkt099fLdNFmfI+4aChHg==}
+
 snapshots:
 
   '@colyseus/auth@0.16.6(@colyseus/core@0.16.19(@colyseus/schema@3.0.56))(express@5.1.0)':
@@ -1591,6 +1635,8 @@ snapshots:
       - supports-color
 
   '@colyseus/greeting-banner@2.0.6': {}
+
+  '@colyseus/httpie@2.0.1': {}
 
   '@colyseus/msgpackr@1.11.2':
     optionalDependencies:
@@ -1950,6 +1996,10 @@ snapshots:
 
   '@types/mime@1.3.5': {}
 
+  '@types/morgan@1.9.10':
+    dependencies:
+      '@types/node': 24.3.0
+
   '@types/ms@2.1.0': {}
 
   '@types/node@24.3.0':
@@ -2000,6 +2050,10 @@ snapshots:
     optional: true
 
   axobject-query@4.1.0: {}
+
+  basic-auth@2.0.1:
+    dependencies:
+      safe-buffer: 5.1.2
 
   bn.js@4.12.2:
     optional: true
@@ -2061,6 +2115,17 @@ snapshots:
   clsx@2.1.1: {}
 
   cluster-key-slot@1.1.2: {}
+
+  colyseus.js@0.16.19:
+    dependencies:
+      '@colyseus/httpie': 2.0.1
+      '@colyseus/msgpackr': 1.11.2
+      '@colyseus/schema': 3.0.56
+      tslib: 2.8.1
+      ws: 8.18.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   colyseus@0.16.4(@colyseus/auth@0.16.6(@colyseus/core@0.16.19(@colyseus/schema@3.0.56))(express@5.1.0))(@colyseus/core@0.16.19(@colyseus/schema@3.0.56))(@colyseus/redis-driver@0.16.1(@colyseus/schema@3.0.56))(@colyseus/redis-presence@0.16.4(@colyseus/schema@3.0.56))(@colyseus/schema@3.0.56)(@colyseus/uwebsockets-transport@0.16.9(@colyseus/core@0.16.19(@colyseus/schema@3.0.56)))(@colyseus/ws-transport@0.16.5(@colyseus/core@0.16.19(@colyseus/schema@3.0.56))):
     dependencies:
@@ -2581,6 +2646,16 @@ snapshots:
 
   mkdirp@3.0.1: {}
 
+  morgan@1.10.1:
+    dependencies:
+      basic-auth: 2.0.1
+      debug: 2.6.9
+      depd: 2.0.0
+      on-finished: 2.3.0
+      on-headers: 1.1.0
+    transitivePeerDependencies:
+      - supports-color
+
   mri@1.2.0: {}
 
   ms@2.0.0: {}
@@ -2615,6 +2690,10 @@ snapshots:
   oauth-sign@0.9.0: {}
 
   object-inspect@1.13.4: {}
+
+  on-finished@2.3.0:
+    dependencies:
+      ee-first: 1.1.1
 
   on-finished@2.4.1:
     dependencies:
@@ -2762,6 +2841,8 @@ snapshots:
     dependencies:
       mri: 1.2.0
 
+  safe-buffer@5.1.2: {}
+
   safe-buffer@5.2.1: {}
 
   safer-buffer@2.1.2: {}
@@ -2907,6 +2988,8 @@ snapshots:
 
   toidentifier@1.0.1: {}
 
+  tslib@2.8.1: {}
+
   tsx@4.20.4:
     dependencies:
       esbuild: 0.25.9
@@ -2978,3 +3061,5 @@ snapshots:
   yallist@5.0.0: {}
 
   zimmerframe@1.1.2: {}
+
+  zod@4.1.0: {}
