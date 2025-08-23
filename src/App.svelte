@@ -1,29 +1,18 @@
-<script lang="ts">
-	import { Client, getStateCallbacks } from 'colyseus.js';
-	import { onMount } from 'svelte';
+<svelte:options runes />
 
-	import { GameState } from '#/state/game.state';
+<script lang="ts">
+	import { onMount, setContext } from 'svelte';
+	import { getDebugContext, useDebugHook } from '@/hooks/useDebug.svelte';
+	import ViewDebugContext from './components/ViewDebugContext.svelte';
+
+	setContext(useDebugHook.name, useDebugHook());
 
 	onMount(() => {
-		const client = new Client('ws://localhost:3000');
-		client.auth.token = 'your_token_here';
-
-		async function game() {
-			const room = await client.joinById<GameState>('main-room');
-
-			const c = getStateCallbacks(room);
-
-			c(room.state).players.onAdd((player, key) => {
-				console.log('Player added:', player, key);
-
-				c(player).onChange(() => {
-					console.log('Player changed:', player);
-				});
-			});
-		}
-
-		game();
+		const debugContext = getDebugContext();
+		debugContext.add('App mounted', { type: 'info', isCode: false });
 	});
 </script>
 
-<main></main>
+<main>
+	<ViewDebugContext />
+</main>
