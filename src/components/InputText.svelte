@@ -15,6 +15,10 @@
 
 		iconSvgContent?: string;
 		element?: HTMLInputElement;
+
+		required?: boolean;
+		disabled?: boolean;
+
 		onchange?: (value: string) => void;
 	}
 
@@ -24,9 +28,11 @@
 		iconSvgContent,
 		name,
 		onchange,
+		placeholder,
+		disabled,
+		required,
 		color = 'default',
 		type: _type = 'text',
-		placeholder,
 	}: Props = $props();
 
 	let type = $state(_type);
@@ -34,8 +40,9 @@
 
 <div
 	data-input-color={color}
+	aria-disabled={disabled}
 	class={[
-		'inline-flex h-8 justify-between rounded-full border bg-gray-900 shadow-lg  transition-all',
+		'pointer-events-none inline-flex h-8 justify-between overflow-hidden rounded-full border  bg-gray-900 shadow-lg transition-all aria-disabled:opacity-50 aria-disabled:saturate-0',
 		{
 			default: 'border-gray-500 text-gray-300',
 			error: 'border-red-500 text-red-300',
@@ -57,7 +64,9 @@
 		{name}
 		{type}
 		{placeholder}
-		class="flex flex-1 px-2 outline-none"
+		{required}
+		{disabled}
+		class="pointer-events-auto flex flex-1 px-2 outline-none disabled:pointer-events-none"
 		onchange={(e) => onchange?.((e.target as HTMLInputElement).value)}
 		bind:this={element}
 	/>
@@ -65,7 +74,7 @@
 		<button
 			data-input-icon
 			type="button"
-			class="flex aspect-square h-full w-auto items-center justify-center px-2 text-white transition-all hover:cursor-pointer active:scale-125"
+			class="pointer-events-auto flex aspect-square h-full w-auto items-center justify-center px-2 text-white transition-all hover:cursor-pointer active:scale-125"
 			onclick={() => (type = type === 'text' ? 'password' : 'text')}
 		>
 			{@html type === 'text' ? hideSvgContent : showSvgContent}
