@@ -6,6 +6,7 @@ import sql from '$/config/db.config';
 import { getUserByUsername, revokeUserHash } from '$/services/user.db';
 import type { AuthPayload } from '$/models/Payload.model';
 import { signToken } from '$/services/jwt.service';
+import { getAuth } from '$/utils/req.utils';
 
 import type {
 	loginRequestSchema,
@@ -96,5 +97,20 @@ export const revokeTokensController = async (req: Request, res: Response) => {
 		jsonResponse.ok(null, {
 			message: 'User tokens revoked successfully',
 		}),
+	);
+};
+
+export const profileAuthController = async (req: Request, res: Response) => {
+	const { user } = getAuth(req);
+
+	const { password, hash, ...result } = user;
+
+	res.json(
+		jsonResponse.ok(
+			{ ...result, roles: result.roles.map((role) => role.name) },
+			{
+				message: 'User profile retrieved successfully',
+			},
+		),
 	);
 };

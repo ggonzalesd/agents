@@ -30,5 +30,14 @@ Content-Type: application/json
 	"id": "fc801aee-c84d-4858-a798-3660498a2c1b"
 }
 
+### Profile
+GET {{host}}/auth/profile HTTP/1.1
+
 ### Logout
 POST {{host}}/auth/logout HTTP/1.1
+
+### Rooms
+GET {{host}}/room HTTP/1.1
+
+### Start ROOM
+POST {{host}}/room/1 HTTP/1.1

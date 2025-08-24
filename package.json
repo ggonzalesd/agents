@@ -39,6 +39,7 @@
 		"@colyseus/schema": "^3.0.56",
 		"@colyseus/ws-transport": "^0.16.5",
 		"@dimforge/rapier3d-compat": "^0.18.2",
+		"axios": "^1.11.0",
 		"bcrypt": "^6.0.0",
 		"colyseus": "^0.16.4",
 		"colyseus.js": "^0.16.19",

@@ -23,7 +23,9 @@ export const authMiddleware =
 		}
 
 		// Attach user to request object
-		(req as any).user = payload;
+		(req as any).payload = payload;
+		(req as any).user = user;
+		(req as any).token = _token;
 
 		next();
 	};

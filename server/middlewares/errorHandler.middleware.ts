@@ -38,7 +38,8 @@ export const errorHandlerFactory =
 		}
 
 		if (err instanceof ServerError) {
-			res.status(err.code).json(jsonResponse.error(err.message));
+			const status = err.code >= 600 ? 500 : err.code;
+			res.status(status).json(jsonResponse.error(err.message, { status }));
 			return;
 		}
 

@@ -3,6 +3,7 @@ import { Router } from 'express';
 import {
 	authLoginController,
 	authRegisterController,
+	profileAuthController,
 	revokeTokensController,
 } from '$/controllers/auth.controller';
 
@@ -43,6 +44,8 @@ router.post(
 	parseMiddleware(revokeRequestSchema, 'body'),
 	revokeTokensController,
 );
+
+router.get('/profile', authMiddleware(), profileAuthController);
 
 router.post('/logout', (_, res) => {
 	res.clearCookie('token');
