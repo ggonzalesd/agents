@@ -4,12 +4,39 @@ import * as bcrypt from 'bcrypt';
 
 import sql from '$/config/db.config';
 
-import { registerRequestSchema } from '#/schema/auth.schema';
+import {
+	loginRequestSchema,
+	registerRequestSchema,
+} from '#/schema/auth.schema';
+import { HttpError } from '#/utils/HttpError';
+import { jsonResponse } from '#/utils/HttpResponse';
+import type { UserDB } from '$/models/user.model';
 
 const router = Router();
 
 router.get('/', async (_, res) => {
 	res.json({ message: 'Auth route works' });
+});
+
+router.post('/login', async (req, res) => {
+	const { password, username } = loginRequestSchema.parse(req.body);
+
+	const _user = await sql<
+		UserDB[]
+	>`SELECT * FROM "User" WHERE "username" = ${username} LIMIT 1`;
+	const user = _user[0];
+
+	if (!user) {
+		throw HttpError.unauthorized('Invalid username or password');
+	}
+
+	const isPasswordValid = bcrypt.compareSync(password, user.password);
+
+	if (!isPasswordValid) {
+		throw HttpError.unauthorized('Invalid username or password');
+	}
+
+	res.json(jsonResponse.ok(user, { message: 'Login successful' }));
 });
 
 router.post('/register', async (req, res) => {
@@ -23,7 +50,8 @@ router.post('/register', async (req, res) => {
 		const exists =
 			await sql`SELECT 1 FROM "User" WHERE "username" = ${username} LIMIT 1`;
 
-		if (exists.length) throw new Error('User already exists');
+		if (exists.length)
+			throw HttpError.badRequest(`Username '${username}' is already taken`);
 
 		const password = bcrypt.hashSync(_pass, 10);
 
@@ -33,9 +61,12 @@ router.post('/register', async (req, res) => {
 		return result;
 	});
 
-	res
-		.status(201)
-		.json({ message: 'User registered successfully', data: result });
+	res.status(201).json(
+		jsonResponse.ok(result, {
+			message: 'User registered successfully',
+			status: 201,
+		}),
+	);
 });
 
 export default router;

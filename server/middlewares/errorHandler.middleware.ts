@@ -1,58 +1,56 @@
-import { ServerError } from 'colyseus';
 import type { NextFunction, Request, Response } from 'express';
+import { ServerError } from 'colyseus';
 
 import { treeifyError, ZodError } from 'zod';
 
+import { HttpError } from '#/utils/HttpError';
+import { jsonResponse } from '#/utils/HttpResponse';
+
 export const errorHandlerFactory =
 	() => (err: unknown, _: Request, res: Response, __: NextFunction) => {
+		if (err instanceof HttpError) {
+			res.status(err.status).json(
+				jsonResponse.error(err.message, {
+					data: err.data,
+					status: err.status,
+				}),
+			);
+			return;
+		}
+
 		if (err instanceof SyntaxError) {
-			res.status(400).json({
-				ok: false,
-				message: 'Invalid JSON',
-				data: null,
-			});
+			res.status(400).json(
+				jsonResponse.error('Invalid JSON', {
+					status: 400,
+				}),
+			);
 			return;
 		}
 
 		if (err instanceof ZodError) {
-			res.status(400).json({
-				ok: false,
-				message: 'Validation error',
-				data: treeifyError(err),
-			});
+			res.status(400).json(
+				jsonResponse.error('Validation error', {
+					status: 400,
+					data: treeifyError(err),
+				}),
+			);
 			return;
 		}
 
 		if (err instanceof ServerError) {
-			res.status(err.code).json({
-				ok: false,
-				message: err.message,
-				data: null,
-			});
+			res.status(err.code).json(jsonResponse.error(err.message));
 			return;
 		}
 
 		if (err instanceof Error) {
-			res.status(500).json({
-				ok: false,
-				message: err.message,
-				data: null,
-			});
+			res.status(500).json(jsonResponse.error(err.message));
 			return;
 		}
 
 		if (typeof err === 'string') {
-			res.status(500).json({
-				ok: false,
-				message: err,
-				data: null,
-			});
+			res.status(500).json(jsonResponse.error(err));
 			return;
 		}
 
-		res.status(500).json({
-			ok: false,
-			message: 'Internal Server Error',
-			data: null,
-		});
+		res.status(500).json(jsonResponse.error('Internal Server Error'));
 	};
