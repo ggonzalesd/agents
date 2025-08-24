@@ -11,6 +11,8 @@ import {
 import { HttpError } from '#/utils/HttpError';
 import { jsonResponse } from '#/utils/HttpResponse';
 import type { UserDB } from '$/models/user.model';
+import { parseMiddleware } from '$/middlewares/parse.middleware';
+import { getUserByUsername } from '$/services/user.db';
 
 const router = Router();
 
@@ -18,55 +20,59 @@ router.get('/', async (_, res) => {
 	res.json({ message: 'Auth route works' });
 });
 
-router.post('/login', async (req, res) => {
-	const { password, username } = loginRequestSchema.parse(req.body);
+router.post(
+	'/login',
+	parseMiddleware(loginRequestSchema, 'body'),
+	async (req, res) => {
+		const { password, username } = req.body as ReturnType<
+			typeof loginRequestSchema.parse
+		>;
 
-	const _user = await sql<
-		UserDB[]
-	>`SELECT * FROM "User" WHERE "username" = ${username} LIMIT 1`;
-	const user = _user[0];
+		const user = (await getUserByUsername(username, sql)).orElseThrow(
+			HttpError.unauthorized('Invalid username or password'),
+		);
 
-	if (!user) {
-		throw HttpError.unauthorized('Invalid username or password');
-	}
+		const isPasswordValid = bcrypt.compareSync(password, user.password);
+		if (!isPasswordValid) {
+			throw HttpError.unauthorized('Invalid username or password');
+		}
 
-	const isPasswordValid = bcrypt.compareSync(password, user.password);
+		res.json(jsonResponse.ok(user, { message: 'Login successful' }));
+	},
+);
 
-	if (!isPasswordValid) {
-		throw HttpError.unauthorized('Invalid username or password');
-	}
+router.post(
+	'/register',
+	parseMiddleware(registerRequestSchema, 'body'),
+	async (req, res) => {
+		const {
+			display,
+			password: _pass,
+			username,
+		} = req.body as ReturnType<typeof registerRequestSchema.parse>;
 
-	res.json(jsonResponse.ok(user, { message: 'Login successful' }));
-});
+		const result = await sql.begin(async (sql) => {
+			const exists =
+				await sql`SELECT 1 FROM "User" WHERE "username" = ${username} LIMIT 1`;
 
-router.post('/register', async (req, res) => {
-	const {
-		display,
-		password: _pass,
-		username,
-	} = registerRequestSchema.parse(req.body);
+			if (exists.length)
+				throw HttpError.badRequest(`Username '${username}' is already taken`);
 
-	const result = await sql.begin(async (sql) => {
-		const exists =
-			await sql`SELECT 1 FROM "User" WHERE "username" = ${username} LIMIT 1`;
+			const password = bcrypt.hashSync(_pass, 10);
 
-		if (exists.length)
-			throw HttpError.badRequest(`Username '${username}' is already taken`);
+			const result =
+				await sql`INSERT INTO "User" ("display", "password", "username") VALUES (${display}, ${password}, ${username}) RETURNING *`;
 
-		const password = bcrypt.hashSync(_pass, 10);
+			return result;
+		});
 
-		const result =
-			await sql`INSERT INTO "User" ("display", "password", "username") VALUES (${display}, ${password}, ${username}) RETURNING *`;
-
-		return result;
-	});
-
-	res.status(201).json(
-		jsonResponse.ok(result, {
-			message: 'User registered successfully',
-			status: 201,
-		}),
-	);
-});
+		res.status(201).json(
+			jsonResponse.ok(result, {
+				message: 'User registered successfully',
+				status: 201,
+			}),
+		);
+	},
+);
 
 export default router;
