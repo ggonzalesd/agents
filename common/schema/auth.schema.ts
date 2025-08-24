@@ -22,3 +22,10 @@ export const registerRequestSchema = z.object({
 	password: passwordSchema,
 	display: displayNameSchema,
 });
+
+export const authPayloadSchema = z.object({
+	id: z.uuid(),
+	username: z.string().min(4).max(64),
+	hash: z.uuid(),
+	roles: z.array(z.string().min(2).max(100)),
+});

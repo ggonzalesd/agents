@@ -1,5 +1,7 @@
 import type { Sql } from 'postgres';
 
+import _sql from '$/config/db.config';
+
 import type { RoleDB } from '$/models/Role.model';
 import type { UserDB } from '$/models/user.model';
 
@@ -7,8 +9,10 @@ import { Option } from '#/utils/Option';
 
 export const getUserByUsername = async (
 	username: string,
-	sql: Sql,
+	__sql?: Sql,
 ): Promise<Option<UserDB>> => {
+	const sql = __sql ?? _sql;
+
 	const _user = await sql<
 		UserDB[]
 	>`SELECT * FROM "User" WHERE "username" = ${username} LIMIT 1`;

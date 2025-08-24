@@ -22,6 +22,7 @@ model User {
   password  String   @db.VarChar(60)
   display   String?  @db.VarChar(255)
   createdAt DateTime @default(now()) @db.Timestamp(6)
+  hash      String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
 
   roles UserRol[]
 }
