@@ -7,6 +7,7 @@ import morgan from 'morgan';
 import { errorHandlerFactory } from '$/middlewares/errorHandler.middleware';
 
 import roomRoute from '$/routes/room.route';
+import authRoute from '$/routes/auth.route';
 
 export const applyHttpApplication = (
 	server: ReturnType<typeof createServer>,
@@ -36,6 +37,7 @@ export const applyHttpApplication = (
 		app.use('/api/v1', group);
 
 		group.use('/room', roomRoute);
+		group.use('/auth', authRoute);
 	}
 
 	app.use((_, res) => {

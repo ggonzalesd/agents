@@ -27,3 +27,5 @@ build
 .env
 
 .notes.txt
+
+/src/generated/prisma
