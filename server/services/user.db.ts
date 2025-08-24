@@ -1,4 +1,6 @@
 import type { Sql } from 'postgres';
+import { v4 as uuidv4 } from 'uuid';
+import * as bcrypt from 'bcrypt';
 
 import _sql from '$/config/db.config';
 
@@ -29,4 +31,34 @@ export const getUserByUsername = async (
 	user.roles = _roles;
 
 	return Option.some(user);
+};
+
+export const revokeUserHash = async (
+	id: string,
+	withPassword?: string | undefined,
+	__sql?: Sql,
+) => {
+	const sql = __sql ?? _sql;
+
+	const _user = await sql`SELECT * FROM "User" WHERE "id" = ${id} LIMIT 1`;
+
+	if (_user.length === 0) {
+		return Option.none();
+	}
+
+	const columns = ['hash'];
+	const data: Record<string, string> = {
+		hash: uuidv4(),
+	};
+
+	if (withPassword) {
+		data.password = bcrypt.hashSync(withPassword, 10);
+		columns.push('password');
+	}
+
+	const result =
+		await sql`UPDATE "User" SET ${sql(data, columns)} WHERE "id" = ${id} RETURNING *`;
+	console.log({ result });
+
+	return Option.some(true);
 };

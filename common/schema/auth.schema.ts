@@ -29,3 +29,8 @@ export const authPayloadSchema = z.object({
 	hash: z.uuid(),
 	roles: z.array(z.string().min(2).max(100)),
 });
+
+export const revokeRequestSchema = z.object({
+	id: z.uuid(),
+	newPassword: z.string().min(4).max(72).optional(),
+});

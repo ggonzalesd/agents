@@ -1,16 +1,20 @@
 import { Router } from 'express';
 
-import { parseMiddleware } from '$/middlewares/parse.middleware';
 import {
 	authLoginController,
 	authRegisterController,
+	revokeTokensController,
 } from '$/controllers/auth.controller';
+
+import { parseMiddleware } from '$/middlewares/parse.middleware';
+import { authMiddleware } from '$/middlewares/auth.middleware';
+import { roleMiddleware } from '$/middlewares/role.middleware';
 
 import {
 	loginRequestSchema,
 	registerRequestSchema,
+	revokeRequestSchema,
 } from '#/schema/auth.schema';
-import { authMiddlewareFactory } from '$/middlewares/auth.middleware';
 
 const router = Router();
 
@@ -26,9 +30,18 @@ router.post(
 
 router.post(
 	'/register',
-	authMiddlewareFactory(),
+	authMiddleware(),
+	roleMiddleware('ADMIN'),
 	parseMiddleware(registerRequestSchema, 'body'),
 	authRegisterController,
+);
+
+router.post(
+	'/revoke',
+	authMiddleware(),
+	roleMiddleware('ADMIN'),
+	parseMiddleware(revokeRequestSchema, 'body'),
+	revokeTokensController,
 );
 
 router.post('/logout', (_, res) => {

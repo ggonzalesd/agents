@@ -3,13 +3,14 @@ import * as bcrypt from 'bcrypt';
 
 import sql from '$/config/db.config';
 
-import { getUserByUsername } from '$/services/user.db';
+import { getUserByUsername, revokeUserHash } from '$/services/user.db';
 import type { AuthPayload } from '$/models/Payload.model';
 import { signToken } from '$/services/jwt.service';
 
 import type {
 	loginRequestSchema,
 	registerRequestSchema,
+	revokeRequestSchema,
 } from '#/schema/auth.schema';
 import { HttpError } from '#/utils/HttpError';
 import { jsonResponse } from '#/utils/HttpResponse';
@@ -80,6 +81,20 @@ export const authRegisterController = async (req: Request, res: Response) => {
 		jsonResponse.ok(result, {
 			message: 'User registered successfully',
 			status: 201,
+		}),
+	);
+};
+
+export const revokeTokensController = async (req: Request, res: Response) => {
+	const body = req.body as ReturnType<typeof revokeRequestSchema.parse>;
+
+	await sql.begin(async (sql) =>
+		revokeUserHash(body.id, body.newPassword, sql),
+	);
+
+	res.json(
+		jsonResponse.ok(null, {
+			message: 'User tokens revoked successfully',
 		}),
 	);
 };

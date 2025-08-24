@@ -47,9 +47,9 @@ export class Option<T = unknown> {
 		return this.value;
 	}
 
-	public orElseThrow(error: Error): T {
+	public orElseThrow(error: Error | (() => Error)): T {
 		if (this.value == null) {
-			throw error;
+			throw typeof error === 'function' ? error() : error;
 		}
 		return this.value;
 	}
