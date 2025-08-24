@@ -10,6 +10,7 @@ import {
 	loginRequestSchema,
 	registerRequestSchema,
 } from '#/schema/auth.schema';
+import { authMiddlewareFactory } from '$/middlewares/auth.middleware';
 
 const router = Router();
 
@@ -25,8 +26,14 @@ router.post(
 
 router.post(
 	'/register',
+	authMiddlewareFactory(),
 	parseMiddleware(registerRequestSchema, 'body'),
 	authRegisterController,
 );
+
+router.post('/logout', (_, res) => {
+	res.clearCookie('token');
+	res.json({ message: 'Logged out successfully' });
+});
 
 export default router;

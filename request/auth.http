@@ -21,3 +21,6 @@ Content-Type: application/json
 	"password": "1234",
 	"display": "Archiso"
 }
+
+### Logout
+POST {{host}}/auth/logout HTTP/1.1

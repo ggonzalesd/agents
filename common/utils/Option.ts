@@ -34,6 +34,12 @@ export class Option<T = unknown> {
 		}
 	}
 
+	public ifSome(fn: (value: T) => void): void {
+		if (this.value != null) {
+			fn(this.value);
+		}
+	}
+
 	public orElse(value: T): T {
 		if (this.value == null) {
 			return value;

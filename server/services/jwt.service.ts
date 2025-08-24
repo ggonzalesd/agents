@@ -11,7 +11,11 @@ export const signToken = (payload: AuthPayload) => {
 	});
 };
 
-export const verifyToken = (token: string): Option<AuthPayload> => {
+export const verifyToken = (token?: string | null): Option<AuthPayload> => {
+	if (token == null) {
+		return Option.none();
+	}
+
 	try {
 		const decoded = jsonwebtoken.verify(token, envConfig.JWT_SECRET);
 		const parsed = authPayloadSchema.parse(decoded);
