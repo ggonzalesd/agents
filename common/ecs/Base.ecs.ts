@@ -30,6 +30,12 @@ export class BaseEcs {
 		}
 	}
 
+	/**
+	 * Add a component to the entity.
+	 * @param component - The component to add
+	 * @param name - The name of the component, if not provided the component's name will be used
+	 * @returns The current instance for chaining
+	 */
 	public set(component: ComponentEcs, name?: string): BaseEcs {
 		component.name = name ?? component.name;
 		component.world = this.__world;
@@ -40,6 +46,12 @@ export class BaseEcs {
 		return this;
 	}
 
+	/**
+	 * Gets a component from the entity. Is **UNSAFE** to call if the component is not present
+	 * @param componentClass - The class of the component to get
+	 * @param name - The name of the component, if not provided the component's name will be used
+	 * @returns The component instance or null if not found
+	 */
 	public getUnsafe<T extends ComponentEcs>(
 		componentClass: new (...args: any[]) => T,
 		name?: string,
@@ -51,6 +63,12 @@ export class BaseEcs {
 		return component as T;
 	}
 
+	/**
+	 * Gets a component from the entity.
+	 * @param componentClass - The class of the component to get
+	 * @param name - The name of the component, if not provided the component's name will be used
+	 * @returns The component instance or null if not found
+	 */
 	public get<T extends ComponentEcs>(
 		componentClass: new (...args: any[]) => T,
 		name?: string,

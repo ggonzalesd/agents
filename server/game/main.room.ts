@@ -6,13 +6,16 @@ import {
 	type RoomException,
 } from 'colyseus';
 
-import { GameState, PlayerState } from '#/state/game.state';
+import * as RAPIER from '@dimforge/rapier3d-compat';
+
+import { GameState } from '#/state/game.state';
 import { WorldEcs } from '#/ecs/World.ecs';
 import { playerServerFactoryGenerator } from './prefab/player.server';
 import { ServerDataEcs } from './scripts/serverData.ecs';
 
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
+	worldPhy: RAPIER.World = null!;
 
 	playerServerFactory: ReturnType<typeof playerServerFactoryGenerator> = null!;
 
@@ -22,9 +25,10 @@ export class MainRoom extends Room<GameState> {
 		}
 
 		this.state = new GameState();
+		this.worldPhy = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
 
 		this.worldEcs = new WorldEcs({
-			[ServerDataEcs.name]: new ServerDataEcs(this.state),
+			[ServerDataEcs.name]: new ServerDataEcs(this.state, this.worldPhy),
 		});
 
 		this.playerServerFactory = playerServerFactoryGenerator(this.worldEcs);
@@ -40,6 +44,7 @@ export class MainRoom extends Room<GameState> {
 
 	onUpdate(_delta: number) {
 		this.worldEcs.onUpdate(_delta);
+		this.worldPhy.step();
 	}
 
 	onAuth(client: Client<any, any>, _options: any, _context: AuthContext) {
@@ -48,31 +53,19 @@ export class MainRoom extends Room<GameState> {
 		return true;
 	}
 
-	onJoin(
+	async onJoin(
 		client: Client<any, any>,
 		_options?: any,
 		_auth?: any,
-	): void | Promise<any> {
+	): Promise<any> {
 		this.worldEcs.addEntity(this.playerServerFactory(client.sessionId));
 	}
 
-	onLeave(client: Client<any, any>, _consented?: boolean): void | Promise<any> {
+	async onLeave(client: Client<any, any>, _consented?: boolean): Promise<any> {
 		this.worldEcs.deleteEntityById(client.sessionId);
 	}
 
-	onUncaughtException(
-		error: RoomException<this>,
-		methodName:
-			| 'onCreate'
-			| 'onAuth'
-			| 'onJoin'
-			| 'onLeave'
-			| 'onDispose'
-			| 'onMessage'
-			| 'setSimulationInterval'
-			| 'setInterval'
-			| 'setTimeout',
-	): void {
+	onUncaughtException(error: RoomException<this>, methodName: string): void {
 		console.error(methodName + ' ' + error.name);
 	}
 }

@@ -2,6 +2,7 @@ import { ComponentEcs } from '#/ecs/Component.ecs';
 import { EntityEcs } from '#/ecs/Entity.ecs';
 import type { WorldEcs } from '#/ecs/World.ecs';
 import type { PlayerState } from '#/state/game.state';
+
 import { ServerDataEcs } from '../scripts/serverData.ecs';
 
 class PlayerServerBehavior extends ComponentEcs {
@@ -10,8 +11,9 @@ class PlayerServerBehavior extends ComponentEcs {
 	constructor() {
 		super();
 
-		const gameState = this.world
-			.get(ServerDataEcs)
+		const serverDataOp = this.world.get(ServerDataEcs);
+
+		const gameState = serverDataOp
 			.map((serverData) => serverData.state)
 			.unsafe();
 

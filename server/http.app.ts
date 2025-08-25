@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import express from 'express';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
 import { errorHandlerFactory } from '$/middlewares/errorHandler.middleware';
 
@@ -19,7 +20,12 @@ export const applyHttpApplication = (
 	app.disable('x-powered-by');
 
 	app.use(morgan('dev'));
-
+	// TODO: CORS - Change Origin for production
+	app.use(
+		cors({
+			origin: '*',
+		}),
+	);
 	app.use(cookieParser());
 	app.use(express.json());
 	app.use(express.urlencoded({ extended: true }));
