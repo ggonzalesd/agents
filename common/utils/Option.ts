@@ -43,9 +43,9 @@ export class Option<T = unknown> {
 	 * Gets the value wrapped in the Option instance, throws if no value is present
 	 * @returns The wrapped value
 	 */
-	public unwrap(): T {
+	public unwrap(message = 'No value present'): T {
 		if (this.value === null) {
-			throw new Error('No value present');
+			throw new Error(message);
 		}
 		return this.value;
 	}

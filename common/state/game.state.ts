@@ -9,6 +9,13 @@ export class Vector3 extends Schema {
 
 	@type('float32')
 	public z: number = 0;
+
+	constructor(data: { x: number; y: number; z: number }) {
+		super();
+		this.x = data.x;
+		this.y = data.y;
+		this.z = data.z;
+	}
 }
 
 export class PlayerState extends Schema {

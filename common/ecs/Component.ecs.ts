@@ -4,6 +4,7 @@ import type { WorldEcs } from './World.ecs';
 
 export class ComponentEcs {
 	active: boolean = true;
+	isSetup: boolean = false;
 	name: string;
 
 	public _world: WorldEcs = null!;

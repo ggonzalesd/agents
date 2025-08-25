@@ -25,7 +25,10 @@ export class EntityEcs extends BaseEcs {
 	}
 
 	onStart() {
-		this.components.forEach((component) => component.onStart());
+		this.components.forEach((component) => {
+			component.onStart();
+			component.isSetup = true;
+		});
 	}
 
 	onUpdate(delta: number) {

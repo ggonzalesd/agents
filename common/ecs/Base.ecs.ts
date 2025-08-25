@@ -74,7 +74,7 @@ export class BaseEcs {
 
 	protected update(delta: number) {
 		for (const component of this.components.values()) {
-			if (!component.active) continue;
+			if (!component.active || !component.isSetup) continue;
 
 			component.onLoop(delta);
 		}

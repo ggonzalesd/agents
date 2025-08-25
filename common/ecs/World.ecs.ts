@@ -13,7 +13,10 @@ export class WorldEcs extends BaseEcs {
 
 		this.init(this, null, components);
 
-		this.components.forEach((component) => component.onStart());
+		this.components.forEach((component) => {
+			component.onStart();
+			component.isSetup = true;
+		});
 	}
 
 	getAll() {

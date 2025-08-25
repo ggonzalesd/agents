@@ -8,10 +8,13 @@ import { ServerDataEcs } from '../scripts/serverData.ecs';
 class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
 
+	forces: { x: number; y: number; z: number };
+
 	constructor(pos: { x: number; y: number; z: number }) {
 		super();
 
 		this.state = new PlayerState(pos);
+		this.forces = { x: 0, y: 0, z: 0 };
 	}
 
 	onStart(): void {
@@ -30,11 +33,7 @@ class PlayerServerBehavior extends ComponentEcs {
 		});
 	}
 
-	onLoop(_delta: number): void {
-		if (Math.random() < 0.1) {
-			this.state.life += 1;
-		}
-	}
+	onLoop(_delta: number): void {}
 }
 
 export const playerServerFactoryGenerator =

@@ -1,0 +1,55 @@
+import * as THREE from 'three';
+
+import { ComponentEcs } from '#/ecs/Component.ecs';
+
+export class RenderClientEcs extends ComponentEcs {
+	public scene: THREE.Scene;
+	public renderer: THREE.WebGLRenderer;
+	public camera: THREE.PerspectiveCamera;
+
+	constructor(canvas: HTMLCanvasElement) {
+		super();
+
+		this.scene = new THREE.Scene();
+		this.camera = new THREE.PerspectiveCamera(
+			75,
+			canvas.width / canvas.height,
+			0.1,
+			1000,
+		);
+		this.renderer = new THREE.WebGLRenderer({ canvas });
+		this.renderer.setClearColor(0x000000, 1);
+
+		const onResize = () => {
+			this.camera.aspect = window.innerWidth / window.innerHeight;
+			this.camera.updateProjectionMatrix();
+			this.renderer.setSize(window.innerWidth, window.innerHeight);
+		};
+
+		onResize();
+
+		window.addEventListener('resize', onResize);
+		this.callOnDelete(() => {
+			window.removeEventListener('resize', onResize);
+		});
+
+		this.scene.add(new THREE.AxesHelper(1));
+
+		this.camera.position.z = 5;
+		this.camera.position.y = 5;
+
+		this.camera.lookAt(0, 0, 0);
+	}
+
+	onStart(): void {}
+
+	onLoop(_delta: number): void {
+		this.camera.position.x = Math.sin(Date.now() * 0.001) * 5;
+		this.camera.position.z = Math.cos(Date.now() * 0.001) * 5;
+		this.camera.lookAt(0, 0, 0);
+
+		this.renderer.clearColor();
+
+		this.renderer.render(this.scene, this.camera);
+	}
+}
