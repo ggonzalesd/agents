@@ -1,5 +1,4 @@
 import {
-	OnCreateException,
 	Room,
 	ServerError,
 	type AuthContext,
@@ -8,9 +7,11 @@ import {
 } from 'colyseus';
 
 import { GameState, PlayerState } from '#/state/game.state';
-import { HttpError } from '#/utils/HttpError';
+import { WorldEcs } from '#/ecs/World.ecs';
 
 export class MainRoom extends Room<GameState> {
+	worldEcs: WorldEcs = null!;
+
 	onCreate(options: any): void | Promise<any> {
 		if (!['1', '2', 'main-room'].includes(options.id)) {
 			throw new ServerError(401, 'Invalid room ID');
@@ -20,6 +21,8 @@ export class MainRoom extends Room<GameState> {
 
 		this.state = new GameState();
 
+		this.worldEcs = new WorldEcs();
+
 		this.roomId = options.id;
 
 		this.autoDispose = false;
@@ -27,9 +30,11 @@ export class MainRoom extends Room<GameState> {
 		this.setSimulationInterval(this.onUpdate.bind(this), 1000 / 60);
 	}
 
-	onUpdate(delta: number) {}
+	onUpdate(_delta: number) {
+		this.worldEcs.onUpdate(_delta);
+	}
 
-	onAuth(client: Client<any, any>, options: any, context: AuthContext) {
+	onAuth(client: Client<any, any>, _options: any, _context: AuthContext) {
 		console.log({ client: client.auth });
 
 		return true;
@@ -37,13 +42,13 @@ export class MainRoom extends Room<GameState> {
 
 	onJoin(
 		client: Client<any, any>,
-		options?: any,
-		auth?: any,
+		_options?: any,
+		_auth?: any,
 	): void | Promise<any> {
 		this.state.players.set(client.sessionId, new PlayerState());
 	}
 
-	onLeave(client: Client<any, any>, consented?: boolean): void | Promise<any> {
+	onLeave(client: Client<any, any>, _consented?: boolean): void | Promise<any> {
 		this.state.players.delete(client.sessionId);
 	}
 
@@ -60,6 +65,6 @@ export class MainRoom extends Room<GameState> {
 			| 'setInterval'
 			| 'setTimeout',
 	): void {
-		console.error(error.name);
+		console.error(methodName + ' ' + error.name);
 	}
 }

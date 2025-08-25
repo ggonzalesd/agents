@@ -1,8 +1,8 @@
 export class Option<T = unknown> {
 	private value: T | null;
 
-	private constructor(value: T | null) {
-		this.value = value;
+	private constructor(value?: T | null) {
+		this.value = value ?? null;
 	}
 
 	static some<U>(value: U): Option<U> {
@@ -11,6 +11,14 @@ export class Option<T = unknown> {
 
 	static none<U>(): Option<U> {
 		return new Option(null!);
+	}
+
+	public unsafe(): T {
+		return this.value as T;
+	}
+
+	public raw(): T | null {
+		return this.value;
 	}
 
 	public unwrap(): T {
