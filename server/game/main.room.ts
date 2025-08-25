@@ -47,8 +47,8 @@ export class MainRoom extends Room<GameState> {
 		this.worldPhy.step();
 	}
 
-	onAuth(client: Client<any, any>, _options: any, _context: AuthContext) {
-		console.log({ client: client.auth });
+	onAuth(_client: Client<any, any>, _options: any, _context: AuthContext) {
+		console.log({ token: _context.token });
 
 		return true;
 	}

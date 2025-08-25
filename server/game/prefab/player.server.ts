@@ -24,18 +24,16 @@ class PlayerServerBehavior extends ComponentEcs {
 		const parentOpt = this.world.getEntity(this.parent);
 
 		gameState.players.set(parentOpt.unwrap().name, this.state);
+
+		this.callOnDelete(() => {
+			gameState.players.delete(parentOpt.unwrap().name);
+		});
 	}
 
-	onDelete(): void {
-		const serverDataOp = this.world.get(ServerDataEcs);
-
-		const gameState = serverDataOp
-			.map((serverData) => serverData.state)
-			.unwrap();
-
-		const parentOpt = this.world.getEntity(this.parent);
-
-		gameState.players.delete(parentOpt.unwrap().name);
+	onLoop(_delta: number): void {
+		if (Math.random() < 0.1) {
+			this.state.life += 1;
+		}
 	}
 }
 

@@ -14,6 +14,8 @@
 		async function game() {
 			const room = await client.joinById<GameState>('main-room');
 
+			console.log(room.sessionId);
+
 			const c = getStateCallbacks(room);
 
 			c(room.state).players.onAdd((player, key) => {
@@ -25,7 +27,11 @@
 				});
 
 				c(player).onChange(() => {
-					console.log('Player changed:', player);
+					playersState.update((players) => {
+						return players.map((p) =>
+							p.key === key ? { key, life: player.life } : p,
+						);
+					});
 				});
 			});
 
