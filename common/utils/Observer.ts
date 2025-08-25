@@ -6,8 +6,8 @@ export class Observer<T = void> {
 	private listeners: Set<(value: T) => void> = new Set();
 
 	constructor() {
-		this.addListener = this.addListener.bind(this);
-		this.removeListener = this.removeListener.bind(this);
+		this.subscribe = this.subscribe.bind(this);
+		this.unsubscribe = this.unsubscribe.bind(this);
 		this.notify = this.notify.bind(this);
 	}
 
@@ -16,11 +16,11 @@ export class Observer<T = void> {
 	 * @param callback - The function to call when the observer is notified
 	 * @returns A function that removes the listener when called
 	 */
-	addListener(callback: (value: T) => void) {
+	subscribe(callback: (value: T) => void) {
 		this.listeners.add(callback);
 
 		return (() => {
-			this.removeListener(callback);
+			this.unsubscribe(callback);
 		}).bind(this);
 	}
 
@@ -28,7 +28,7 @@ export class Observer<T = void> {
 	 * Removes a listener from the observer
 	 * @param callback - The function to remove
 	 */
-	removeListener(callback: (value: T) => void) {
+	unsubscribe(callback: (value: T) => void) {
 		this.listeners.delete(callback);
 	}
 

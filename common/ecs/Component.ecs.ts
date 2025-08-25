@@ -6,8 +6,20 @@ export class ComponentEcs {
 	active: boolean = true;
 	name: string;
 
-	public world: WorldEcs = null!;
+	public _world: WorldEcs = null!;
 	public parent: string | null = null;
+
+	public set world(world: WorldEcs) {
+		this._world = world;
+	}
+
+	public get world(): WorldEcs {
+		if (this._world == null) {
+			throw new Error('World is accessible only within onStart');
+		}
+
+		return this._world;
+	}
 
 	private __deferCallbacks: Set<() => void> = new Set();
 

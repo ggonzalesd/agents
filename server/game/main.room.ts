@@ -45,6 +45,12 @@ export class MainRoom extends Room<GameState> {
 	onUpdate(_delta: number) {
 		this.worldEcs.onUpdate(_delta);
 		this.worldPhy.step();
+
+		if (Math.random() < 0.01) {
+			this.broadcast('hello', {
+				message: '[Hello World]: ' + Math.random(),
+			});
+		}
 	}
 
 	onAuth(_client: Client<any, any>, _options: any, _context: AuthContext) {
@@ -58,7 +64,13 @@ export class MainRoom extends Room<GameState> {
 		_options?: any,
 		_auth?: any,
 	): Promise<any> {
-		this.worldEcs.addEntity(this.playerServerFactory(client.sessionId));
+		this.worldEcs.addEntity(
+			this.playerServerFactory(client.sessionId, {
+				x: (Math.random() - 0.5) * 2,
+				y: (Math.random() - 0.5) * 2,
+				z: (Math.random() - 0.5) * 2,
+			}),
+		);
 	}
 
 	async onLeave(client: Client<any, any>, _consented?: boolean): Promise<any> {

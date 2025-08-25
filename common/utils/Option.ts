@@ -69,21 +69,26 @@ export class Option<T = unknown> {
 	/**
 	 * Executes a function if the Option instance contains no value
 	 * @param fn - The function to execute
+	 * @returns The Option instance
 	 */
-	public ifNone(fn: () => void): void {
+	public ifNone(fn: () => void): Option<T> {
 		if (this.value == null) {
 			fn();
 		}
+		return this;
 	}
 
 	/**
-	 * Executes a function if the Option instance contains a value
+	 * Executes functions if the Option instance contains a value
 	 * @param fn - The function to execute
+	 * @returns The Option instance
 	 */
-	public ifSome(fn: (value: T) => void): void {
-		if (this.value != null) {
-			fn(this.value);
+	public ifSome(...fns: Array<(value: T) => void>): Option<T> {
+		const value = this.value;
+		if (value != null) {
+			fns.forEach((fn) => fn(value));
 		}
+		return this;
 	}
 
 	/**
@@ -120,5 +125,51 @@ export class Option<T = unknown> {
 			return Option.none() as unknown as Option<U>;
 		}
 		return Option.some(fn(this.value));
+	}
+
+	/**
+	 * Populates the Option instance with a value
+	 * @param value - The value to wrap
+	 * @returns The Option instance
+	 */
+	public populate(value: T): Option<T> {
+		this.value = value;
+		return this;
+	}
+
+	/**
+	 * Clears the value wrapped in the Option instance
+	 * @returns The Option instance
+	 */
+	public clear(): Option<T> {
+		this.value = null;
+		return this;
+	}
+
+	/**
+	 * Copies the value from another Option instance
+	 * @param op - The Option instance to copy from
+	 * @returns The Option instance
+	 */
+	public copy(op: Option<T>): Option<T> {
+		this.value = op.raw();
+		return this;
+	}
+
+	/**
+	 * Clones the Option instance
+	 * @returns A new Option instance with the same value
+	 */
+	public clone(): Option<T> {
+		return new Option(this.value);
+	}
+
+	/**
+	 * Gives the value to another option instance, **consuming** the original value
+	 * @param op - The Option instance to give the value to
+	 */
+	public giveTo(op: Option<T>): void {
+		op.populate(this.value!);
+		this.value = null;
 	}
 }

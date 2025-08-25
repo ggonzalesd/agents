@@ -1,14 +1,39 @@
 <script lang="ts">
-	import { Client, getStateCallbacks } from 'colyseus.js';
+	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 
-	import { GameState } from '#/state/game.state';
-	import { writable } from 'svelte/store';
+	import { WorldEcs } from '#/ecs/World.ecs';
+	import { ColyseusClientEcs } from '@/game/scripts/colyseusClient.ecs';
+	import { Option } from '#/utils/Option';
+	import { ClientManagerEcs } from '@/game/scripts/clientManager.ecs';
 
 	let playersState = writable<{ key: string; life: number }[]>([]);
 
 	onMount(() => {
-		const client = new Client('ws://localhost:3000');
+		const world = new WorldEcs({
+			[ColyseusClientEcs.name]: new ColyseusClientEcs(
+				'ws://localhost:3000',
+				'your_token_here',
+				'main-room',
+			),
+			[ClientManagerEcs.name]: new ClientManagerEcs(),
+		});
+
+		let animationRequestId: Option<number> = Option.none();
+		let lastTime = performance.now();
+
+		function main() {
+			let currentTime = performance.now();
+			let deltaTime = currentTime - lastTime;
+			lastTime = currentTime;
+
+			world.onUpdate(deltaTime);
+			animationRequestId.populate(requestAnimationFrame(main));
+		}
+
+		animationRequestId.populate(requestAnimationFrame(main));
+
+		/* const client = new Client('ws://localhost:3000');
 		client.auth.token = 'your_token_here';
 
 		async function game() {
@@ -43,7 +68,11 @@
 			});
 		}
 
-		game();
+		game(); */
+
+		return () => {
+			animationRequestId.ifSome(cancelAnimationFrame);
+		};
 	});
 </script>
 

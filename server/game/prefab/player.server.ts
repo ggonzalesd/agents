@@ -8,10 +8,10 @@ import { ServerDataEcs } from '../scripts/serverData.ecs';
 class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
 
-	constructor() {
+	constructor(pos: { x: number; y: number; z: number }) {
 		super();
 
-		this.state = new PlayerState();
+		this.state = new PlayerState(pos);
 	}
 
 	onStart(): void {
@@ -38,12 +38,13 @@ class PlayerServerBehavior extends ComponentEcs {
 }
 
 export const playerServerFactoryGenerator =
-	(world: WorldEcs) => (name: string) => {
+	(world: WorldEcs) =>
+	(name: string, pos: { x: number; y: number; z: number }) => {
 		return new EntityEcs({
 			name,
 			world,
 			components: {
-				[PlayerServerBehavior.name]: new PlayerServerBehavior(),
+				[PlayerServerBehavior.name]: new PlayerServerBehavior(pos),
 			},
 		});
 	};
