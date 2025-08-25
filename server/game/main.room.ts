@@ -8,20 +8,28 @@ import {
 
 import { GameState, PlayerState } from '#/state/game.state';
 import { WorldEcs } from '#/ecs/World.ecs';
+import { playerServerFactoryGenerator } from './prefab/player.server';
+import { ServerDataEcs } from './scripts/serverData.ecs';
 
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
+
+	playerServerFactory: ReturnType<typeof playerServerFactoryGenerator> = null!;
 
 	onCreate(options: any): void | Promise<any> {
 		if (!['1', '2', 'main-room'].includes(options.id)) {
 			throw new ServerError(401, 'Invalid room ID');
 		}
 
-		console.log({ options });
-
 		this.state = new GameState();
 
-		this.worldEcs = new WorldEcs();
+		this.worldEcs = new WorldEcs({
+			[ServerDataEcs.name]: new ServerDataEcs(this.state),
+		});
+
+		this.playerServerFactory = playerServerFactoryGenerator(this.worldEcs);
+
+		console.log({ options });
 
 		this.roomId = options.id;
 
@@ -45,11 +53,11 @@ export class MainRoom extends Room<GameState> {
 		_options?: any,
 		_auth?: any,
 	): void | Promise<any> {
-		this.state.players.set(client.sessionId, new PlayerState());
+		this.worldEcs.addEntity(this.playerServerFactory(client.sessionId));
 	}
 
 	onLeave(client: Client<any, any>, _consented?: boolean): void | Promise<any> {
-		this.state.players.delete(client.sessionId);
+		this.worldEcs.deleteEntityById(client.sessionId);
 	}
 
 	onUncaughtException(

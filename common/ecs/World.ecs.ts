@@ -32,6 +32,13 @@ export class WorldEcs extends BaseEcs {
 		this.entities.set(entity.name, entity);
 	}
 
+	deleteEntityById(id: string) {
+		const entity = this.entities.get(id);
+		if (entity) {
+			this.deleteEntity(entity);
+		}
+	}
+
 	deleteEntity(entity: EntityEcs) {
 		entity.deleted = true;
 		entity.active = false;

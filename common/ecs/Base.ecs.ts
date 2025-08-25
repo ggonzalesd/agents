@@ -1,18 +1,18 @@
 import type { ComponentEcs } from './Component.ecs';
-import { EntityEcs } from './Entity.ecs';
-import { WorldEcs } from './World.ecs';
 
 import { Option } from '#/utils/Option';
 
 export class BaseEcs {
 	protected components: Map<string, ComponentEcs> = new Map();
 
-	private __world: WorldEcs = null!;
-	private __entity: EntityEcs | null = null!;
+	private __world: any = null!;
+	private __entity: any | null = null!;
+
+	constructor() {}
 
 	protected init(
-		world: WorldEcs,
-		entity: EntityEcs | null,
+		world: any,
+		entity: any | null,
 		components: Record<string, ComponentEcs>,
 	) {
 		this.__world = world;
