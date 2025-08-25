@@ -6,7 +6,7 @@ export class BaseEcs {
 	protected components: Map<string, ComponentEcs> = new Map();
 
 	private __world: any = null!;
-	private __entity: any | null = null!;
+	private __parent: string | null = null!;
 
 	constructor() {}
 
@@ -16,17 +16,13 @@ export class BaseEcs {
 		components: Record<string, ComponentEcs>,
 	) {
 		this.__world = world;
-		this.__entity = entity;
+		this.__parent = entity;
 
 		for (const [name, component] of Object.entries(components)) {
 			component.name = name;
 			component.world = world;
-			component.entity = Option.some(entity!);
+			component.parent = this.__parent;
 			this.components.set(name, component);
-		}
-
-		for (const component of Object.values(components)) {
-			component.onStart();
 		}
 	}
 
@@ -39,7 +35,7 @@ export class BaseEcs {
 	public set(component: ComponentEcs, name?: string): BaseEcs {
 		component.name = name ?? component.name;
 		component.world = this.__world;
-		component.entity = Option.some(this.__entity!);
+		component.parent = this.__parent;
 
 		this.components.set(component.name, component);
 		component.onStart();

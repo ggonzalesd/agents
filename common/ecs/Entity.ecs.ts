@@ -19,11 +19,13 @@ export class EntityEcs extends BaseEcs {
 	}) {
 		super();
 		const { components, world, name: _name } = props;
-
 		this.name = _name ?? uuidv4();
 		this.world = world;
+		this.init(this.world, this.name, components);
+	}
 
-		this.init(world, this, components);
+	onStart() {
+		this.components.forEach((component) => component.onStart());
 	}
 
 	onUpdate(delta: number) {

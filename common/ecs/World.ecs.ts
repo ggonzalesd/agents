@@ -12,13 +12,23 @@ export class WorldEcs extends BaseEcs {
 		super();
 
 		this.init(this, null, components);
+
+		this.components.forEach((component) => component.onStart());
 	}
 
 	getAll() {
 		return [...this.entities.values()];
 	}
 
-	getEntity(name: string): Option<EntityEcs> {
+	getEntity(_name: string | null | Option<string>): Option<EntityEcs> {
+		if (_name == null) return Option.none();
+
+		if (_name instanceof Option && _name.isNone()) {
+			return Option.none();
+		}
+
+		const name = _name instanceof Option ? _name.unsafe() : _name;
+
 		const entity = this.entities.get(name);
 
 		if (entity) {
@@ -30,6 +40,7 @@ export class WorldEcs extends BaseEcs {
 
 	addEntity(entity: EntityEcs) {
 		this.entities.set(entity.name, entity);
+		entity.onStart();
 	}
 
 	deleteEntityById(id: string) {

@@ -1,16 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import type { EntityEcs } from './Entity.ecs';
 import type { WorldEcs } from './World.ecs';
-
-import { Option } from '#/utils/Option';
 
 export class ComponentEcs {
 	active: boolean = true;
 	name: string;
 
 	public world: WorldEcs = null!;
-	public entity: Option<EntityEcs> = Option.none();
+	public parent: string | null = null;
 
 	private __deferCallbacks: Set<() => void> = new Set();
 

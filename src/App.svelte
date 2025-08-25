@@ -5,7 +5,8 @@
 	import { getDebugContext, useDebugHook } from '@/hooks/useDebug.svelte';
 
 	import ViewDebugContext from './components/ViewDebugContext.svelte';
-	import LoginView from './views/LoginView.svelte';
+	// import LoginView from './views/LoginView.svelte';
+	import GameView from '@/views/GameView.svelte';
 
 	setContext(useDebugHook.name, useDebugHook());
 
@@ -20,5 +21,6 @@
 <main
 	class="flex size-full min-h-screen flex-col items-center justify-center bg-gradient-to-br from-lime-500/10 to-blue-500/20"
 >
-	<LoginView />
+	<!-- <LoginView /> -->
+	<GameView />
 </main>
