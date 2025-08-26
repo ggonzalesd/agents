@@ -32,7 +32,10 @@
 		</div>
 
 		<div class="flex flex-col justify-center gap-2 p-2">
-			<svelte:element this={message.isCode ? 'pre' : 'div'}>
+			<svelte:element
+				this={message.isCode ? 'pre' : 'div'}
+				class="pointer-events-auto"
+			>
 				{message.message}
 			</svelte:element>
 			{#if message.imageUrl}

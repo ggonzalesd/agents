@@ -1,8 +1,20 @@
+type UnwrapOption<T> = T extends Option<infer U> ? UnwrapOption<U> : T;
+
 export class Option<T = unknown> {
 	private value: T | null;
 
 	private constructor(value?: T | null) {
 		this.value = value ?? null;
+	}
+
+	public collapse(): Option<UnwrapOption<T>> {
+		let current: any = this as Option<any>;
+
+		while (current.value instanceof Option) {
+			current = current.value;
+		}
+
+		return current as Option<UnwrapOption<T>>;
 	}
 
 	/**
@@ -180,5 +192,52 @@ export class Option<T = unknown> {
 	public giveTo(op: Option<T>): void {
 		op.populate(this.value!);
 		this.value = null;
+	}
+
+	/**
+	 * Returns a new Option instance if the filter function returns true for the wrapped value
+	 * @param fn - The filter function to apply
+	 * @returns A new Option instance with the wrapped value if the filter function returns true, or an empty Option instance otherwise
+	 */
+	public filter(fn: (value: T) => boolean): Option<T> {
+		if (this.value != null && fn(this.value)) {
+			return this;
+		}
+		return Option.none();
+	}
+
+	static zip(): Option<unknown>;
+	static zip<T extends readonly Option<any>[]>(
+		...options: T
+	): Option<{ [K in keyof T]: T[K] extends Option<infer U> ? U : never }>;
+	static zip<R extends Record<string, Option<any>>>(
+		options: R,
+	): Option<{ [K in keyof R]: R[K] extends Option<infer U> ? U : never }>;
+
+	static zip(...args: any[]): Option<any> {
+		if (
+			args.length === 1 &&
+			typeof args[0] === 'object' &&
+			!Array.isArray(args[0])
+		) {
+			const record = args[0];
+			const result: any = {};
+
+			if (Object.keys(record).length === 0) {
+				return Option.none();
+			}
+
+			for (const key in record) {
+				const opt = record[key];
+				if (opt.value == null) return Option.none();
+				result[key] = opt.value;
+			}
+
+			return Option.some(result);
+		}
+
+		const opts = args as Option<any>[];
+		if (opts.some((opt) => opt.value == null)) return Option.none();
+		return Option.some(opts.map((opt) => opt.value));
 	}
 }

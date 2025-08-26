@@ -9,6 +9,7 @@ import { vec3Set, vec4Set } from '#/utils/math.util';
 
 import { ColyseusClientEcs } from '../scripts/colyseusClient.ecs';
 import { RenderClientEcs } from '../scripts/renderClient.ecs';
+import { UIClientEcs } from '../scripts/uiClient.ecs';
 
 class PlayerClientBehavior extends ComponentEcs {
 	public state: PlayerState;
@@ -42,9 +43,16 @@ class PlayerClientBehavior extends ComponentEcs {
 		});
 		renderClient.scene.add(cube);
 
-		this.callOnDelete(() => {
-			renderClient.scene.remove(cube);
-		});
+		this.callOnDelete(() => renderClient.scene.remove(cube));
+
+		// Testing Actions
+		this.world.get(UIClientEcs).ifSome((uiCli) =>
+			uiCli.actionContext.listen('jump', () => {
+				if (room.sessionId === this.parent) {
+					room.send('jump');
+				}
+			}),
+		);
 	}
 
 	onLoop(_delta: number): void {}

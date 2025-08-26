@@ -1,6 +1,8 @@
 import { getContext } from 'svelte';
 import { writable } from 'svelte/store';
 
+import { Publisher } from '#/utils/Publisher';
+
 export const useActions = () => {
 	const stringData = localStorage.getItem('x-actions');
 	const __actions = stringData ? JSON.parse(stringData) : [];
@@ -8,22 +10,7 @@ export const useActions = () => {
 
 	const { subscribe, update, set } = writable(_actions);
 
-	const listeners = new Map<string, Set<() => void>>();
-
-	const listen = (id: string, callback: () => void) => {
-		if (!listeners.has(id)) {
-			listeners.set(id, new Set());
-		}
-		listeners.get(id)?.add(callback);
-
-		return () => {
-			listeners.get(id)?.delete(callback);
-		};
-	};
-
-	const notify = (id: string) => {
-		listeners.get(id)?.forEach((callback) => callback());
-	};
+	const publisher = new Publisher();
 
 	const clear = () => {
 		localStorage.removeItem('x-actions');
@@ -46,7 +33,14 @@ export const useActions = () => {
 		});
 	};
 
-	return { subscribe, listen, notify, clear, add, remove };
+	return {
+		subscribe,
+		listen: publisher.listen,
+		notify: publisher.notify,
+		clear,
+		add,
+		remove,
+	};
 };
 
 export const getActionsContext = () => {

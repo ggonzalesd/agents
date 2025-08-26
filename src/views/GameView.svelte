@@ -8,14 +8,19 @@
 	import { RenderClientEcs } from '@/game/scripts/renderClient.ecs';
 	import { UIClientEcs } from '@/game/scripts/uiClient.ecs';
 	import { getDebugContext } from '@/hooks/useDebug.svelte';
+	import { getActionsContext } from '@/hooks/useActions.svelte';
 
 	let canvasRef = $state.raw<HTMLCanvasElement>(null!);
 
 	let debugContext = getDebugContext();
+	let actionContext = getActionsContext();
 
 	onMount(() => {
 		const world = new WorldEcs({
-			[UIClientEcs.name]: new UIClientEcs(debugContext),
+			[UIClientEcs.name]: new UIClientEcs({
+				debug: debugContext,
+				actions: actionContext,
+			}),
 			[ColyseusClientEcs.name]: new ColyseusClientEcs(
 				'ws://localhost:3000',
 				'your_token_here',

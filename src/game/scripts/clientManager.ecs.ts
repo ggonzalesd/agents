@@ -38,11 +38,11 @@ export class ClientManagerEcs extends ComponentEcs {
 		});
 
 		room.onMessage('message', (message) => {
-			this.uiClient.ifSome((uiClient) => {
-				uiClient.debugHook.add(message, {
-					isCode: false,
-					type: 'info',
-				});
+			const uiClient = this.uiClient.raw();
+
+			uiClient?.debugHook.add(message, {
+				isCode: false,
+				type: 'info',
 			});
 		});
 	}
@@ -51,13 +51,22 @@ export class ClientManagerEcs extends ComponentEcs {
 		this.playerClientFactory = playerClientFactoryGenerator(this.world);
 
 		this.world.get(UIClientEcs).giveTo(this.uiClient);
+		this.world.get(ColyseusClientEcs).giveTo(this.colyseusClient);
 
-		this.colyseusClient.copy(this.world.get(ColyseusClientEcs));
-
+		// Execute onConnection if the Colyseus client is available
 		this.colyseusClient.ifSome((client) => {
 			this.callOnDelete(client.alarm.subscribe(this.onConnection.bind(this)));
-
 			client.connect();
+		});
+
+		// TODO: Remove this
+		// ? Testing LLMs Interface Service
+		this.uiClient.ifSome((cli) => {
+			this.callOnDelete(
+				cli.actionContext.listen('manual-llm', () => {
+					alert('Hello');
+				}),
+			);
 		});
 	}
 
