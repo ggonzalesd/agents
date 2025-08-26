@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 
 	import { WorldEcs } from '#/ecs/World.ecs';

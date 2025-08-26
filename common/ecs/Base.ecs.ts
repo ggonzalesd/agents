@@ -69,7 +69,7 @@ export class BaseEcs {
 		componentClass: new (...args: any[]) => T,
 		name?: string,
 	): Option<T> {
-		return Option.some(this.getUnsafe(componentClass, name));
+		return Option.of(this.getUnsafe(componentClass, name));
 	}
 
 	protected update(delta: number) {

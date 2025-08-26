@@ -4,9 +4,9 @@
 	import { onMount, setContext } from 'svelte';
 	import { getDebugContext, useDebugHook } from '@/hooks/useDebug.svelte';
 
-	import ViewDebugContext from './components/ViewDebugContext.svelte';
 	// import LoginView from './views/LoginView.svelte';
 	import GameView from '@/views/GameView.svelte';
+	import UiHelpers from './components/UiHelpers.svelte';
 
 	setContext(useDebugHook.name, useDebugHook());
 
@@ -16,7 +16,7 @@
 	});
 </script>
 
-<ViewDebugContext />
+<UiHelpers />
 
 <main
 	class="flex size-full min-h-screen flex-col items-center justify-center bg-gradient-to-br from-lime-500/10 to-blue-500/20"

@@ -34,11 +34,7 @@ export class WorldEcs extends BaseEcs {
 
 		const entity = this.entities.get(name);
 
-		if (entity) {
-			return Option.some(entity);
-		}
-
-		return Option.none();
+		return Option.of(entity);
 	}
 
 	addEntity(entity: EntityEcs) {

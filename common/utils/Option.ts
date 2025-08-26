@@ -10,6 +10,15 @@ export class Option<T = unknown> {
 	 * @param value - The value to wrap
 	 * @returns A new Option instance
 	 */
+	static of<U>(value?: U | null | undefined): Option<U> {
+		return new Option(value);
+	}
+
+	/**
+	 * Creates a new Option instance with a value
+	 * @param value - The value to wrap
+	 * @returns A new Option instance
+	 */
 	static some<U>(value: U): Option<U> {
 		return new Option(value);
 	}

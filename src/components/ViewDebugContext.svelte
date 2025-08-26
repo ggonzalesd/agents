@@ -50,8 +50,14 @@
 {/snippet}
 
 <div
-	class="pointer-events-none absolute top-0 left-0 z-50 flex flex-col gap-2 p-4"
+	class="pointer-events-none absolute top-8 left-0 z-50 flex flex-col gap-2 p-4"
 >
+	<div>View Debug Context</div>
+
+	{#if $debugContext.length === 0}
+		<div class="text-sm text-zinc-400">No debug messages</div>
+	{/if}
+
 	{#each $debugContext as message}
 		{@render itemMessage(message)}
 	{/each}
