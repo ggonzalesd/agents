@@ -18,7 +18,8 @@ export class ClientManagerEcs extends ComponentEcs {
 
 	onConnection() {
 		const { proxy, room } = this.colyseusClient
-			.map((c) => c.connection.unsafe())
+			.map((c) => c.connection)
+			.collapse()
 			.unwrap('No ColyseusClientEcs found');
 
 		proxy(room.state).players.onAdd((state, index) => {

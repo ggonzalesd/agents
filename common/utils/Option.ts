@@ -240,4 +240,24 @@ export class Option<T = unknown> {
 		if (opts.some((opt) => opt.value == null)) return Option.none();
 		return Option.some(opts.map((opt) => opt.value));
 	}
+
+	build(fn: (opt: Option<T>) => null | undefined | void): Option<unknown>;
+	build<R extends readonly Option<any>[]>(
+		fn: (opt: Option<T>) => R,
+	): Option<{ [K in keyof R]: R[K] extends Option<infer U> ? U : never }>;
+	build<R extends Record<string, Option<any>>>(
+		fn: (opt: Option<T>) => R,
+	): Option<{ [K in keyof R]: R[K] extends Option<infer U> ? U : never }>;
+
+	build(fn: (opt: Option<T>) => any): Option<unknown> {
+		const result = fn(this);
+
+		if (result == null) return Option.none();
+
+		if (Array.isArray(result)) {
+			return Option.zip(...result);
+		} else {
+			return Option.zip(result);
+		}
+	}
 }

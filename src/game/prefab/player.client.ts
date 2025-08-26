@@ -23,7 +23,8 @@ class PlayerClientBehavior extends ComponentEcs {
 	onStart(): void {
 		const { proxy, room } = this.world
 			.get(ColyseusClientEcs)
-			.map((c) => c.connection.unsafe())
+			.map((c) => c.connection)
+			.collapse()
 			.unwrap('Connection not found');
 
 		const renderClient = this.world
