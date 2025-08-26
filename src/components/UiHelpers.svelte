@@ -2,8 +2,9 @@
 
 <script lang="ts">
 	import ViewDebugContext from '@/components/ViewDebugContext.svelte';
+	import ViewActionsContext from './ViewActionsContext.svelte';
 
-	let helper = $state<'DEBUG' | 'OTHER'>('DEBUG');
+	let helper = $state<'DEBUG' | 'ACTIONS'>('DEBUG');
 
 	let isDisplay = $state<boolean>(true);
 	let display = $derived(isDisplay ? 'X' : '>');
@@ -24,12 +25,15 @@
 	{#if isDisplay}
 		<div class="w-2"></div>
 		{@render btn('Debug', () => (helper = 'DEBUG'))}
-		{@render btn('Other', () => (helper = 'OTHER'))}
+		{@render btn('Actions', () => (helper = 'ACTIONS'))}
 	{/if}
 </div>
 
 {#if isDisplay}
 	{#if helper === 'DEBUG'}
 		<ViewDebugContext />
+	{/if}
+	{#if helper === 'ACTIONS'}
+		<ViewActionsContext />
 	{/if}
 {/if}

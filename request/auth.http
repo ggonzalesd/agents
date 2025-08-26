@@ -41,3 +41,6 @@ GET {{host}}/room HTTP/1.1
 
 ### Start ROOM
 POST {{host}}/room/1 HTTP/1.1
+
+### Experimental
+GET {{host}}/experimental/manual-request-llm HTTP/1.1

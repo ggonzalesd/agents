@@ -37,8 +37,13 @@ export class ClientManagerEcs extends ComponentEcs {
 			this.world.deleteEntityById(index);
 		});
 
-		room.onMessage('hello', (message) => {
-			console.log('Received message:', message);
+		room.onMessage('message', (message) => {
+			this.uiClient.ifSome((uiClient) => {
+				uiClient.debugHook.add(message, {
+					isCode: false,
+					type: 'info',
+				});
+			});
 		});
 	}
 

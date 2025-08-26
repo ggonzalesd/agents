@@ -10,6 +10,7 @@ import { errorHandlerFactory } from '$/middlewares/errorHandler.middleware';
 
 import roomRoute from '$/routes/room.route';
 import authRoute from '$/routes/auth.route';
+import experimentalRoute from '$/routes/experimental.route';
 
 export const applyHttpApplication = (
 	server: ReturnType<typeof createServer>,
@@ -46,6 +47,7 @@ export const applyHttpApplication = (
 
 		group.use('/room', roomRoute);
 		group.use('/auth', authRoute);
+		group.use('/experimental', experimentalRoute);
 	}
 
 	app.use((_, res) => {

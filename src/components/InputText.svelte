@@ -15,6 +15,7 @@
 
 		iconSvgContent?: string;
 		element?: HTMLInputElement;
+		value?: string;
 
 		required?: boolean;
 		disabled?: boolean;
@@ -25,6 +26,7 @@
 	let {
 		id = uuidv4(),
 		element = $bindable(),
+		value = $bindable(),
 		iconSvgContent,
 		name,
 		onchange,
@@ -66,6 +68,7 @@
 		{placeholder}
 		{required}
 		{disabled}
+		bind:value
 		class="pointer-events-auto flex flex-1 px-2 outline-none disabled:pointer-events-none"
 		onchange={(e) => onchange?.((e.target as HTMLInputElement).value)}
 		bind:this={element}

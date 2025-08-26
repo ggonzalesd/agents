@@ -7,8 +7,10 @@
 	// import LoginView from './views/LoginView.svelte';
 	import GameView from '@/views/GameView.svelte';
 	import UiHelpers from './components/UiHelpers.svelte';
+	import { useActions } from './hooks/useActions.svelte';
 
 	setContext(useDebugHook.name, useDebugHook());
+	setContext(useActions.name, useActions());
 
 	onMount(() => {
 		const debugContext = getDebugContext();

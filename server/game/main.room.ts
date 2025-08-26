@@ -67,10 +67,6 @@ export class MainRoom extends Room<GameState> {
 				z: (Math.random() - 0.5) * 5,
 			}),
 		);
-
-		this.broadcast('hello', {
-			message: '[Hello World]: ' + Math.random(),
-		});
 	}
 
 	async onLeave(client: Client<any, any>, _consented?: boolean): Promise<any> {
