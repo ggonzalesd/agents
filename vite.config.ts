@@ -12,4 +12,14 @@ export default defineConfig({
 			'#': '/common',
 		},
 	},
+	build: {
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					three: ['three', 'three-stdlib'],
+					colyseus: ['colyseus.js', '@colyseus/schema'],
+				},
+			},
+		},
+	},
 });

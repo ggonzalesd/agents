@@ -12,6 +12,7 @@ import { GameState } from '#/state/game.state';
 import { WorldEcs } from '#/ecs/World.ecs';
 import { playerServerFactoryGenerator } from './prefab/player.server';
 import { ServerDataEcs } from './scripts/serverData.ecs';
+import { ServerManagerEcs } from './scripts/serverManager.ecs';
 
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
@@ -29,6 +30,7 @@ export class MainRoom extends Room<GameState> {
 
 		this.worldEcs = new WorldEcs({
 			[ServerDataEcs.name]: new ServerDataEcs(this.state, this.worldPhy),
+			[ServerManagerEcs.name]: new ServerManagerEcs(),
 		});
 
 		this.playerServerFactory = playerServerFactoryGenerator(this.worldEcs);
@@ -61,7 +63,7 @@ export class MainRoom extends Room<GameState> {
 		this.worldEcs.addEntity(
 			this.playerServerFactory(client.sessionId, {
 				x: (Math.random() - 0.5) * 5,
-				y: (Math.random() - 0.5) * 5,
+				y: (Math.random() - 0.5) * 5 + 10,
 				z: (Math.random() - 0.5) * 5,
 			}),
 		);

@@ -39,6 +39,17 @@ export class RenderClientEcs extends ComponentEcs {
 		this.camera.position.y = 5;
 
 		this.camera.lookAt(0, 0, 0);
+
+		this.scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+
+		const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+		directionalLight.position.set(1, 1, 0);
+		this.scene.add(directionalLight);
+
+		const pointLight = new THREE.PointLight(0xffffff, 5, 1500);
+		pointLight.position.set(0, 2.5, 0);
+
+		this.scene.add(pointLight);
 	}
 
 	onStart(): void {}

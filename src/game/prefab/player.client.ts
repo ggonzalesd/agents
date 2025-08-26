@@ -31,13 +31,7 @@ class PlayerClientBehavior extends ComponentEcs {
 
 		const cube = new THREE.Mesh(
 			new THREE.BoxGeometry(1, 1, 1),
-			new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff }),
-		);
-
-		cube.position.set(
-			this.state.position.x,
-			this.state.position.y,
-			this.state.position.z,
+			new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff }),
 		);
 
 		proxy(this.state.position).onChange(() => {
