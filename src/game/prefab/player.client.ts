@@ -5,6 +5,7 @@ import { EntityEcs } from '#/ecs/Entity.ecs';
 import type { WorldEcs } from '#/ecs/World.ecs';
 
 import type { PlayerState } from '#/state/game.state';
+import { vec3Set, vec4Set } from '#/utils/math.util';
 
 import { ColyseusClientEcs } from '../scripts/colyseusClient.ecs';
 import { RenderClientEcs } from '../scripts/renderClient.ecs';
@@ -35,13 +36,11 @@ class PlayerClientBehavior extends ComponentEcs {
 		);
 
 		proxy(this.state.position).onChange(() => {
-			cube.position.set(
-				this.state.position.x,
-				this.state.position.y,
-				this.state.position.z,
-			);
+			vec3Set(cube.position, this.state.position);
 		});
-
+		proxy(this.state.rotation).onChange(() => {
+			vec4Set(cube.quaternion, this.state.rotation);
+		});
 		renderClient.scene.add(cube);
 
 		this.callOnDelete(() => {

@@ -7,11 +7,16 @@
 	import { Option } from '#/utils/Option';
 	import { ClientManagerEcs } from '@/game/scripts/clientManager.ecs';
 	import { RenderClientEcs } from '@/game/scripts/renderClient.ecs';
+	import { UIClientEcs } from '@/game/scripts/uiClient.ecs';
+	import { getDebugContext } from '@/hooks/useDebug.svelte';
 
 	let canvasRef = $state.raw<HTMLCanvasElement>(null!);
 
+	let debugContext = getDebugContext();
+
 	onMount(() => {
 		const world = new WorldEcs({
+			[UIClientEcs.name]: new UIClientEcs(debugContext),
 			[ColyseusClientEcs.name]: new ColyseusClientEcs(
 				'ws://localhost:3000',
 				'your_token_here',
