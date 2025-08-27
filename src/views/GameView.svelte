@@ -18,6 +18,7 @@
 	onMount(() => {
 		const world = new WorldEcs({
 			[UIClientEcs.name]: new UIClientEcs({
+				canvas: $state.snapshot(canvasRef) as HTMLCanvasElement,
 				debug: debugContext,
 				actions: actionContext,
 			}),
@@ -52,4 +53,4 @@
 	});
 </script>
 
-<canvas class="absolute size-full bg-zinc-900" bind:this={canvasRef}></canvas>
+<canvas class="absolute size-full bg-zinc-900 pointer-events-auto" bind:this={canvasRef}></canvas>

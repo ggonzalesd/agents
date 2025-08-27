@@ -40,18 +40,18 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		const bodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(
 			...vec3Flatten(this.iPos),
 		);
-		const body = this.physic.createRigidBody(bodyDesc);
+		this.body = this.physic.createRigidBody(bodyDesc);
 
 		const colliderDesc = RAPIER.ColliderDesc.capsule(0.5, 0.5).setRestitution(
 			0.8,
 		);
-		this.collider = this.physic.createCollider(colliderDesc, body);
+		this.collider = this.physic.createCollider(colliderDesc, this.body);
 
-		body.lockRotations(true, true);
+		this.body.lockRotations(true, true);
 
 		this.callOnDelete(() => {
 			this.physic.removeCollider(this.collider, true);
-			this.physic.removeRigidBody(body);
+			this.physic.removeRigidBody(this.body);
 		});
 	}
 
@@ -99,7 +99,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 				undefined,
 				undefined,
 				undefined,
-				undefined,
+				(c) => c !== this.collider,
 			) != null
 		);
 	}

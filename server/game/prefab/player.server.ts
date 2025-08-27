@@ -1,47 +1,15 @@
-import * as RAPIER from '@dimforge/rapier3d-compat';
-
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { PlayerState } from '#/state/game.state';
-import { vec3Flatten, vec3Set, vec4Set, type IVec3 } from '#/utils/math.util';
-import { Option } from '#/utils/Option';
+import { vec3Set, type IVec3 } from '#/utils/math.util';
 import { EntityEcs, type WorldEcs } from '#/ecs';
 
 import { ServerDataEcs } from '../scripts/serverData.ecs';
-
-class RigidServerEcs extends ComponentEcs {
-	public collider: RAPIER.Collider = null!;
-	public body: RAPIER.RigidBody = null!;
-
-	constructor(private __initialPos: IVec3) {
-		super();
-	}
-
-	onStart(): void {
-		const physic = this.world
-			.get(ServerDataEcs)
-			.map((sd) => sd.worldPhysic)
-			.unwrap('RAPIER World not found');
-
-		const bodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(
-			...vec3Flatten(this.__initialPos),
-		);
-
-		this.body = physic.createRigidBody(bodyDesc);
-		this.collider = physic.createCollider(
-			RAPIER.ColliderDesc.cuboid(0.5, 0.5, 0.5).setRestitution(0.8),
-			this.body,
-		);
-
-		this.callOnDelete(() => {
-			physic.removeCollider(this.collider, true);
-			physic.removeRigidBody(this.body);
-		});
-	}
-}
+import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';
 
 class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
-	public body: Option<RAPIER.RigidBody> = Option.none();
+
+	public character: CharacterBodyServerEcs = null!;
 
 	constructor(pos: IVec3) {
 		super();
@@ -64,22 +32,19 @@ class PlayerServerBehavior extends ComponentEcs {
 			gameState.players.delete(parent.name);
 		});
 
-		this.world
+		this.character = this.world
 			.getEntity(this.parent)
-			.map((p) => p.getUnsafe(RigidServerEcs))
-			.map((r) => r.body)
-			.giveTo(this.body);
+			.map((p) => p.getUnsafe(CharacterBodyServerEcs))
+			.unwrap('CharacterBodyServerEcs not found');
 	}
 
 	onLoop(_delta: number): void {
-		this.body.ifSome((b) => {
-			this.world.stacker.one(`client:${this.parent}:jump`).ifSome((_) => {
-				b.applyImpulse({ x: 0, y: 5, z: 0 }, true);
-			});
-
-			vec3Set(this.state.position, b.translation());
-			vec4Set(this.state.rotation, b.rotation());
+		this.world.stacker.one(`client:${this.parent}:jump`).ifSome((_) => {
+			/// this.character.body.applyImpulse({ x: 0, y: 5, z: 0 }, true);
+			this.character.isJumping = true;
 		});
+
+		vec3Set(this.state.position, this.character.body.translation());
 	}
 }
 
@@ -89,7 +54,7 @@ export const playerServerFactoryGenerator =
 			name,
 			world,
 			components: {
-				[RigidServerEcs.name]: new RigidServerEcs(pos),
+				[CharacterBodyServerEcs.name]: new CharacterBodyServerEcs(pos),
 				[PlayerServerBehavior.name]: new PlayerServerBehavior(pos),
 			},
 		});

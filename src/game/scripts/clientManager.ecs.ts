@@ -27,7 +27,7 @@ export class ClientManagerEcs extends ComponentEcs {
 			this.world.addEntity(player);
 
 			this.uiClient.ifSome((uiClient) => {
-				uiClient.debugHook.add('Player ' + index, {
+				uiClient.debug.add('Player ' + index, {
 					isCode: false,
 					type: 'error',
 				});
@@ -41,7 +41,7 @@ export class ClientManagerEcs extends ComponentEcs {
 		room.onMessage('message', (message) => {
 			const uiClient = this.uiClient.raw();
 
-			uiClient?.debugHook.add(message, {
+			uiClient?.debug.add(message, {
 				isCode: false,
 				type: 'info',
 			});
@@ -64,7 +64,7 @@ export class ClientManagerEcs extends ComponentEcs {
 		// ? Testing LLMs Interface Service
 		this.uiClient.ifSome((cli) => {
 			this.callOnDelete(
-				cli.actionContext.listen('manual-llm', () => {
+				cli.actions.listen('manual-llm', () => {
 					alert('Hello');
 				}),
 			);

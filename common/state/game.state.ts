@@ -35,13 +35,9 @@ export class PlayerState extends Schema {
 	@type(Vector3)
 	public position: Vector3;
 
-	@type(Quaternion)
-	public rotation: Quaternion;
-
 	constructor(pos: { x: number; y: number; z: number }) {
 		super();
 		this.position = new Vector3(pos);
-		this.rotation = new Quaternion({ x: 0, y: 0, z: 0, w: 1 });
 	}
 }
 

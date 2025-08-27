@@ -8,6 +8,8 @@
 	import GameView from '@/views/GameView.svelte';
 	import UiHelpers from './components/UiHelpers.svelte';
 	import { useActions } from './hooks/useActions.svelte';
+	import { useGameInput } from './hooks/useGameInput';
+
 
 	setContext(useDebugHook.name, useDebugHook());
 	setContext(useActions.name, useActions());
@@ -21,7 +23,7 @@
 <UiHelpers />
 
 <main
-	class="flex size-full min-h-screen flex-col items-center justify-center bg-gradient-to-br from-lime-500/10 to-blue-500/20"
+	class="flex size-full min-h-screen  pointer-events-none flex-col items-center justify-center bg-gradient-to-br from-lime-500/10 to-blue-500/20"
 >
 	<!-- <LoginView /> -->
 	<GameView />

@@ -81,6 +81,6 @@ export class MainRoom extends Room<GameState> {
 	}
 
 	onUncaughtException(error: RoomException<this>, methodName: string): void {
-		console.error(methodName + ' ' + error.name);
+		console.error(methodName + ' ' + error.name, error);
 	}
 }

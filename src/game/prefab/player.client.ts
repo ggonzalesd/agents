@@ -4,12 +4,13 @@ import { ComponentEcs } from '#/ecs/Component.ecs';
 import { EntityEcs } from '#/ecs/Entity.ecs';
 import type { WorldEcs } from '#/ecs/World.ecs';
 
-import type { PlayerState } from '#/state/game.state';
+import type { GameState, PlayerState } from '#/state/game.state';
 import { vec3Flatten, vec3Set, vec4Set } from '#/utils/math.util';
 
 import { ColyseusClientEcs } from '../scripts/colyseusClient.ecs';
 import { RenderClientEcs } from '../scripts/renderClient.ecs';
 import { UIClientEcs } from '../scripts/uiClient.ecs';
+import type { Room } from 'colyseus.js';
 
 class PlayerClientBehavior extends ComponentEcs {
 	public state: PlayerState;
@@ -17,6 +18,9 @@ class PlayerClientBehavior extends ComponentEcs {
 	public renderCli: RenderClientEcs = null!;
 	public cube: THREE.Mesh = null!;
 	public smoothCube: THREE.Vector3 = null!;
+	public uiCli: UIClientEcs = null!;
+
+	public room: Room<GameState> = null!;
 
 	constructor(state: PlayerState) {
 		super();
@@ -27,18 +31,22 @@ class PlayerClientBehavior extends ComponentEcs {
 	}
 
 	onStart(): void {
+		this.uiCli = this.world.get(UIClientEcs).unwrap('No UIClientEcs found');
+
 		const { proxy, room } = this.world
 			.get(ColyseusClientEcs)
 			.map(({ connection }) => connection)
 			.collapse()
 			.unwrap('Connection not found');
 
+		this.room = room;
+
 		this.renderCli = this.world
 			.get(RenderClientEcs)
 			.unwrap('No RenderClientEcs found');
 
 		this.cube = new THREE.Mesh(
-			new THREE.BoxGeometry(1, 1, 1),
+			new THREE.CapsuleGeometry(0.5, 1, 8),
 			new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff }),
 		);
 		this.renderCli.scene.add(this.cube);
@@ -46,15 +54,12 @@ class PlayerClientBehavior extends ComponentEcs {
 		proxy(this.state.position).onChange(() => {
 			vec3Set(this.cube.position, this.state.position);
 		});
-		proxy(this.state.rotation).onChange(() => {
-			vec4Set(this.cube.quaternion, this.state.rotation);
-		});
 
 		this.callOnDelete(() => this.renderCli.scene.remove(this.cube));
 
 		// Testing Actions
-		this.world.get(UIClientEcs).ifSome(({ actionContext }) =>
-			actionContext.listen('jump', () => {
+		this.world.get(UIClientEcs).ifSome(({ actions }) =>
+			actions.listen('jump', () => {
 				if (room.sessionId === this.parent) {
 					room.send('jump');
 				}
@@ -63,8 +68,14 @@ class PlayerClientBehavior extends ComponentEcs {
 	}
 
 	onLoop(_delta: number): void {
-		this.smoothCube = this.smoothCube.lerp(this.cube.position, 0.05);
-		this.renderCli.camera.lookAt(this.smoothCube);
+		if (this.room.sessionId === this.parent) {
+			this.smoothCube = this.smoothCube.lerp(this.cube.position, 0.05);
+			this.renderCli.camera.lookAt(this.smoothCube);
+		}
+
+		if (Math.random() < 0.01) {
+			console.log(this.uiCli.input.input.pressCount);
+		}
 	}
 }
 

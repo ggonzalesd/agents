@@ -38,6 +38,9 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.1.0
+      game-inputs:
+        specifier: ^0.8.0
+        version: 0.8.0
       gl-matrix:
         specifier: ^3.4.4
         version: 3.4.4
@@ -1011,6 +1014,10 @@ packages:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
 
+  events@3.3.0:
+    resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
+    engines: {node: '>=0.8.x'}
+
   express-jwt@8.5.1:
     resolution: {integrity: sha512-Dv6QjDLpR2jmdb8M6XQXiCcpEom7mK8TOqnr0/TngDKsG2DHVkO8+XnVxkJVN7BuS1I3OrGw6N8j5DaaGgkDRQ==}
     engines: {node: '>= 8.0.0'}
@@ -1092,6 +1099,9 @@ packages:
 
   function-bind@1.1.2:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
+
+  game-inputs@0.8.0:
+    resolution: {integrity: sha512-YCpIS7tUenag2zZoBAk4lWWIJyWOrT+fvGMe9h0hF75riIvUe/7xXmqZ1BANu/gydvGaxlBHuVNNcytNM3NxbA==}
 
   get-intrinsic@1.3.0:
     resolution: {integrity: sha512-9fSjSaos/fRIVIp+xSJlE6lfwhES7LNtKaCBIamHsjr2na1BiABJPo0mOjjz8GJDURarmCPGqaiVg5mfjb98CQ==}
@@ -2697,6 +2707,8 @@ snapshots:
 
   etag@1.8.1: {}
 
+  events@3.3.0: {}
+
   express-jwt@8.5.1:
     dependencies:
       '@types/jsonwebtoken': 9.0.10
@@ -2843,6 +2855,10 @@ snapshots:
     optional: true
 
   function-bind@1.1.2: {}
+
+  game-inputs@0.8.0:
+    dependencies:
+      events: 3.3.0
 
   get-intrinsic@1.3.0:
     dependencies:
