@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { getContext, onMount } from 'svelte';
 
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { ColyseusClientEcs } from '@/game/scripts/colyseusClient.ecs';
@@ -9,16 +9,19 @@
 	import { UIClientEcs } from '@/game/scripts/uiClient.ecs';
 	import { getDebugContext } from '@/hooks/useDebug.svelte';
 	import { getActionsContext } from '@/hooks/useActions.svelte';
+	import { GameInput } from '@/utils/input.utils';
 
 	let canvasRef = $state.raw<HTMLCanvasElement>(null!);
 
 	let debugContext = getDebugContext();
 	let actionContext = getActionsContext();
+	let gameInputContext = getContext<GameInput>(GameInput.name);
 
 	onMount(() => {
+
 		const world = new WorldEcs({
 			[UIClientEcs.name]: new UIClientEcs({
-				canvas: $state.snapshot(canvasRef) as HTMLCanvasElement,
+				input: gameInputContext,
 				debug: debugContext,
 				actions: actionContext,
 			}),

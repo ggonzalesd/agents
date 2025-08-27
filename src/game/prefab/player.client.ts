@@ -68,13 +68,13 @@ class PlayerClientBehavior extends ComponentEcs {
 	}
 
 	onLoop(_delta: number): void {
-		if (this.room.sessionId === this.parent) {
-			this.smoothCube = this.smoothCube.lerp(this.cube.position, 0.05);
-			this.renderCli.camera.lookAt(this.smoothCube);
-		}
+		if (this.room.sessionId !== this.parent) return;
 
-		if (Math.random() < 0.01) {
-			console.log(this.uiCli.input.input.pressCount);
+		this.smoothCube = this.smoothCube.lerp(this.cube.position, 0.05);
+		this.renderCli.camera.lookAt(this.smoothCube);
+
+		if (this.uiCli.input.down('Space')) {
+			this.room.send('jump');
 		}
 	}
 }

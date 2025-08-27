@@ -8,11 +8,12 @@
 	import GameView from '@/views/GameView.svelte';
 	import UiHelpers from './components/UiHelpers.svelte';
 	import { useActions } from './hooks/useActions.svelte';
-	import { useGameInput } from './hooks/useGameInput';
+	import { GameInput } from './utils/input.utils';
 
 
 	setContext(useDebugHook.name, useDebugHook());
 	setContext(useActions.name, useActions());
+	setContext(GameInput.name, new GameInput());
 
 	onMount(() => {
 		const debugContext = getDebugContext();
