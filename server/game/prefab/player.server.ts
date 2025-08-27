@@ -1,6 +1,6 @@
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { PlayerState } from '#/state/game.state';
-import { vec3Set, type IVec3 } from '#/utils/math.util';
+import { vec3Set, type IVec2, type IVec3 } from '#/utils/math.util';
 import { EntityEcs, type WorldEcs } from '#/ecs';
 
 import { ServerDataEcs } from '../scripts/serverData.ecs';
@@ -15,6 +15,8 @@ class PlayerServerBehavior extends ComponentEcs {
 		super();
 
 		this.state = new PlayerState(pos);
+
+		this.onClientState = this.onClientState.bind(this);
 	}
 
 	onStart(): void {
@@ -44,7 +46,36 @@ class PlayerServerBehavior extends ComponentEcs {
 			this.character.isJumping = true;
 		});
 
+		this.world.stacker
+			.one(`client:${this.parent}:state`)
+			.ifSome(this.onClientState);
+
 		vec3Set(this.state.position, this.character.body.translation());
+	}
+
+	onClientState(message: unknown) {
+		if (typeof message !== 'object' || message == null) return;
+
+		if (
+			'isMoving' in message &&
+			message.isMoving != null &&
+			typeof message.isMoving === 'boolean'
+		) {
+			this.character.isMoving = message.isMoving;
+		}
+
+		if (
+			'direction' in message &&
+			message.direction != null &&
+			typeof message.direction === 'number'
+		) {
+			const angle = message.direction;
+			const direction: IVec2 = {
+				x: Math.cos(angle),
+				y: -Math.sin(angle),
+			};
+			this.character.clientDirection = direction;
+		}
 	}
 }
 

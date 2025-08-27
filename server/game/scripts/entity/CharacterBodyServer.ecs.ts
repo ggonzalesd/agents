@@ -72,12 +72,12 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		const vel = this.body.linvel();
 
 		if (this.isMoving) {
-			const speed = isGround ? 10 : 5;
+			const speed = isGround ? 6 : 3;
 
 			const newVel = vec3Add(vec3Scale(this.direction, speed), vec3Up(vel.y));
 			this.body.setLinvel(vec3ToRapier(newVel), true);
 		} else if (isGround) {
-			const newVel = vec3Scale(vel, -0.5);
+			const newVel = vec3Scale(vel, -0.1);
 			this.body.applyImpulse(vec3ToRapier(newVel), true);
 		}
 

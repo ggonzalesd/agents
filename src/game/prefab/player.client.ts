@@ -35,7 +35,7 @@ class PlayerClientBehavior extends ComponentEcs {
 
 		const { proxy, room } = this.world
 			.get(ColyseusClientEcs)
-			.map(({ connection }) => connection)
+			.pick('connection')
 			.collapse()
 			.unwrap('Connection not found');
 
@@ -76,6 +76,18 @@ class PlayerClientBehavior extends ComponentEcs {
 		if (this.uiCli.input.down('Space')) {
 			this.room.send('jump');
 		}
+
+		const isMoving = this.uiCli.input.anyPress('KeyW', 'KeyA', 'KeyS', 'KeyD');
+		const axis = this.uiCli.input.axisPress('KeyW', 'KeyS', 'KeyD', 'KeyA');
+
+		const u = new THREE.Vector3(1, 0, 0);
+		u.applyQuaternion(this.renderCli.camera.quaternion);
+		u.y = 0;
+		const cameraAngle = Math.atan2(u.z, u.x);
+
+		const angle = Math.atan2(axis.y, axis.x) - cameraAngle;
+
+		this.room.send('client:state', { isMoving, direction: angle });
 	}
 }
 

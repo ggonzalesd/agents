@@ -50,6 +50,17 @@ export class RenderClientEcs extends ComponentEcs {
 		pointLight.position.set(0, 2.5, 0);
 
 		this.scene.add(pointLight);
+
+		// Plane
+		const plane = new THREE.Mesh(
+			new THREE.PlaneGeometry(100, 100),
+			new THREE.MeshStandardMaterial({
+				color: 0x404040,
+				side: THREE.DoubleSide,
+			}),
+		);
+		plane.rotateX(-Math.PI / 2);
+		this.scene.add(plane);
 	}
 
 	onStart(): void {}

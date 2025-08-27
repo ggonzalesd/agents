@@ -1,11 +1,16 @@
+import type { IVec2 } from '#/utils/math.util';
+
 export class GameInput {
 	private unmount?: () => void;
 
 	private keyMap: Map<string, number> = new Map();
+	private prevent: boolean = true;
+	private disabled: boolean = false;
 
 	constructor() {
 		this.setup = this.setup.bind(this);
 		this.onKeyDown = this.onKeyDown.bind(this);
+		this.setup = this.setup.bind(this);
 
 		this.setup();
 	}
@@ -25,8 +30,12 @@ export class GameInput {
 	}
 
 	private onKeyDown(event: KeyboardEvent) {
-		event.preventDefault();
-		event.stopPropagation();
+		if (this.disabled) return;
+
+		if (this.prevent) {
+			event.preventDefault();
+			event.stopPropagation();
+		}
 
 		const value = this.keyMap.get(event.code);
 
@@ -47,6 +56,25 @@ export class GameInput {
 
 	public up(key: string) {
 		return this.keyMap.get(key) === -1;
+	}
+
+	public drop(key: string) {
+		this.keyMap.delete(key);
+	}
+
+	public anyPress(...keys: string[]) {
+		return keys.some((key) => this.press(key));
+	}
+
+	public axisPress(
+		up: string,
+		down: string,
+		right: string,
+		left: string,
+	): IVec2 {
+		const x = Number(this.press(right)) - Number(this.press(left));
+		const y = Number(this.press(up)) - Number(this.press(down));
+		return { x, y };
 	}
 
 	public tick() {

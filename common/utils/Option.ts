@@ -148,6 +148,30 @@ export class Option<T = unknown> {
 		return Option.some(fn(this.value));
 	}
 
+	public pick<U extends Array<any>>(
+		this: Option<U>,
+		index: number,
+	): Option<U[number]>;
+	public pick<U extends Record<string, any>, K extends keyof U>(
+		this: Option<U>,
+		key: K,
+	): Option<U[K]>;
+	public pick(this: Option<any>, key: string): Option<unknown>;
+
+	public pick(this: Option<any>, key: any): Option<any> {
+		if (this.value == null) return Option.none();
+
+		if (Array.isArray(this.value) && typeof key === 'number') {
+			return Option.of(this.value[key]);
+		}
+
+		if (typeof this.value === 'object' && typeof key === 'string') {
+			return Option.of(this.value[key]);
+		}
+
+		return Option.none();
+	}
+
 	/**
 	 * Populates the Option instance with a value
 	 * @param value - The value to wrap
