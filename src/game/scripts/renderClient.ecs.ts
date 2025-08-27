@@ -55,10 +55,6 @@ export class RenderClientEcs extends ComponentEcs {
 	onStart(): void {}
 
 	onLoop(_delta: number): void {
-		this.camera.position.x = Math.sin(Date.now() * 0.001) * 5;
-		this.camera.position.z = Math.cos(Date.now() * 0.001) * 5;
-		this.camera.lookAt(0, 0, 0);
-
 		this.renderer.clearColor();
 
 		this.renderer.render(this.scene, this.camera);

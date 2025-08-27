@@ -1,10 +1,12 @@
 import { Option } from '#/utils/Option';
+import { Stacker } from '#/utils/Stacker';
 import { BaseEcs } from './Base.ecs';
 import type { ComponentEcs } from './Component.ecs';
 import type { EntityEcs } from './Entity.ecs';
 
 export class WorldEcs extends BaseEcs {
 	private entities: Map<string, EntityEcs> = new Map();
+	public stacker: Stacker<string, any> = new Stacker();
 
 	private __deferDelete: Set<EntityEcs> = new Set();
 

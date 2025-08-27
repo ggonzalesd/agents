@@ -12,11 +12,8 @@ class RigidServerEcs extends ComponentEcs {
 	public collider: RAPIER.Collider = null!;
 	public body: RAPIER.RigidBody = null!;
 
-	private __initialPos: IVec3;
-
-	constructor(pos: IVec3) {
+	constructor(private __initialPos: IVec3) {
 		super();
-		this.__initialPos = pos;
 	}
 
 	onStart(): void {
@@ -76,6 +73,10 @@ class PlayerServerBehavior extends ComponentEcs {
 
 	onLoop(_delta: number): void {
 		this.body.ifSome((b) => {
+			this.world.stacker.one(`client:${this.parent}:jump`).ifSome((_) => {
+				b.applyImpulse({ x: 0, y: 5, z: 0 }, true);
+			});
+
 			vec3Set(this.state.position, b.translation());
 			vec4Set(this.state.rotation, b.rotation());
 		});

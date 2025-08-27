@@ -189,9 +189,10 @@ export class Option<T = unknown> {
 	 * Gives the value to another option instance, **consuming** the original value
 	 * @param op - The Option instance to give the value to
 	 */
-	public giveTo(op: Option<T>): void {
+	public giveTo(op: Option<T>) {
 		op.populate(this.value!);
 		this.value = null;
+		return op;
 	}
 
 	/**
