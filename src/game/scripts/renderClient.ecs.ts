@@ -7,7 +7,7 @@ export class RenderClientEcs extends ComponentEcs {
 	public renderer: THREE.WebGLRenderer;
 	public camera: THREE.PerspectiveCamera;
 
-	constructor(canvas: HTMLCanvasElement) {
+	constructor(public canvas: HTMLCanvasElement) {
 		super();
 
 		this.scene = new THREE.Scene();
@@ -18,6 +18,8 @@ export class RenderClientEcs extends ComponentEcs {
 			1000,
 		);
 		this.renderer = new THREE.WebGLRenderer({ canvas });
+		this.renderer.shadowMap.enabled = true;
+		this.renderer.shadowMap.needsUpdate = true;
 		this.renderer.setClearColor(0x000000, 1);
 
 		const onResize = () => {
@@ -43,10 +45,12 @@ export class RenderClientEcs extends ComponentEcs {
 		this.scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
 		const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+		directionalLight.castShadow = true;
 		directionalLight.position.set(1, 1, 0);
 		this.scene.add(directionalLight);
 
-		const pointLight = new THREE.PointLight(0xffffff, 5, 1500);
+		const pointLight = new THREE.PointLight(0xffffff, 20, 1500);
+		pointLight.castShadow = true;
 		pointLight.position.set(0, 2.5, 0);
 
 		this.scene.add(pointLight);
@@ -59,7 +63,8 @@ export class RenderClientEcs extends ComponentEcs {
 				side: THREE.DoubleSide,
 			}),
 		);
-		plane.rotateX(-Math.PI / 2);
+		plane.receiveShadow = true;
+		plane.rotateX(Math.PI / 2);
 		this.scene.add(plane);
 	}
 

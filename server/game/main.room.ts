@@ -43,9 +43,17 @@ export class MainRoom extends Room<GameState> {
 
 		this.setSimulationInterval(this.onUpdate.bind(this), 1000 / 60);
 
-		this.onMessage('jump', this.onClientJump.bind(this));
 		this.onMessage('client:state', this.onClientState.bind(this));
+		this.onMessage('client:action', this.onClientAction.bind(this));
 		this.onMessage('*', () => {});
+	}
+
+	onClientAction(client: Client, message: any) {
+		this.worldEcs.stacker.stackLoss(
+			`client:${client.sessionId}:action`,
+			message ?? {},
+			10,
+		);
 	}
 
 	onClientState(client: Client, message: any) {
@@ -54,11 +62,6 @@ export class MainRoom extends Room<GameState> {
 			message,
 			5,
 		);
-	}
-
-	onClientJump(client: Client, _: any) {
-		// console.log('Message received:', message, client.sessionId);
-		this.worldEcs.stacker.stackLoss(`client:${client.sessionId}:jump`, 1);
 	}
 
 	onUpdate(_delta: number) {

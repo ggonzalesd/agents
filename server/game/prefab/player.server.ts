@@ -17,6 +17,7 @@ class PlayerServerBehavior extends ComponentEcs {
 		this.state = new PlayerState(pos);
 
 		this.onClientState = this.onClientState.bind(this);
+		this.onClientActions = this.onClientActions.bind(this);
 	}
 
 	onStart(): void {
@@ -41,16 +42,26 @@ class PlayerServerBehavior extends ComponentEcs {
 	}
 
 	onLoop(_delta: number): void {
-		this.world.stacker.one(`client:${this.parent}:jump`).ifSome((_) => {
-			/// this.character.body.applyImpulse({ x: 0, y: 5, z: 0 }, true);
-			this.character.isJumping = true;
-		});
+		this.world.stacker
+			.one(`client:${this.parent}:action`)
+			.ifSome(this.onClientActions);
 
 		this.world.stacker
 			.one(`client:${this.parent}:state`)
 			.ifSome(this.onClientState);
 
 		vec3Set(this.state.position, this.character.body.translation());
+	}
+
+	onClientActions(message: unknown) {
+		if (typeof message !== 'object' || message == null || !('type' in message))
+			return;
+
+		switch (message.type) {
+			case 'jump':
+				this.character.isJumping = true;
+				break;
+		}
 	}
 
 	onClientState(message: unknown) {

@@ -42,10 +42,12 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		);
 		this.body = this.physic.createRigidBody(bodyDesc);
 
-		const colliderDesc = RAPIER.ColliderDesc.capsule(0.5, 0.5).setRestitution(
-			0.8,
-		);
+		const colliderDesc = RAPIER.ColliderDesc.capsule(0.5, 0.5)
+			.setRestitution(0.1)
+			.setFriction(0.0);
 		this.collider = this.physic.createCollider(colliderDesc, this.body);
+
+		this.collider.setRestitution(0.01);
 
 		this.body.lockRotations(true, true);
 
@@ -83,7 +85,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 
 		if (this.isJumping && isGround) {
 			this.isJumping = false;
-			this.body.applyImpulse(vec3ToRapier(vec3Up(15)), true);
+			this.body.applyImpulse(vec3ToRapier(vec3Up(10)), true);
 		}
 	}
 

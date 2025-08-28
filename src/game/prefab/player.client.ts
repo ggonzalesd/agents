@@ -18,7 +18,11 @@ class PlayerClientBehavior extends ComponentEcs {
 	public renderCli: RenderClientEcs = null!;
 	public cube: THREE.Mesh = null!;
 	public smoothCube: THREE.Vector3 = null!;
+	public cameraSmooth: THREE.Vector3 = null!;
 	public uiCli: UIClientEcs = null!;
+
+	public angleH = 0;
+	public angleV = 0;
 
 	public room: Room<GameState> = null!;
 
@@ -45,10 +49,14 @@ class PlayerClientBehavior extends ComponentEcs {
 			.get(RenderClientEcs)
 			.unwrap('No RenderClientEcs found');
 
+		this.cameraSmooth = this.renderCli.camera.position.clone();
+
 		this.cube = new THREE.Mesh(
 			new THREE.CapsuleGeometry(0.5, 1, 8),
 			new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff }),
 		);
+		this.cube.castShadow = true;
+		this.cube.receiveShadow = true;
 		this.renderCli.scene.add(this.cube);
 
 		proxy(this.state.position).onChange(() => {
@@ -61,7 +69,7 @@ class PlayerClientBehavior extends ComponentEcs {
 		this.world.get(UIClientEcs).ifSome(({ actions }) =>
 			actions.listen('jump', () => {
 				if (room.sessionId === this.parent) {
-					room.send('jump');
+					this.room.send('client:action', { type: 'jump' });
 				}
 			}),
 		);
@@ -70,13 +78,38 @@ class PlayerClientBehavior extends ComponentEcs {
 	onLoop(_delta: number): void {
 		if (this.room.sessionId !== this.parent) return;
 
-		this.smoothCube = this.smoothCube.lerp(this.cube.position, 0.05);
+		this.angleH += (this.uiCli.input.moveX * Math.PI) / 180;
+		this.angleV += (this.uiCli.input.moveY * Math.PI) / 180;
+
+		if (this.angleH > Math.PI * 2) this.angleH -= Math.PI * 2;
+		if (this.angleH < 0) this.angleH += Math.PI * 2;
+
+		if (this.angleV > Math.PI / 2) this.angleV = Math.PI / 2;
+		if (this.angleV < 0) this.angleV = 0;
+
+		const radius = 5;
+		const camX = this.cube.position.x + radius * Math.cos(this.angleH);
+		const camZ = this.cube.position.z + radius * Math.sin(this.angleH);
+		const camY = this.cube.position.y + radius * Math.sin(this.angleV);
+
+		this.cameraSmooth.x = camX;
+		this.cameraSmooth.y = camY;
+		this.cameraSmooth.z = camZ;
+
+		this.renderCli.camera.position.lerp(this.cameraSmooth, 0.3);
+
+		// Camera
+		this.smoothCube = this.smoothCube.lerp(
+			this.cube.position.clone().add(new THREE.Vector3(0, 1, 0)),
+			0.1,
+		);
 		this.renderCli.camera.lookAt(this.smoothCube);
 
-		if (this.uiCli.input.down('Space')) {
-			this.room.send('jump');
+		if (this.uiCli.input.down('Space') && this.room.connection.isOpen) {
+			this.room.send('client:action', { type: 'jump' });
 		}
 
+		// Movement
 		const isMoving = this.uiCli.input.anyPress('KeyW', 'KeyA', 'KeyS', 'KeyD');
 		const axis = this.uiCli.input.axisPress('KeyW', 'KeyS', 'KeyD', 'KeyA');
 
@@ -87,7 +120,8 @@ class PlayerClientBehavior extends ComponentEcs {
 
 		const angle = Math.atan2(axis.y, axis.x) - cameraAngle;
 
-		this.room.send('client:state', { isMoving, direction: angle });
+		if (this.room.connection.isOpen)
+			this.room.send('client:state', { isMoving, direction: angle });
 	}
 }
 

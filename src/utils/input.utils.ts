@@ -6,6 +6,10 @@ export class GameInput {
 	private keyMap: Map<string, number> = new Map();
 	private prevent: boolean = true;
 	private disabled: boolean = false;
+	private contextMenu: boolean = false;
+
+	public moveX: number = 0;
+	public moveY: number = 0;
 
 	constructor() {
 		this.setup = this.setup.bind(this);
@@ -20,13 +24,44 @@ export class GameInput {
 
 		document.addEventListener('keydown', this.onKeyDown);
 		document.addEventListener('keyup', this.onKeyDown);
+		document.addEventListener('contextmenu', this.onContextMenu);
+
+		document.addEventListener('mousedown', (e) => {
+			if (this.disabled) return;
+			if (e.button !== 2) return;
+
+			document.body.requestPointerLock();
+		});
+
+		document.addEventListener('mouseup', (e) => {
+			document.exitPointerLock();
+			if (e.button !== 2) return;
+
+			this.moveX = 0;
+			this.moveY = 0;
+		});
+
+		document.addEventListener('mousemove', (e) => {
+			if (document.pointerLockElement !== document.body) return;
+
+			this.moveX = e.movementX;
+			this.moveY = e.movementY;
+		});
 
 		const umount = () => {
 			document.removeEventListener('keydown', this.onKeyDown);
 			document.removeEventListener('keyup', this.onKeyDown);
+			document.removeEventListener('contextmenu', this.onContextMenu);
 		};
 
 		this.unmount = umount.bind(this);
+	}
+
+	private onContextMenu(event: PointerEvent) {
+		if (this.disabled || this.contextMenu) return;
+
+		event.preventDefault();
+		event.stopPropagation();
 	}
 
 	private onKeyDown(event: KeyboardEvent) {
