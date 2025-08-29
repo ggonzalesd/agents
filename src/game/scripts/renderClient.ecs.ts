@@ -7,6 +7,9 @@ export class RenderClientEcs extends ComponentEcs {
 	public renderer: THREE.WebGLRenderer;
 	public camera: THREE.PerspectiveCamera;
 
+	private raycaster = new THREE.Raycaster();
+	private mouse = new THREE.Vector2();
+
 	constructor(public canvas: HTMLCanvasElement) {
 		super();
 
@@ -68,7 +71,26 @@ export class RenderClientEcs extends ComponentEcs {
 		this.scene.add(plane);
 	}
 
-	onStart(): void {}
+	onStart(): void {
+		window.addEventListener(
+			'click',
+			((event: PointerEvent) => {
+				this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+				this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+				this.raycaster.setFromCamera(this.mouse, this.camera);
+
+				const intersects = this.raycaster.intersectObjects(
+					this.scene.children,
+					true,
+				);
+
+				if (intersects.length == 0) return;
+
+				console.log(intersects[0].object);
+			}).bind(this),
+		);
+	}
 
 	onLoop(_delta: number): void {
 		this.renderer.clearColor();
