@@ -1,15 +1,13 @@
 <script lang="ts">
 	import { getContext, onMount } from 'svelte';
 
-	import { WorldEcs } from '#/ecs/World.ecs';
-	import { ColyseusClientEcs } from '@/game/scripts/colyseusClient.ecs';
 	import { Option } from '#/utils/Option';
-	import { ClientManagerEcs } from '@/game/scripts/clientManager.ecs';
-	import { RenderClientEcs } from '@/game/scripts/renderClient.ecs';
-	import { UIClientEcs } from '@/game/scripts/uiClient.ecs';
+
 	import { getDebugContext } from '@/hooks/useDebug.svelte';
 	import { getActionsContext } from '@/hooks/useActions.svelte';
 	import { GameInput } from '@/utils/input.utils';
+
+	import { worldPrefab } from '@/game/prefab/world.client';
 
 	let canvasRef = $state.raw<HTMLCanvasElement>(null!);
 
@@ -19,21 +17,11 @@
 
 	onMount(() => {
 
-		const world = new WorldEcs({
-			[UIClientEcs.name]: new UIClientEcs({
-				input: gameInputContext,
-				debug: debugContext,
-				actions: actionContext,
-			}),
-			[ColyseusClientEcs.name]: new ColyseusClientEcs(
-				'ws://localhost:3000',
-				'your_token_here',
-				'main-room',
-			),
-			[ClientManagerEcs.name]: new ClientManagerEcs(),
-			[RenderClientEcs.name]: new RenderClientEcs(
-				$state.snapshot(canvasRef) as HTMLCanvasElement,
-			),
+		const world = worldPrefab({
+			canvas: $state.snapshot(canvasRef) as HTMLCanvasElement,
+			input: gameInputContext,
+			debug: debugContext,
+			actions: actionContext,
 		});
 
 		let animationRequestId: Option<number> = Option.none();
@@ -52,6 +40,7 @@
 
 		return () => {
 			animationRequestId.ifSome(cancelAnimationFrame);
+			world.onDelete();
 		};
 	});
 </script>

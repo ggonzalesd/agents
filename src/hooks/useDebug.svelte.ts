@@ -16,6 +16,12 @@ export type DebugItemMessage = {
 export const useDebugHook = () => {
 	const { subscribe, update } = writable<Array<DebugItemMessage>>([]);
 
+	const updateMessage = (id: string, message: string) => {
+		update((messages) =>
+			messages.map((msg) => (msg.id === id ? { ...msg, message } : msg)),
+		);
+	};
+
 	const add = (
 		message: string,
 		props?: {
@@ -24,7 +30,7 @@ export const useDebugHook = () => {
 			deleteOn?: number;
 			imageUrl?: string;
 		},
-	) => {
+	): string => {
 		const id = uuidv4();
 		const createdAt = new Date();
 
@@ -50,9 +56,11 @@ export const useDebugHook = () => {
 		};
 
 		update((messages) => [...messages, data]);
+
+		return id;
 	};
 
-	return { subscribe, add };
+	return { subscribe, add, updateMessage };
 };
 
 export const getDebugContext = () => {

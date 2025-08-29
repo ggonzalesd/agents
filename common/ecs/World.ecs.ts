@@ -77,4 +77,13 @@ export class WorldEcs extends BaseEcs {
 			this.__deferDelete.clear();
 		}
 	}
+
+	onDelete() {
+		const entities = [...this.entities.values()];
+		for (const entity of entities) {
+			entity.onDelete();
+		}
+
+		this.delete();
+	}
 }

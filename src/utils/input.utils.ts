@@ -30,6 +30,8 @@ export class GameInput {
 			if (this.disabled) return;
 			if (e.button !== 2) return;
 
+			console.log(e);
+
 			document.body.requestPointerLock();
 		});
 

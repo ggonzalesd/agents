@@ -37,4 +37,13 @@ export class ColyseusClientEcs extends ComponentEcs {
 
 		this.alarm.notify();
 	}
+
+	public isClient(id: string) {
+		return this.connection
+			.pick('room')
+			.filter(
+				({ connection, sessionId }) => connection.isOpen && sessionId === id,
+			)
+			.isSome();
+	}
 }

@@ -79,4 +79,13 @@ export class BaseEcs {
 			component.onLoop(delta);
 		}
 	}
+
+	protected delete() {
+		const values = [...this.components.values()];
+
+		for (let i = values.length - 1; i >= 0; i--) {
+			values[i].onDelete();
+		}
+		this.components.clear();
+	}
 }

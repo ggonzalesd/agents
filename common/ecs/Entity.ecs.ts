@@ -40,9 +40,6 @@ export class EntityEcs extends BaseEcs {
 	onDelete() {
 		this.active = false;
 
-		for (const component of this.components.values()) {
-			component.onDelete();
-		}
-		this.components.clear();
+		this.delete();
 	}
 }
