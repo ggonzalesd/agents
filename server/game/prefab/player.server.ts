@@ -86,6 +86,7 @@ class PlayerServerBehavior extends ComponentEcs {
 				y: -Math.sin(angle),
 			};
 			this.character.clientDirection = direction;
+			this.state.rotationY = angle;
 		}
 	}
 }

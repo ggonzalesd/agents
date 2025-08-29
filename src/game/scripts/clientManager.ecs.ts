@@ -12,6 +12,8 @@ export class ClientManagerEcs extends ComponentEcs {
 	private playerClientFactory: ReturnType<typeof playerClientFactoryGenerator> =
 		null!;
 
+	private idMessage: string = '';
+
 	constructor() {
 		super();
 	}
@@ -69,7 +71,20 @@ export class ClientManagerEcs extends ComponentEcs {
 				}),
 			);
 		});
+
+		this.uiClient.ifSome((uc) => {
+			this.idMessage = uc.debug.add('Message', {
+				deleteOn: 0,
+				isCode: false,
+				type: 'info',
+			});
+		});
 	}
 
-	onLoop(_delta: number): void {}
+	onLoop(_delta: number): void {
+		this.uiClient.ifSome((uc) => {
+			if (Math.random() < 0.1)
+				uc.debug.updateMessage(this.idMessage, `D: ${Math.random()}`);
+		});
+	}
 }

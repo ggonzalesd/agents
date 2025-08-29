@@ -25,6 +25,10 @@ export class ClientAuthoritative extends ComponentEcs {
 		};
 	}
 
+	public get(): Readonly<ClientAuthoritativeSharedState> {
+		return this.state;
+	}
+
 	public update(newState: Partial<ClientAuthoritativeSharedState>) {
 		this.state = { ...this.state, ...newState };
 		this.needsSend = true;

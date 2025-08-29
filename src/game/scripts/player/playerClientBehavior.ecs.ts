@@ -75,6 +75,9 @@ export class PlayerClientBehavior extends ComponentEcs {
 
 		const angle = Math.atan2(axis.y, axis.x) - cameraAngle;
 
-		this.clientAuthoritative.update({ direction: angle, isMoving });
+		this.clientAuthoritative.update({
+			isMoving,
+			...(isMoving ? { direction: angle } : {}),
+		});
 	}
 }

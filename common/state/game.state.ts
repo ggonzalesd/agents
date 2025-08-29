@@ -35,6 +35,9 @@ export class PlayerState extends Schema {
 	@type(Vector3)
 	public position: Vector3;
 
+	@type('float32')
+	public rotationY: number = 0;
+
 	constructor(pos: { x: number; y: number; z: number }) {
 		super();
 		this.position = new Vector3(pos);

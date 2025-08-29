@@ -23,7 +23,17 @@ export class Player3DEcs extends ComponentEcs {
 		mesh.castShadow = true;
 		mesh.receiveShadow = true;
 
+		const sphere = new THREE.Mesh(
+			new THREE.SphereGeometry(0.5, 8, 8),
+			new THREE.MeshStandardMaterial({ color: 'white' }),
+		);
+		sphere.position.y = 0.5;
+		sphere.position.x = 0.5;
+		sphere.castShadow = true;
+		sphere.receiveShadow = true;
+
 		this.object3D.add(mesh);
+		this.object3D.add(sphere);
 	}
 
 	onStart(): void {
@@ -47,5 +57,11 @@ export class Player3DEcs extends ComponentEcs {
 		proxy(this.state.position).onChange(() => {
 			vec3Set(this.object3D.position, this.state.position);
 		});
+	}
+
+	onLoop(_delta: number): void {
+		this.object3D.quaternion.setFromEuler(
+			new THREE.Euler(0, this.state.rotationY, 0),
+		);
 	}
 }
