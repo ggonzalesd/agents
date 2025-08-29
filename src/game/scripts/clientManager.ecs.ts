@@ -85,6 +85,11 @@ export class ClientManagerEcs extends ComponentEcs {
 		this.uiClient.ifSome((uc) => {
 			if (Math.random() < 0.1)
 				uc.debug.updateMessage(this.idMessage, `D: ${Math.random()}`);
+
+			if (uc.input.down('Escape') && !uc.input.isCursorLock()) {
+				uc.game.setPause(true);
+				uc.input.disabled = true;
+			}
 		});
 	}
 }

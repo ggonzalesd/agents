@@ -5,7 +5,7 @@ export class GameInput {
 
 	private keyMap: Map<string, number> = new Map();
 	private prevent: boolean = true;
-	private disabled: boolean = false;
+	public disabled: boolean = false;
 	private contextMenu: boolean = false;
 
 	public moveX: number = 0;
@@ -32,16 +32,22 @@ export class GameInput {
 
 			console.log(e);
 
-			document.body.requestPointerLock();
+			if (document.pointerLockElement !== document.body) {
+				document.body.requestPointerLock();
+			} else {
+				document.exitPointerLock();
+				this.moveX = 0;
+				this.moveY = 0;
+			}
 		});
 
-		document.addEventListener('mouseup', (e) => {
+		/* document.addEventListener('mouseup', (e) => {
 			document.exitPointerLock();
 			if (e.button !== 2) return;
 
 			this.moveX = 0;
 			this.moveY = 0;
-		});
+		}); */
 
 		document.addEventListener('mousemove', (e) => {
 			if (document.pointerLockElement !== document.body) return;
@@ -57,6 +63,10 @@ export class GameInput {
 		};
 
 		this.unmount = umount.bind(this);
+	}
+
+	public isCursorLock() {
+		return document.pointerLockElement === document.body;
 	}
 
 	private onContextMenu(event: PointerEvent) {

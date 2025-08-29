@@ -8,12 +8,14 @@ import { ClientManagerEcs } from '../scripts/clientManager.ecs';
 import { ColyseusClientEcs } from '../scripts/colyseusClient.ecs';
 import { RenderClientEcs } from '../scripts/renderClient.ecs';
 import { UIClientEcs } from '../scripts/uiClient.ecs';
+import type { useGameState } from '@/hooks/useGameState.svelte';
 
 type WorldPrefabProps = {
 	canvas: HTMLCanvasElement;
 	input: GameInput;
 	debug: ReturnType<typeof useDebugHook>;
 	actions: ReturnType<typeof useActions>;
+	game: ReturnType<typeof useGameState>;
 };
 
 export const worldPrefab = ({
@@ -21,12 +23,14 @@ export const worldPrefab = ({
 	input,
 	actions,
 	debug,
+	game,
 }: WorldPrefabProps) =>
 	new WorldEcs({
 		[UIClientEcs.name]: new UIClientEcs({
 			input,
 			debug,
 			actions,
+			game,
 		}),
 		[ColyseusClientEcs.name]: new ColyseusClientEcs(
 			'ws://localhost:3000',

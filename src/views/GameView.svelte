@@ -8,17 +8,19 @@
 	import { GameInput } from '@/utils/input.utils';
 
 	import { worldPrefab } from '@/game/prefab/world.client';
+	import { getGameStateContext } from '@/hooks/useGameState.svelte';
 
 	let canvasRef = $state.raw<HTMLCanvasElement>(null!);
 
 	let debugContext = getDebugContext();
 	let actionContext = getActionsContext();
 	let gameInputContext = getContext<GameInput>(GameInput.name);
+	let gameStateContext = getGameStateContext();
 
 	onMount(() => {
-
 		const world = worldPrefab({
 			canvas: $state.snapshot(canvasRef) as HTMLCanvasElement,
+			game: gameStateContext,
 			input: gameInputContext,
 			debug: debugContext,
 			actions: actionContext,
@@ -45,4 +47,7 @@
 	});
 </script>
 
-<canvas class="absolute size-full bg-zinc-900 pointer-events-auto" bind:this={canvasRef}></canvas>
+<canvas
+	class="pointer-events-auto absolute size-full bg-zinc-900"
+	bind:this={canvasRef}
+></canvas>
