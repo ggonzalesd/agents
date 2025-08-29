@@ -1,27 +1,30 @@
 import * as THREE from 'three';
 import type { Room } from 'colyseus.js';
 
+import { vec3Add, vec3dNew, vec3Scale, vec3Up } from '#/utils/math.util';
+
 import { ComponentEcs } from '#/ecs/Component.ecs';
-import type { GameState, PlayerState } from '#/state/game.state';
+import type { GameState } from '#/state/game.state';
+
+import type { GameInput } from '@/utils/input.utils';
 
 import { ColyseusClientEcs } from '../colyseusClient.ecs';
 import { UIClientEcs } from '../uiClient.ecs';
 import { RenderClientEcs } from '../renderClient.ecs';
 
 import { Player3DEcs } from './player3D.ecs';
-import { vec3Flatten } from '#/utils/math.util';
 
 export class PlayerCameraFollowEcs extends ComponentEcs {
 	room: Room<GameState> = null!;
-	uiClient: UIClientEcs = null!;
-	renderClient: RenderClientEcs = null!;
+	input: GameInput = null!;
+	camera: THREE.Camera = null!;
 
 	player3D: Player3DEcs = null!;
 
 	angleH = 0;
 	angleV = 0;
 
-	cameraSmooth = new THREE.Vector3();
+	smoothCamera = new THREE.Vector3();
 	smoothCube = new THREE.Vector3();
 
 	constructor() {
@@ -36,24 +39,28 @@ export class PlayerCameraFollowEcs extends ComponentEcs {
 			.pick('room')
 			.unwrap('No Room found');
 
-		this.uiClient = this.world.get(UIClientEcs).unwrap('No UIClientEcs found');
+		this.input = this.world
+			.get(UIClientEcs)
+			.pick('input')
+			.unwrap('No GameInput found');
 
-		this.renderClient = this.world
+		this.camera = this.world
 			.get(RenderClientEcs)
-			.unwrap('No RenderClientEcs found');
+			.pick('camera')
+			.unwrap('No Camera found');
 
 		const player = this.world.getEntity(this.parent).unwrap('No Player found');
 
 		this.player3D = player.get(Player3DEcs).unwrap('No Player3DEcs found');
 
-		this.cameraSmooth = this.renderClient.camera.position.clone();
+		this.smoothCamera = this.camera.position.clone();
 	}
 
 	onLoop(_delta: number): void {
 		if (this.room.sessionId !== this.parent) return;
 
-		this.angleH += (this.uiClient.input.moveX * Math.PI) / 180;
-		this.angleV += (this.uiClient.input.moveY * Math.PI) / 180;
+		this.angleH += (this.input.moveX * Math.PI) / 180;
+		this.angleV += (this.input.moveY * Math.PI) / 180;
 
 		if (this.angleH > Math.PI * 2) this.angleH -= Math.PI * 2;
 		if (this.angleH < 0) this.angleH += Math.PI * 2;
@@ -61,24 +68,25 @@ export class PlayerCameraFollowEcs extends ComponentEcs {
 		if (this.angleV > Math.PI / 2) this.angleV = Math.PI / 2;
 		if (this.angleV < 0) this.angleV = 0;
 
-		const cube = this.player3D.object3D;
+		const obj = this.player3D.object3D;
 
 		const radius = 5;
-		const camX = cube.position.x + radius * Math.cos(this.angleH);
-		const camZ = cube.position.z + radius * Math.sin(this.angleH);
-		const camY = cube.position.y + radius * Math.sin(this.angleV);
 
-		this.cameraSmooth.x = camX;
-		this.cameraSmooth.y = camY;
-		this.cameraSmooth.z = camZ;
+		const offset = vec3dNew(
+			Math.cos(this.angleH),
+			Math.sin(this.angleV),
+			Math.sin(this.angleH),
+		);
 
-		this.renderClient.camera.position.lerp(this.cameraSmooth, 0.3);
+		const newSmooth = vec3Add(obj.position, vec3Scale(offset, radius));
+
+		this.camera.position.lerp(newSmooth, 0.3);
 
 		// Camera
 		this.smoothCube = this.smoothCube.lerp(
-			cube.position.clone().add(new THREE.Vector3(0, 1, 0)),
+			obj.position.clone().add(vec3Up()),
 			0.1,
 		);
-		this.renderClient.camera.lookAt(this.smoothCube);
+		this.camera.lookAt(this.smoothCube);
 	}
 }

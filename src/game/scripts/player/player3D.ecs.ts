@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import type { Room } from 'colyseus.js';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import type { PlayerState } from '#/state/game.state';

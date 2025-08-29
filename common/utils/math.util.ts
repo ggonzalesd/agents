@@ -21,6 +21,12 @@ export const vec2Normalize = (vec: IVec2): IVec2 => {
 	return length > 0 ? { x: vec.x / length, y: vec.y / length } : { x: 0, y: 0 };
 };
 
+export const vec3dNew = (x: number, y: number, z: number): IVec3 => ({
+	x,
+	y,
+	z,
+});
+
 export const vec3dLerp = (a: IVec3, b: IVec3, t: number): IVec3 => {
 	return {
 		x: a.x + (b.x - a.x) * t,
