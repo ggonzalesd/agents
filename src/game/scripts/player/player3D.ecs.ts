@@ -24,23 +24,16 @@ export class Player3DEcs extends ComponentEcs {
 
 		const mesh = new THREE.Mesh(
 			new THREE.CapsuleGeometry(0.5, 1, 8),
-			new THREE.MeshStandardMaterial({
+			new THREE.MeshBasicMaterial({
 				color: Math.random() * 0xffffff,
 				wireframe: true,
+				opacity: 0.1,
+				transparent: true,
 			}),
 		);
 
 		mesh.castShadow = true;
 		mesh.receiveShadow = true;
-
-		const sphere = new THREE.Mesh(
-			new THREE.SphereGeometry(0.5, 8, 8),
-			new THREE.MeshStandardMaterial({ color: 'white' }),
-		);
-		sphere.position.y = 0.5;
-		sphere.position.x = 0.5;
-		sphere.castShadow = true;
-		sphere.receiveShadow = true;
 
 		this.object3D.add(mesh);
 		// this.object3D.add(sphere);
@@ -88,8 +81,8 @@ export class Player3DEcs extends ComponentEcs {
 		this.callOnDelete(() => this.renderClient.scene.remove(this.object3D));
 
 		// Sync Position
-		proxy(this.state.position).onChange(() => {
-			vec3Set(this.object3D.position, this.state.position);
+		proxy(this.state.character.position).onChange(() => {
+			vec3Set(this.object3D.position, this.state.character.position);
 		});
 
 		this.clientAuth = this.world
@@ -102,11 +95,12 @@ export class Player3DEcs extends ComponentEcs {
 		this.mixer.update(_delta * 0.001);
 
 		this.object3D.quaternion.setFromEuler(
-			new THREE.Euler(0, this.state.rotationY, 0),
+			new THREE.Euler(0, this.state.character.rotationY, 0),
 		);
 
 		// TODO: Is Moving from Share State
-		const isMoving = this.clientAuth.state.isMoving;
+		const isMoving =
+			this.clientAuth.state.isMoving || this.state.character.isMoving;
 		if (isMoving) {
 			this.actions.IDLE.stop();
 			this.actions.WALK.play();

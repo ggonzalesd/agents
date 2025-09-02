@@ -50,7 +50,7 @@ class PlayerServerBehavior extends ComponentEcs {
 			.one(`client:${this.parent}:state`)
 			.ifSome(this.onClientState);
 
-		vec3Set(this.state.position, this.character.body.translation());
+		vec3Set(this.state.character.position, this.character.body.translation());
 	}
 
 	onClientActions(message: unknown) {
@@ -73,6 +73,7 @@ class PlayerServerBehavior extends ComponentEcs {
 			typeof message.isMoving === 'boolean'
 		) {
 			this.character.isMoving = message.isMoving;
+			this.state.character.isMoving = message.isMoving;
 		}
 
 		if (
@@ -86,7 +87,7 @@ class PlayerServerBehavior extends ComponentEcs {
 				y: -Math.sin(angle),
 			};
 			this.character.clientDirection = direction;
-			this.state.rotationY = angle;
+			this.state.character.rotationY = angle;
 		}
 	}
 }
