@@ -5,11 +5,13 @@ import { Publisher } from '#/utils/Publisher';
 
 type GameType = {
 	paused: boolean;
+	view: 'MENU' | 'MESSAGE' | 'INFO';
 };
 
 export const useGameState = () => {
 	let { subscribe, update } = writable<GameType>({
 		paused: false,
+		view: 'MENU',
 	});
 
 	const publisher = new Publisher<GameType>();

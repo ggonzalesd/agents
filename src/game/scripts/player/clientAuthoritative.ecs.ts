@@ -12,7 +12,7 @@ type ClientAuthoritativeSharedState = {
 };
 
 export class ClientAuthoritative extends ComponentEcs {
-	private state: ClientAuthoritativeSharedState;
+	public state: ClientAuthoritativeSharedState;
 	private needsSend = false;
 
 	private colyseusClient: ColyseusClientEcs = null!;

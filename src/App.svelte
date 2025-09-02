@@ -11,6 +11,7 @@
 	import { GameInput } from './utils/input.utils';
 	import Modals from './components/Modals.svelte';
 	import { useGameState } from './hooks/useGameState.svelte';
+	import { preloadGLB } from './utils/assets.utils';
 
 	setContext(useDebugHook.name, useDebugHook());
 	setContext(useActions.name, useActions());
@@ -31,5 +32,11 @@
 	class="pointer-events-none flex size-full min-h-screen flex-col items-center justify-center bg-gradient-to-br from-lime-500/10 to-blue-500/20"
 >
 	<!-- <LoginView /> -->
-	<GameView />
+	{#await preloadGLB('/3d/SkinModel.glb')}
+		<p>Loading Models...</p>
+	{:then _}
+		<GameView />
+	{:catch error}
+		<p class="text-red-500">Error loading models: {error.message}</p>
+	{/await}
 </main>
