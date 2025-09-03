@@ -1,7 +1,10 @@
 <svelte:options runes />
 
 <script lang="ts">
+	import { getContext, onMount } from 'svelte';
 	import { treeifyError } from 'zod';
+
+	import { loginRequestSchema } from '#/schema/auth.schema';
 
 	import InputText from '@/components/InputText.svelte';
 	import Button from '@/components/Button.svelte';
@@ -10,7 +13,9 @@
 	import passwordSvgContent from '@/assets/icons/password.svg?raw';
 	import lockSvgContent from '@/assets/icons/lock.svg?raw';
 
-	import { loginRequestSchema } from '#/schema/auth.schema';
+	import { GameInput } from '@/utils/input.utils';
+	import { loginService, profileService } from '@/services/api.service';
+	import { getRouterContext } from '@/hooks/useRouter.svelte';
 
 	const data = $state({ username: '', password: '' });
 	const errors = $derived.by(() => {
@@ -22,6 +27,35 @@
 
 		return null;
 	});
+
+	let gameInputContext = getContext<GameInput>(GameInput.name);
+	let routerContext = getRouterContext();
+
+	onMount(() => {
+		gameInputContext.disabled = true;
+		profileService().then(() => {
+			routerContext.changeRoute('/game');
+		});
+	});
+
+	let loading = $state(false);
+	const onSubmit = (event: SubmitEvent) => {
+		loading = true;
+
+		event.preventDefault();
+		const formData = new FormData(event.target as HTMLFormElement);
+		const username = formData.get('username') as string;
+		const password = formData.get('password') as string;
+
+		loginService(username, password)
+			.then((data) => {
+				routerContext.changeRoute('/game');
+				localStorage.setItem('token', data.token);
+			})
+			.finally(() => {
+				loading = false;
+			});
+	};
 </script>
 
 {#snippet renderErrors(errors?: string[] | null)}
@@ -34,8 +68,9 @@
 	{/if}
 {/snippet}
 
-<form class="flex flex-col gap-2">
+<form class="flex flex-col gap-2" onsubmit={onSubmit}>
 	<InputText
+		disabled={loading}
 		name="username"
 		placeholder="Email"
 		iconSvgContent={emailSvgContent}
@@ -45,6 +80,7 @@
 	{@render renderErrors(errors?.username?.errors)}
 
 	<InputText
+		disabled={loading}
 		name="password"
 		placeholder="Password"
 		iconSvgContent={passwordSvgContent}
@@ -54,5 +90,11 @@
 	/>
 	{@render renderErrors(errors?.password?.errors)}
 
-	<Button color="success" iconSvgContent={lockSvgContent} label="Submit" />
+	<Button
+		disabled={loading}
+		type="submit"
+		color="success"
+		iconSvgContent={lockSvgContent}
+		label="Submit"
+	/>
 </form>

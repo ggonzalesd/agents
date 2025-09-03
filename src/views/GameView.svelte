@@ -18,6 +18,8 @@
 	let gameStateContext = getGameStateContext();
 
 	onMount(() => {
+		gameInputContext.disabled = false;
+
 		const world = worldPrefab({
 			canvas: $state.snapshot(canvasRef) as HTMLCanvasElement,
 			game: gameStateContext,
