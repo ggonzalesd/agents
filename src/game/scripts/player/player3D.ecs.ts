@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three-stdlib';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import type { PlayerState } from '#/state/game.state';
@@ -32,9 +31,6 @@ export class Player3DEcs extends ComponentEcs {
 			}),
 		);
 
-		mesh.castShadow = true;
-		mesh.receiveShadow = true;
-
 		this.object3D.add(mesh);
 		// this.object3D.add(sphere);
 
@@ -58,6 +54,12 @@ export class Player3DEcs extends ComponentEcs {
 
 			mesh.position.set(0, -1, 0);
 			mesh.rotateY(Math.PI / 2);
+			mesh.traverse((child) => {
+				if (child instanceof THREE.Mesh) {
+					child.castShadow = true;
+					child.receiveShadow = true;
+				}
+			});
 
 			this.object3D.add(mesh);
 		}

@@ -1,6 +1,6 @@
 import { HttpError } from '#/utils/HttpError';
 import { verifyToken } from '$/services/jwt.service';
-import { getUserByUsername } from '$/services/user.db';
+import { getUserByUsername } from '$/db/user.db';
 import type { NextFunction, Request, Response } from 'express';
 
 export const authMiddleware =

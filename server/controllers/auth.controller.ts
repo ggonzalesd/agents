@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt';
 
 import sql from '$/config/db.config';
 
-import { getUserByUsername, revokeUserHash } from '$/services/user.db';
+import { getUserByUsername, revokeUserHash } from '$/db/user.db';
 import type { AuthPayload } from '$/models/Payload.model';
 import { signToken } from '$/services/jwt.service';
 import { getAuth } from '$/utils/req.utils';
