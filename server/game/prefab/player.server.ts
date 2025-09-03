@@ -10,8 +10,9 @@ class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
 
 	public character: CharacterBodyServerEcs = null!;
+	public serverData: ServerDataEcs = null!;
 
-	constructor(pos: IVec3) {
+	constructor({ pos }: { pos: IVec3 }) {
 		super();
 
 		this.state = new PlayerState(pos);
@@ -21,11 +22,11 @@ class PlayerServerBehavior extends ComponentEcs {
 	}
 
 	onStart(): void {
-		const serverDataOp = this.world.get(ServerDataEcs);
+		this.serverData = this.world
+			.get(ServerDataEcs)
+			.unwrap('ServerDataEcs not found');
 
-		const gameState = serverDataOp
-			.map((serverData) => serverData.state)
-			.unwrap('GameState not found');
+		const gameState = this.serverData.state;
 
 		const parent = this.world.getEntity(this.parent).unwrap('Parent not found');
 
@@ -61,6 +62,15 @@ class PlayerServerBehavior extends ComponentEcs {
 			case 'jump':
 				this.character.isJumping = true;
 				break;
+			case 'message':
+				// TODO:
+				if ('message' in message && typeof message.message === 'string') {
+					this.serverData.room.broadcast('agent:message', {
+						id: this.parent,
+						message: message.message,
+					});
+				}
+				break;
 		}
 	}
 
@@ -93,13 +103,14 @@ class PlayerServerBehavior extends ComponentEcs {
 }
 
 export const playerServerFactoryGenerator =
-	(world: WorldEcs) => (name: string, pos: IVec3) => {
+	(world: WorldEcs) =>
+	({ name, pos }: { name: string; pos: IVec3 }) => {
 		return new EntityEcs({
 			name,
 			world,
 			components: {
 				[CharacterBodyServerEcs.name]: new CharacterBodyServerEcs(pos),
-				[PlayerServerBehavior.name]: new PlayerServerBehavior(pos),
+				[PlayerServerBehavior.name]: new PlayerServerBehavior({ pos }),
 			},
 		});
 	};

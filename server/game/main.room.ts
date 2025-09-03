@@ -29,7 +29,7 @@ export class MainRoom extends Room<GameState> {
 		this.worldPhy = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
 
 		this.worldEcs = new WorldEcs({
-			[ServerDataEcs.name]: new ServerDataEcs(this.state, this.worldPhy),
+			[ServerDataEcs.name]: new ServerDataEcs(this.state, this.worldPhy, this),
 			[ServerManagerEcs.name]: new ServerManagerEcs(),
 		});
 
@@ -81,10 +81,13 @@ export class MainRoom extends Room<GameState> {
 		_auth?: any,
 	): Promise<any> {
 		this.worldEcs.addEntity(
-			this.playerServerFactory(client.sessionId, {
-				x: (Math.random() - 0.5) * 5,
-				y: (Math.random() - 0.5) * 5 + 10,
-				z: (Math.random() - 0.5) * 5,
+			this.playerServerFactory({
+				name: client.sessionId,
+				pos: {
+					x: (Math.random() - 0.5) * 10,
+					y: (Math.random() - 0.5) * 5 + 10,
+					z: (Math.random() - 0.5) * 10,
+				},
 			}),
 		);
 	}

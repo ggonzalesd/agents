@@ -60,6 +60,14 @@ export class PlayerClientBehavior extends ComponentEcs {
 	onLoop(_delta: number): void {
 		if (this.room.sessionId !== this.parent) return;
 
+		if (this.input.down('Space')) {
+			// this.addMessage('New Message ' + new Date().toLocaleTimeString());
+			this.room.send('client:action', {
+				type: 'message',
+				message: 'Hello server! ' + new Date().toLocaleTimeString(),
+			});
+		}
+
 		if (this.input.down('Space') && this.room.connection.isOpen) {
 			this.room.send('client:action', { type: 'jump' });
 		}
