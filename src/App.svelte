@@ -14,6 +14,8 @@
 	import { preloadGLB } from './utils/assets.utils';
 	import { useRouter } from './hooks/useRouter.svelte';
 	import Router from './components/lib/Router.svelte';
+	import ProfileView from './views/ProfileView.svelte';
+	import Loading from './views/Loading.svelte';
 
 	setContext(useDebugHook.name, useDebugHook());
 	setContext(useActions.name, useActions());
@@ -33,15 +35,19 @@
 </Router>
 
 <main
-	class="pointer-events-none flex size-full min-h-screen flex-col items-center justify-center bg-gradient-to-br from-lime-500/10 to-blue-500/20"
+	class="pointer-events-none flex size-full min-h-screen flex-col items-center justify-center bg-gradient-to-br from-rose-500/10 to-blue-500/20"
 >
 	<Router route="/login">
 		<LoginView />
 	</Router>
 
+	<Router route="/profile">
+		<ProfileView />
+	</Router>
+
 	<Router route="/game">
 		{#await preloadGLB('/3d/SkinModel.glb')}
-			<p>Loading Models...</p>
+			<Loading />
 		{:then _}
 			<GameView />
 		{:catch error}

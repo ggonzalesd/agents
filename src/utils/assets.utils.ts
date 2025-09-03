@@ -50,19 +50,24 @@ export const cloneMesh = <T extends string>(
 	};
 };
 
-export const preloadGLB = async (...urls: string[]) => {
+export const preloadGLB = async (...urls: string[]): Promise<GLTF[]> => {
 	const loader = new GLTFLoader();
 
 	const promises = urls.map((url) => {
-		return new Promise<void>((resolve) => {
-			loader.load(url, (gltf) => {
-				glbCache.set(url, gltf);
-				resolve();
-			});
+		return new Promise<GLTF>((resolve, reject) => {
+			loader.load(
+				url,
+				(gltf) => {
+					glbCache.set(url, gltf);
+					resolve(gltf);
+				},
+				undefined,
+				(err) => reject(err),
+			);
 		});
 	});
 
-	await Promise.all(promises);
+	return await Promise.all(promises);
 };
 
 export const loadGLB = (url: string): GLTF => {

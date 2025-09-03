@@ -1,6 +1,6 @@
 <script lang="ts">
+	import { type Snippet } from 'svelte';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
-	import { onDestroy, type Snippet } from 'svelte';
 
 	interface Props {
 		route?: string;
