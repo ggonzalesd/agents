@@ -1,4 +1,1 @@
-export interface RoleDB {
-	id: number;
-	name: string;
-}
+export type Role = 'USER' | 'ADMIN' | 'MODERATOR';

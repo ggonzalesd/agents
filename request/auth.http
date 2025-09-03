@@ -8,8 +8,8 @@ POST {{host}}/auth/login HTTP/1.1
 Content-Type: application/json
 
 {
-	"username": "ggonzalesd",
-	"password": "1234"
+	"username": "archiso",
+	"password": "grobergonza"
 }
 
 ### Register
@@ -27,7 +27,7 @@ POST {{host}}/auth/revoke HTTP/1.1
 Content-Type: application/json
 
 {
-	"id": "fc801aee-c84d-4858-a798-3660498a2c1b"
+	"id": "d84f5da6-9353-4b91-a3f6-1554ae3cb693"
 }
 
 ### Profile

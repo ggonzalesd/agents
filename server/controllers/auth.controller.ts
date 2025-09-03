@@ -35,7 +35,7 @@ export const authLoginController = async (req: Request, res: Response) => {
 		id: user.id,
 		username: user.username,
 		hash: user.hash,
-		roles: user.roles.map((m) => m.name),
+		role: user.role,
 	};
 
 	const token = signToken(payload);
@@ -107,7 +107,7 @@ export const profileAuthController = async (req: Request, res: Response) => {
 
 	res.json(
 		jsonResponse.ok(
-			{ ...result, roles: result.roles.map((role) => role.name) },
+			{ ...result },
 			{
 				message: 'User profile retrieved successfully',
 			},

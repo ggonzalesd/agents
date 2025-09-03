@@ -19,6 +19,7 @@ export const verifyToken = (token?: string | null): Option<AuthPayload> => {
 	try {
 		const decoded = jsonwebtoken.verify(token, envConfig.JWT_SECRET);
 		const parsed = authPayloadSchema.parse(decoded);
+
 		return Option.some(parsed);
 	} catch (error) {
 		return Option.none();

@@ -11,7 +11,7 @@ export const roleMiddleware =
 			return next();
 		}
 
-		if (!payload || !roles.some((role) => payload.roles.includes(role))) {
+		if (!payload || !roles.some((role) => payload.role === role)) {
 			throw HttpError.forbidden(
 				`Access only allowed for roles: ${roles.join(', ')}`,
 			);

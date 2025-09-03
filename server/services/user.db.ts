@@ -4,7 +4,6 @@ import * as bcrypt from 'bcrypt';
 
 import _sql from '$/config/db.config';
 
-import type { RoleDB } from '$/models/Role.model';
 import type { UserDB } from '$/models/user.model';
 
 import { Option } from '#/utils/Option';
@@ -23,12 +22,6 @@ export const getUserByUsername = async (
 	if (!user) {
 		return Option.none();
 	}
-
-	const _roles = await sql<
-		RoleDB[]
-	>`SELECT * FROM "Rol" WHERE "id" IN (SELECT "rolId" FROM "UserRol" WHERE "userId" = ${user.id})`;
-
-	user.roles = _roles;
 
 	return Option.some(user);
 };

@@ -27,7 +27,7 @@ export const authPayloadSchema = z.object({
 	id: z.uuid(),
 	username: z.string().min(4).max(64),
 	hash: z.uuid(),
-	roles: z.array(z.string().min(2).max(100)),
+	role: z.enum(['USER', 'ADMIN', 'MODERATOR']),
 });
 
 export const revokeRequestSchema = z.object({

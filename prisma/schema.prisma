@@ -9,30 +9,63 @@ datasource db {
   url      = env("DB_URL")
 }
 
-model Rol {
-  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name String @unique @db.VarChar(64)
-
-  UserRol UserRol[]
+enum Role {
+  USER
+  ADMIN
+  MODERATOR
 }
 
 model User {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  username  String   @unique @db.VarChar(64)
-  password  String   @db.VarChar(60)
-  display   String?  @db.VarChar(255)
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  hash      String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-
-  roles UserRol[]
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username  String    @unique @db.VarChar(64)
+  password  String    @db.VarChar(60)
+  display   String?   @db.VarChar(255)
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
+  hash      String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  role      Role      @default(USER)
+  Profile   Profile[]
 }
 
-model UserRol {
-  rolId  String @db.Uuid
-  userId String @db.Uuid
+model World {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  display     String   @db.VarChar(255)
+  description String   @db.Text
+  imageUrl    String?  @db.Text
+  createdAt   DateTime @default(now()) @db.Timestamp(6)
 
-  User User @relation(fields: [userId], references: [id])
-  Rol  Rol  @relation(fields: [rolId], references: [id])
+  Agent Agent[]
+}
 
-  @@id([rolId, userId])
+model Agent {
+  id        String @id @db.VarChar(255)
+  worldId   String @db.Uuid
+  name      String @db.VarChar(255)
+  positionX Float
+  positionY Float
+  positionZ Float
+  rotation  Float
+  metadata  Json   @db.JsonB
+
+  world World   @relation(fields: [worldId], references: [id])
+  Alive Alive[]
+}
+
+model Alive {
+  id         String @id @db.VarChar(255)
+  life       Float
+  saturation Float
+
+  agent   Agent     @relation(fields: [id], references: [id])
+  Profile Profile[]
+}
+
+model Profile {
+  aliveId String  @db.VarChar(255)
+  userId  String  @db.Uuid
+  banned  Boolean @default(false)
+
+  alive Alive @relation(fields: [aliveId], references: [id])
+  User  User? @relation(fields: [userId], references: [id])
+
+  @@id([aliveId, userId])
 }

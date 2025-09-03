@@ -1,6 +1,8 @@
+import type { Role } from './Role.model';
+
 export interface AuthPayload {
 	id: string;
 	username: string;
 	hash: string;
-	roles: string[];
+	role: Role;
 }

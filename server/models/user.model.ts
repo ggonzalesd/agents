@@ -1,4 +1,4 @@
-import type { RoleDB } from './Role.model';
+import type { Role } from './Role.model';
 
 export interface UserDB {
 	id: string;
@@ -7,5 +7,5 @@ export interface UserDB {
 	password: string;
 	hash: string;
 	createdAt: Date;
-	roles: RoleDB[];
+	role: Role;
 }
