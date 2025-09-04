@@ -9,9 +9,9 @@ export class PlayerState extends Schema {
 	@type(CharacterState)
 	public character: CharacterState;
 
-	constructor(pos: IVec3) {
+	constructor(pos: IVec3, skin: string) {
 		super();
-		this.character = new CharacterState(pos);
+		this.character = new CharacterState(pos, skin);
 	}
 }
 

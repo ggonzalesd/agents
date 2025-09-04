@@ -12,8 +12,12 @@ export class CharacterState extends Schema {
 	@type('boolean')
 	public isMoving: boolean = false;
 
-	constructor(pos: IVec3) {
+	@type('string')
+	public skin: string = 'default';
+
+	constructor(pos: IVec3, skin: string = 'default') {
 		super();
 		this.position = new Vector3(pos);
+		this.skin = skin;
 	}
 }

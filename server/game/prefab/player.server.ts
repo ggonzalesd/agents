@@ -6,13 +6,16 @@ import { PlayerServerBehavior } from '../scripts/player/playerServerBehavior.ecs
 
 export const playerServerFactoryGenerator =
 	(world: WorldEcs) =>
-	({ name, pos }: { name: string; pos: IVec3 }) => {
+	({ name, pos, username }: { name: string; pos: IVec3; username: string }) => {
 		return new EntityEcs({
 			name,
 			world,
 			components: {
 				[CharacterBodyServerEcs.name]: new CharacterBodyServerEcs(pos),
-				[PlayerServerBehavior.name]: new PlayerServerBehavior({ pos }),
+				[PlayerServerBehavior.name]: new PlayerServerBehavior({
+					pos,
+					username,
+				}),
 			},
 		});
 	};

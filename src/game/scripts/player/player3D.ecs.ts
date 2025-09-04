@@ -36,7 +36,12 @@ export class Player3DEcs extends ComponentEcs {
 
 		// Skinning /3d/gordon.png with transparency
 		const material = new THREE.MeshStandardMaterial({
-			map: loadTexture('/3d/gordon.png'),
+			map: loadTexture(
+				import.meta.env.VITE_API_URL +
+					'/api/v1/skin/' +
+					state.character.skin +
+					'.png',
+			),
 		});
 		material.transparent = true;
 

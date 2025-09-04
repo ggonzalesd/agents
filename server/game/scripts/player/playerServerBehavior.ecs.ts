@@ -11,10 +11,10 @@ export class PlayerServerBehavior extends ComponentEcs {
 	public character: CharacterBodyServerEcs = null!;
 	public serverData: ServerDataEcs = null!;
 
-	constructor({ pos }: { pos: IVec3 }) {
+	constructor({ pos, username }: { pos: IVec3; username: string }) {
 		super();
 
-		this.state = new PlayerState(pos);
+		this.state = new PlayerState(pos, username);
 
 		this.onClientState = this.onClientState.bind(this);
 		this.onClientActions = this.onClientActions.bind(this);

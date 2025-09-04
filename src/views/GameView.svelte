@@ -26,6 +26,7 @@
 			input: gameInputContext,
 			debug: debugContext,
 			actions: actionContext,
+			token: localStorage.getItem('token') ?? '',
 		});
 
 		let animationRequestId: Option<number> = Option.none();

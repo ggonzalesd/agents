@@ -16,6 +16,7 @@ type WorldPrefabProps = {
 	debug: ReturnType<typeof useDebugHook>;
 	actions: ReturnType<typeof useActions>;
 	game: ReturnType<typeof useGameState>;
+	token: string;
 };
 
 export const worldPrefab = ({
@@ -24,6 +25,7 @@ export const worldPrefab = ({
 	actions,
 	debug,
 	game,
+	token,
 }: WorldPrefabProps) =>
 	new WorldEcs({
 		[UIClientEcs.name]: new UIClientEcs({
@@ -34,7 +36,7 @@ export const worldPrefab = ({
 		}),
 		[ColyseusClientEcs.name]: new ColyseusClientEcs(
 			'ws://localhost:3000',
-			'your_token_here',
+			token,
 			'main-room',
 		),
 		[RenderClientEcs.name]: new RenderClientEcs(canvas),

@@ -31,8 +31,11 @@
 		scene.add(modelSpot);
 
 		let texture = loadTexture(
-			import.meta.env.VITE_API_URL + '/api/v1/skin/' + username + '.png',
-			false,
+			import.meta.env.VITE_API_URL +
+				'/api/v1/skin/' +
+				username +
+				'.png?_=' +
+				Date.now(),
 		);
 		const material = new THREE.MeshStandardMaterial({
 			color: 0xffffff,
