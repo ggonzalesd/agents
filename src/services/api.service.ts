@@ -1,40 +1,55 @@
 import axios from 'axios';
+import { z } from 'zod';
 
-export const loginService = async (username: string, password: string) => {
-	const response = await axios.post(
-		`${import.meta.env.VITE_API_URL}/api/v1/auth/login`,
-		{
-			username,
-			password,
-		},
-		{
-			withCredentials: true,
-		},
-	);
+import { loginResSchema, profileResSchema } from '#/schema/api.schema';
+import {
+	dispatchError,
+	type ErrorResponse,
+	type OkResponse,
+} from '#/utils/http-client.util';
 
-	return response.data.data as {
-		token: string;
-		payload: {
-			id: string;
-			username: string;
-			hash: string;
-			role?: 'ADMIN' | 'USER' | 'MODERATOR';
+axios.defaults.withCredentials = true;
+
+export const loginService = async (payload: {
+	username: string;
+	password: string;
+}): Promise<
+	OkResponse<z.infer<typeof loginResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await axios.post(
+			`${import.meta.env.VITE_API_URL}/api/v1/auth/login`,
+			payload,
+		);
+
+		const body = loginResSchema.parse(response.data);
+
+		return {
+			ok: true,
+			message: body.message,
+			data: body.data,
 		};
-	};
+	} catch (error) {
+		return dispatchError(error);
+	}
 };
 
-export const profileService = async () => {
-	const response = await axios.get(
-		`${import.meta.env.VITE_API_URL}/api/v1/auth/profile`,
-		{
-			withCredentials: true,
-		},
-	);
+export const profileService = async (): Promise<
+	OkResponse<z.infer<typeof profileResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await axios.get(
+			`${import.meta.env.VITE_API_URL}/api/v1/auth/profile`,
+		);
 
-	return response.data.data as {
-		id: string;
-		username: string;
-		hash: string;
-		role?: 'ADMIN' | 'USER' | 'MODERATOR';
-	};
+		const body = profileResSchema.parse(response.data);
+
+		return {
+			ok: true,
+			message: body.message,
+			data: body.data,
+		};
+	} catch (error) {
+		return dispatchError(error);
+	}
 };

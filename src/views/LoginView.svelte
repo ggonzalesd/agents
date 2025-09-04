@@ -33,28 +33,35 @@
 
 	onMount(() => {
 		gameInputContext.disabled = true;
+
 		profileService().then((data) => {
-			routerContext.changeRoute('/profile', data.username);
+			if (!data.ok) return;
+
+			routerContext.changeRoute('/profile', data.data.username);
 		});
 	});
 
+	let errorMessage = $state<string | null>(null);
 	let loading = $state(false);
-	const onSubmit = (event: SubmitEvent) => {
-		loading = true;
-
+	const onSubmit = async (event: SubmitEvent) => {
 		event.preventDefault();
+		loading = true;
+		errorMessage = null;
+
 		const formData = new FormData(event.target as HTMLFormElement);
 		const username = formData.get('username') as string;
 		const password = formData.get('password') as string;
 
-		loginService(username, password)
-			.then((data) => {
-				routerContext.changeRoute('/profile', data.payload.username);
-				localStorage.setItem('token', data.token);
-			})
-			.finally(() => {
-				loading = false;
-			});
+		const response = await loginService({ username, password });
+
+		if (response.ok) {
+			routerContext.changeRoute('/profile', response.data.payload.username);
+			localStorage.setItem('token', response.data.token);
+		} else {
+			errorMessage = response.error.message;
+		}
+
+		loading = false;
 	};
 </script>
 
@@ -97,4 +104,10 @@
 		iconSvgContent={lockSvgContent}
 		label="Submit"
 	/>
+
+	{#if errorMessage}
+		<div class="text-red-500">
+			<p class="text-xs text-red-500">* {errorMessage}</p>
+		</div>
+	{/if}
 </form>
