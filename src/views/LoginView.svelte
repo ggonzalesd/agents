@@ -16,6 +16,7 @@
 	import { GameInput } from '@/utils/input.utils';
 	import { loginService, profileService } from '@/services/api.service';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
+	import { getGameStateContext } from '@/hooks/useGameState.svelte';
 
 	const data = $state({ username: '', password: '' });
 	const errors = $derived.by(() => {
@@ -28,6 +29,7 @@
 		return null;
 	});
 
+	let gameStateContext = getGameStateContext();
 	let gameInputContext = getContext<GameInput>(GameInput.name);
 	let routerContext = getRouterContext();
 
@@ -37,7 +39,8 @@
 		profileService().then((data) => {
 			if (!data.ok) return;
 
-			routerContext.changeRoute('/profile', data.data.username);
+			gameStateContext.setUsername(data.data.username);
+			routerContext.changeRoute('/profile');
 		});
 	});
 
@@ -55,7 +58,8 @@
 		const response = await loginService({ username, password });
 
 		if (response.ok) {
-			routerContext.changeRoute('/profile', response.data.payload.username);
+			gameStateContext.setUsername(response.data.payload.username);
+			routerContext.changeRoute('/profile');
 			localStorage.setItem('token', response.data.token);
 		} else {
 			errorMessage = response.error.message;

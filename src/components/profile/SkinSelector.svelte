@@ -1,19 +1,19 @@
 <script lang="ts">
 	import * as THREE from 'three';
 	import { GLTFLoader } from 'three-stdlib';
+	import { get } from 'svelte/store';
 
 	import { loadTexture, preloadGLB } from '@/utils/assets.utils';
 	import Loading from '@/views/Loading.svelte';
-	import { getRouterContext } from '@/hooks/useRouter.svelte';
-	import { get } from 'svelte/store';
 	import { uploadSkinService } from '@/services/api.service';
+	import { getGameStateContext } from '@/hooks/useGameState.svelte';
 
-	let router = getRouterContext();
+	let gameStateContext = getGameStateContext();
 
 	let retry = $state(0);
 
 	function canvasAttach(canvas: HTMLCanvasElement) {
-		const username = get(router).data as string;
+		const username = get(gameStateContext).username as string;
 
 		const scene = new THREE.Scene();
 		const camera = new THREE.PerspectiveCamera(75, 450 / 450, 0.1, 1000);

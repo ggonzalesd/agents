@@ -36,6 +36,10 @@ export class ColyseusClientEcs extends ComponentEcs {
 		this.connection.populate({ room, proxy });
 
 		this.alarm.notify();
+
+		this.callOnDelete(() => {
+			room.leave();
+		});
 	}
 
 	public isClient(id: string) {

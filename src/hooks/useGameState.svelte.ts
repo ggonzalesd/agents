@@ -6,12 +6,14 @@ import { Publisher } from '#/utils/Publisher';
 type GameType = {
 	paused: boolean;
 	view: 'MENU' | 'MESSAGE' | 'INFO';
+	username: string;
 };
 
 export const useGameState = () => {
 	let { subscribe, update } = writable<GameType>({
 		paused: false,
 		view: 'MENU',
+		username: '',
 	});
 
 	const publisher = new Publisher<GameType>();
@@ -23,9 +25,18 @@ export const useGameState = () => {
 			return newValue;
 		});
 
+	const setUsername = (username: string) => {
+		update((state) => {
+			const newValue = { ...state, username };
+			publisher.publish('game:username', newValue);
+			return newValue;
+		});
+	};
+
 	return {
 		subscribe,
 		setPause,
+		setUsername,
 		publisher: { subscribe: publisher.subscribe },
 	};
 };
