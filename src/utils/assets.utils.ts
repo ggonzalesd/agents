@@ -4,8 +4,8 @@ import { GLTFLoader, SkeletonUtils, type GLTF } from 'three-stdlib';
 const glbCache = new Map<string, GLTF>();
 const textureCache = new Map<string, THREE.Texture>();
 
-export const loadTexture = (url: string): THREE.Texture => {
-	if (textureCache.has(url)) {
+export const loadTexture = (url: string, useCache = true): THREE.Texture => {
+	if (useCache && textureCache.has(url)) {
 		return textureCache.get(url)!;
 	}
 	const loader = new THREE.TextureLoader();

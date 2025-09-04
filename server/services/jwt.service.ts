@@ -7,7 +7,7 @@ import { Option } from '#/utils/Option';
 
 export const signToken = (payload: AuthPayload) => {
 	return jsonwebtoken.sign(payload, envConfig.JWT_SECRET, {
-		expiresIn: '1h',
+		expiresIn: '1d',
 	});
 };
 

@@ -31,6 +31,7 @@
 
 		let texture = loadTexture(
 			import.meta.env.VITE_API_URL + '/api/v1/skin/' + username + '.png',
+			false,
 		);
 		const material = new THREE.MeshStandardMaterial({
 			color: 0xffffff,
@@ -75,14 +76,51 @@
 			modelSpot.rotation.y += 0.01; // Rotate model for some animation
 
 			if (mixer) {
-				mixer.update(0.005);
+				mixer.update(0.01);
 			}
 		}
 		animate();
 
 		return () => {
 			cancelAnimationFrame(requestId);
+			texture.dispose();
 		};
+	}
+
+	let fileInput: HTMLInputElement | null = $state(null);
+
+	function handleUpdateClick(event: Event) {
+		event.preventDefault();
+		fileInput?.click();
+	}
+
+	function handleOnChange(event: Event) {
+		const input = event.target as HTMLInputElement;
+		if (input.files && input.files[0]) {
+			const file = input.files[0];
+			const formData = new FormData();
+			formData.append('file', file);
+
+			fetch(import.meta.env.VITE_API_URL + '/api/v1/skin/upload', {
+				method: 'PUT',
+				credentials: 'include',
+				body: formData,
+			})
+				.then((response) => {
+					if (!response.ok) {
+						throw new Error('Network response was not ok');
+					}
+					return response.json();
+				})
+				.then((data) => {
+					console.log('Success:', data);
+					// Reload page
+					window.location.reload();
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+		}
 	}
 </script>
 
@@ -96,7 +134,18 @@
 				{@attach canvasAttach}
 			>
 			</canvas>
-			<button class="absolute bottom-0 inline-flex">ASS</button>
+			<input
+				onchange={handleOnChange}
+				bind:this={fileInput}
+				type="file"
+				class="sr-only"
+			/>
+			<button
+				onclick={handleUpdateClick}
+				class="pointer-events-auto absolute bottom-0 inline-flex rounded-md bg-white/25 px-4 py-2 hover:cursor-pointer"
+			>
+				Update
+			</button>
 		</div>
 	{:catch error}
 		<p>Error loading model: {JSON.stringify(error)}</p>
