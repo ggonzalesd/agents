@@ -127,9 +127,14 @@
 			</label>
 		</div>
 	{:catch error}
-		<p>Error loading model: {JSON.stringify(error)}</p>
-		<button class="pointer-events-auto" onclick={() => retry++}>
-			Retry Preload
-		</button>
+		<div class="flex flex-col items-center gap-4">
+			<p>Error loading model: {JSON.stringify(error)}</p>
+			<button
+				class="pointer-events-auto cursor-pointer rounded-md bg-rose-500 px-4 py-2 text-white hover:bg-rose-600"
+				onclick={() => retry++}
+			>
+				Retry Preload
+			</button>
+		</div>
 	{/await}
 {/key}
