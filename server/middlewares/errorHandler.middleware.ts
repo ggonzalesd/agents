@@ -5,6 +5,7 @@ import { treeifyError, ZodError } from 'zod';
 
 import { HttpError } from '#/utils/HttpError';
 import { jsonResponse } from '#/utils/HttpResponse';
+import { MulterError } from 'multer';
 
 export const errorHandlerFactory =
 	() => (err: unknown, _: Request, res: Response, __: NextFunction) => {
@@ -13,6 +14,15 @@ export const errorHandlerFactory =
 				jsonResponse.error(err.message, {
 					data: err.data,
 					status: err.status,
+				}),
+			);
+			return;
+		}
+
+		if (err instanceof MulterError) {
+			res.status(400).json(
+				jsonResponse.error(err.message, {
+					status: 400,
 				}),
 			);
 			return;

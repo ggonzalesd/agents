@@ -10,6 +10,7 @@ import { errorHandlerFactory } from '$/middlewares/errorHandler.middleware';
 
 import roomRoute from '$/routes/room.route';
 import authRoute from '$/routes/auth.route';
+import skinRoute from '$/routes/skin.route';
 import experimentalRoute from '$/routes/experimental.route';
 
 export const applyHttpApplication = (
@@ -49,6 +50,7 @@ export const applyHttpApplication = (
 
 		group.use('/room', roomRoute);
 		group.use('/auth', authRoute);
+		group.use('/skin', skinRoute);
 		group.use('/experimental', experimentalRoute);
 	}
 
