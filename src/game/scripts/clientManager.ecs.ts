@@ -78,6 +78,8 @@ export class ClientManagerEcs extends ComponentEcs {
 				isCode: false,
 				type: 'info',
 			});
+
+			this.callOnDelete(() => uc.debug.deleteMessage(this.idMessage));
 		});
 	}
 

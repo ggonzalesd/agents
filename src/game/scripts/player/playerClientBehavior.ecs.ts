@@ -16,6 +16,7 @@ export class PlayerClientBehavior extends ComponentEcs {
 	public camera: THREE.Camera = null!;
 	public input: GameInput = null!;
 	public room: Room<GameState> = null!;
+	public uiClient: UIClientEcs = null!;
 
 	public clientAuthoritative: ClientAuthoritative = null!;
 
@@ -30,10 +31,9 @@ export class PlayerClientBehavior extends ComponentEcs {
 			.get(ClientAuthoritative)
 			.unwrap('No ClientAuthoritative found');
 
-		this.input = this.world
-			.get(UIClientEcs)
-			.pick('input')
-			.unwrap('No UIClientEcs found');
+		this.uiClient = this.world.get(UIClientEcs).unwrap('No UIClientEcs found');
+
+		this.input = this.uiClient.input;
 
 		this.room = this.world
 			.get(ColyseusClientEcs)
@@ -60,12 +60,9 @@ export class PlayerClientBehavior extends ComponentEcs {
 	onLoop(_delta: number): void {
 		if (this.room.sessionId !== this.parent) return;
 
-		if (this.input.down('Space')) {
-			// this.addMessage('New Message ' + new Date().toLocaleTimeString());
-			this.room.send('client:action', {
-				type: 'message',
-				message: 'Hello server! ' + new Date().toLocaleTimeString(),
-			});
+		if (this.input.down('KeyT')) {
+			this.uiClient.game.setPause(true, 'MESSAGE');
+			this.input.disabled = true;
 		}
 
 		if (this.input.down('Space') && this.room.connection.isOpen) {

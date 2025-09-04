@@ -9,6 +9,7 @@
 
 	import { worldPrefab } from '@/game/prefab/world.client';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
+	import { WorldEcs } from '#/ecs/World.ecs';
 
 	let canvasRef = $state.raw<HTMLCanvasElement>(null!);
 
@@ -16,6 +17,7 @@
 	let actionContext = getActionsContext();
 	let gameInputContext = getContext<GameInput>(GameInput.name);
 	let gameStateContext = getGameStateContext();
+	let worldEcsContext = getContext<Option<WorldEcs>>(WorldEcs.name);
 
 	onMount(() => {
 		gameInputContext.disabled = false;
@@ -28,6 +30,8 @@
 			actions: actionContext,
 			token: localStorage.getItem('token') ?? '',
 		});
+
+		worldEcsContext.populate(world);
 
 		let animationRequestId: Option<number> = Option.none();
 		let lastTime = performance.now();
@@ -46,6 +50,7 @@
 		return () => {
 			animationRequestId.ifSome(cancelAnimationFrame);
 			world.onDelete();
+			worldEcsContext.clear();
 		};
 	});
 </script>

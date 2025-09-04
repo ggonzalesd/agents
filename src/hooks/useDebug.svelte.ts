@@ -22,6 +22,10 @@ export const useDebugHook = () => {
 		);
 	};
 
+	const deleteMessage = (id: string) => {
+		update((messages) => messages.filter((msg) => msg.id !== id));
+	};
+
 	const add = (
 		message: string,
 		props?: {
@@ -60,7 +64,7 @@ export const useDebugHook = () => {
 		return id;
 	};
 
-	return { subscribe, add, updateMessage };
+	return { subscribe, add, updateMessage, deleteMessage };
 };
 
 export const getDebugContext = () => {

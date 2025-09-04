@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
 	import PauseModal from './modals/PauseModal.svelte';
+	import MessageModal from './modals/MessageModal.svelte';
 
 	let gameState = getGameStateContext();
 </script>
@@ -13,6 +14,8 @@
 	>
 		{#if $gameState.view === 'MENU'}
 			<PauseModal />
+		{:else if $gameState.view === 'MESSAGE'}
+			<MessageModal />
 		{/if}
 	</div>
 {/if}

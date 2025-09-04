@@ -16,12 +16,15 @@
 	import Router from './components/lib/Router.svelte';
 	import ProfileView from './views/ProfileView.svelte';
 	import Loading from './views/Loading.svelte';
+	import { WorldEcs } from '#/ecs/World.ecs';
+	import { Option } from '#/utils/Option';
 
 	setContext(useDebugHook.name, useDebugHook());
 	setContext(useActions.name, useActions());
 	setContext(GameInput.name, new GameInput());
 	setContext(useGameState.name, useGameState());
 	setContext(useRouter.name, useRouter('/login'));
+	setContext(WorldEcs.name, Option.none<WorldEcs>());
 
 	onMount(() => {
 		const debugContext = getDebugContext();

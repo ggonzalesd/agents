@@ -18,9 +18,9 @@ export const useGameState = () => {
 
 	const publisher = new Publisher<GameType>();
 
-	const setPause = (value: boolean) =>
+	const setPause = (value: boolean, view: GameType['view'] = 'MENU') =>
 		update((state) => {
-			const newValue = { ...state, paused: value };
+			const newValue = { ...state, paused: value, view };
 			publisher.publish('game:paused', newValue);
 			return newValue;
 		});
