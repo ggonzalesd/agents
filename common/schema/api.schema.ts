@@ -28,3 +28,10 @@ export const profileResSchema = apiResSchema.extend({
 		role: z.enum(['ADMIN', 'USER', 'MODERATOR']).optional(),
 	}),
 });
+
+export const uploadSkinResSchema = apiResSchema.extend({
+	data: z.object({
+		url: z.string().url(),
+		signedUrl: z.string().url(),
+	}),
+});

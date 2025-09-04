@@ -1,7 +1,11 @@
 import axios from 'axios';
 import { z } from 'zod';
 
-import { loginResSchema, profileResSchema } from '#/schema/api.schema';
+import {
+	loginResSchema,
+	profileResSchema,
+	uploadSkinResSchema,
+} from '#/schema/api.schema';
 import {
 	dispatchError,
 	type ErrorResponse,
@@ -43,6 +47,37 @@ export const profileService = async (): Promise<
 		);
 
 		const body = profileResSchema.parse(response.data);
+
+		return {
+			ok: true,
+			message: body.message,
+			data: body.data,
+		};
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const uploadSkinService = async (
+	skin: File,
+): Promise<
+	OkResponse<z.infer<typeof uploadSkinResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const formData = new FormData();
+		formData.append('file', skin);
+
+		const response = await axios.put(
+			`${import.meta.env.VITE_API_URL}/api/v1/skin/upload`,
+			formData,
+			{
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			},
+		);
+
+		const body = uploadSkinResSchema.parse(response.data);
 
 		return {
 			ok: true,

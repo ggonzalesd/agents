@@ -6,6 +6,7 @@
 	import Loading from '@/views/Loading.svelte';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
 	import { get } from 'svelte/store';
+	import { uploadSkinService } from '@/services/api.service';
 
 	let router = getRouterContext();
 
@@ -87,39 +88,23 @@
 		};
 	}
 
-	let fileInput: HTMLInputElement | null = $state(null);
-
-	function handleUpdateClick(event: Event) {
-		event.preventDefault();
-		fileInput?.click();
-	}
-
-	function handleOnChange(event: Event) {
+	async function handleOnChange(event: Event) {
 		const input = event.target as HTMLInputElement;
-		if (input.files && input.files[0]) {
-			const file = input.files[0];
-			const formData = new FormData();
-			formData.append('file', file);
 
-			fetch(import.meta.env.VITE_API_URL + '/api/v1/skin/upload', {
-				method: 'PUT',
-				credentials: 'include',
-				body: formData,
-			})
-				.then((response) => {
-					if (!response.ok) {
-						throw new Error('Network response was not ok');
-					}
-					return response.json();
-				})
-				.then((data) => {
-					console.log('Success:', data);
-					// Reload page
-					window.location.reload();
-				})
-				.catch((error) => {
-					console.error('Error:', error);
-				});
+		if (!(input && input.files)) {
+			return;
+		}
+		const file = input.files[0];
+
+		const response = await uploadSkinService(file);
+
+		if (response.ok) {
+			console.log('Skin uploaded successfully');
+			window.location.reload();
+			return;
+		} else {
+			console.error('Error uploading skin:', response.message);
+			return;
 		}
 	}
 </script>
@@ -134,18 +119,12 @@
 				{@attach canvasAttach}
 			>
 			</canvas>
-			<input
-				onchange={handleOnChange}
-				bind:this={fileInput}
-				type="file"
-				class="sr-only"
-			/>
-			<button
-				onclick={handleUpdateClick}
+			<label
 				class="pointer-events-auto absolute bottom-0 inline-flex rounded-md bg-white/25 px-4 py-2 hover:cursor-pointer"
 			>
-				Update
-			</button>
+				<span>Select Skin</span>
+				<input onchange={handleOnChange} type="file" class="sr-only" />
+			</label>
 		</div>
 	{:catch error}
 		<p>Error loading model: {JSON.stringify(error)}</p>
