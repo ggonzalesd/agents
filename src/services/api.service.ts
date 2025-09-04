@@ -12,7 +12,7 @@ export const loginService = async (username: string, password: string) => {
 		},
 	);
 
-	return response.data as {
+	return response.data.data as {
 		token: string;
 		payload: {
 			id: string;
@@ -31,7 +31,7 @@ export const profileService = async () => {
 		},
 	);
 
-	return response.data as {
+	return response.data.data as {
 		id: string;
 		username: string;
 		hash: string;

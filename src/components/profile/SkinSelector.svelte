@@ -4,10 +4,16 @@
 
 	import { loadTexture, preloadGLB } from '@/utils/assets.utils';
 	import Loading from '@/views/Loading.svelte';
+	import { getRouterContext } from '@/hooks/useRouter.svelte';
+	import { get } from 'svelte/store';
+
+	let router = getRouterContext();
 
 	let retry = $state(0);
 
 	function canvasAttach(canvas: HTMLCanvasElement) {
+		const username = get(router).data as string;
+
 		const scene = new THREE.Scene();
 		const camera = new THREE.PerspectiveCamera(75, 450 / 450, 0.1, 1000);
 		const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
@@ -23,25 +29,35 @@
 		const modelSpot = new THREE.Object3D();
 		scene.add(modelSpot);
 
-		let texture = loadTexture('/3d/gordon.png');
+		let texture = loadTexture(
+			import.meta.env.VITE_API_URL + '/api/v1/skin/' + username + '.png',
+		);
 		const material = new THREE.MeshStandardMaterial({
 			color: 0xffffff,
 			map: texture,
 			transparent: true,
 		});
 
+		let mixer: THREE.AnimationMixer | null = null;
+
 		const loader = new GLTFLoader();
 		loader.load(
 			'/3d/SkinModel.glb',
 			(gltf) => {
 				modelSpot.add(gltf.scene);
-				gltf.scene.rotation.y = Math.PI; // Rotate model to face camera
+				gltf.scene.rotation.y = (3 * Math.PI) / 2; // Rotate model to face camera
 				gltf.scene.position.y = -1; // Adjust model position if needed
 				gltf.scene.traverse((child) => {
 					if ((child as THREE.Mesh).isMesh) {
 						(child as THREE.Mesh).material = material;
 					}
 				});
+
+				if (gltf.animations && gltf.animations.length) {
+					mixer = new THREE.AnimationMixer(gltf.scene);
+					const action = mixer.clipAction(gltf.animations[1]);
+					action.play();
+				}
 			},
 			undefined,
 			(error) => {
@@ -57,6 +73,10 @@
 			renderer.render(scene, camera);
 
 			modelSpot.rotation.y += 0.01; // Rotate model for some animation
+
+			if (mixer) {
+				mixer.update(0.005);
+			}
 		}
 		animate();
 

@@ -33,8 +33,8 @@
 
 	onMount(() => {
 		gameInputContext.disabled = true;
-		profileService().then(() => {
-			routerContext.changeRoute('/profile');
+		profileService().then((data) => {
+			routerContext.changeRoute('/profile', data.username);
 		});
 	});
 
@@ -49,7 +49,7 @@
 
 		loginService(username, password)
 			.then((data) => {
-				routerContext.changeRoute('/profile');
+				routerContext.changeRoute('/profile', data.payload.username);
 				localStorage.setItem('token', data.token);
 			})
 			.finally(() => {

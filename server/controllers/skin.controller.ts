@@ -52,5 +52,5 @@ export const getSkinController = async (req: Request, res: Response) => {
 		: envConfig.CLIENT_URL + '/3d/gordon.png';
 
 	// Redirect to the signed URL
-	res.redirect(url);
+	res.redirect(302, url);
 };
