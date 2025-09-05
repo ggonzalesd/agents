@@ -1,5 +1,6 @@
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { Option } from '#/utils/Option';
+import { itemClientFactoryGenerator } from '../prefab/item.client';
 
 import { playerClientFactoryGenerator } from '../prefab/player.client';
 import { ColyseusClientEcs } from './colyseusClient.ecs';
@@ -10,6 +11,8 @@ export class ClientManagerEcs extends ComponentEcs {
 	private uiClient: Option<UIClientEcs> = Option.none();
 
 	private playerClientFactory: ReturnType<typeof playerClientFactoryGenerator> =
+		null!;
+	private itemClientFactory: ReturnType<typeof itemClientFactoryGenerator> =
 		null!;
 
 	private idMessage: string = '';
@@ -40,6 +43,13 @@ export class ClientManagerEcs extends ComponentEcs {
 			this.world.deleteEntityById(index);
 		});
 
+		proxy(room.state).items.onAdd((state, index) => {
+			const item = this.itemClientFactory(index, state);
+			this.world.addEntity(item);
+
+			console.log('Item added', state);
+		});
+
 		room.onMessage('message', (message) => {
 			const uiClient = this.uiClient.raw();
 
@@ -52,6 +62,7 @@ export class ClientManagerEcs extends ComponentEcs {
 
 	onStart(): void {
 		this.playerClientFactory = playerClientFactoryGenerator(this.world);
+		this.itemClientFactory = itemClientFactoryGenerator(this.world);
 
 		this.world.get(UIClientEcs).giveTo(this.uiClient);
 		this.world.get(ColyseusClientEcs).giveTo(this.colyseusClient);

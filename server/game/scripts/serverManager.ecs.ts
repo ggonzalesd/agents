@@ -2,6 +2,7 @@ import * as RAPIER from '@dimforge/rapier3d-compat';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { ServerDataEcs } from './serverData.ecs';
+import { itemServerFactory } from '../prefab/item.server';
 
 export class ServerManagerEcs extends ComponentEcs {
 	onStart(): void {
@@ -16,6 +17,15 @@ export class ServerManagerEcs extends ComponentEcs {
 
 		const colliderDesc = RAPIER.ColliderDesc.cuboid(100, 1, 100);
 		const collider = physics.createCollider(colliderDesc, body);
+
+		// Random Object
+
+		const item = itemServerFactory({
+			world: this.world,
+			name: 'item1',
+			pos: { x: 0, y: 5, z: 0 },
+		});
+		this.world.addEntity(item);
 
 		this.callOnDelete(() => {
 			physics.removeCollider(collider, true);

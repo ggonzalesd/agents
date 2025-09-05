@@ -27,7 +27,10 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 	public direction: IVec3 = { x: 0, y: 0, z: 0 };
 	public clientDirection: IVec2 = { x: 0, y: 0 };
 
-	constructor(private iPos: IVec3) {
+	constructor(
+		private iPos: IVec3,
+		private configShape: 'capsule' | 'cuboid' = 'capsule',
+	) {
 		super();
 	}
 
@@ -42,9 +45,12 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		);
 		this.body = this.physic.createRigidBody(bodyDesc);
 
-		const colliderDesc = RAPIER.ColliderDesc.capsule(0.5, 0.5)
-			.setRestitution(0.1)
-			.setFriction(0.0);
+		const colliderDesc =
+			this.configShape === 'capsule'
+				? RAPIER.ColliderDesc.capsule(0.5, 0.5)
+				: RAPIER.ColliderDesc.cuboid(0.25, 0.25, 0.25)
+						.setRestitution(0.1)
+						.setFriction(0.0);
 		this.collider = this.physic.createCollider(colliderDesc, this.body);
 
 		this.collider.setRestitution(0.01);
