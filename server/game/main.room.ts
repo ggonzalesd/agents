@@ -14,6 +14,7 @@ import { playerServerFactoryGenerator } from './prefab/player.server';
 import { ServerDataEcs } from './scripts/serverData.ecs';
 import { ServerManagerEcs } from './scripts/serverManager.ecs';
 import { verifyToken } from '$/services/jwt.service';
+import { npcServerFactoryGenerator } from './prefab/npc.server';
 
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
@@ -36,7 +37,21 @@ export class MainRoom extends Room<GameState> {
 
 		this.playerServerFactory = playerServerFactoryGenerator(this.worldEcs);
 
-		console.log({ options });
+		const npcServerFactory = npcServerFactoryGenerator(this.worldEcs);
+
+		// Add some NPCs
+		for (let i = 0; i < 2; i++) {
+			this.worldEcs.addEntity(
+				npcServerFactory({
+					name: `npc_${i}`,
+					pos: {
+						x: (Math.random() - 0.5) * 20,
+						y: 5,
+						z: (Math.random() - 0.5) * 20,
+					},
+				}),
+			);
+		}
 
 		this.roomId = options.id;
 
