@@ -46,11 +46,14 @@ export const authLoginController = async (req: Request, res: Response) => {
 		secure: process.env.NODE_ENV === 'production',
 	});
 
+	const { password: _, hash: __, ...result } = user;
+
 	res.json(
 		jsonResponse.ok(
 			{
 				token,
 				payload,
+				user: result,
 			},
 			{ message: 'Login successful' },
 		),
@@ -107,7 +110,7 @@ export const profileAuthController = async (req: Request, res: Response) => {
 
 	res.json(
 		jsonResponse.ok(
-			{ ...result },
+			{ user: result },
 			{
 				message: 'User profile retrieved successfully',
 			},

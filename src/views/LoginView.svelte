@@ -41,7 +41,7 @@
 		profileService().then((data) => {
 			if (!data.ok) return;
 
-			gameStateContext.setUsername(data.data.username);
+			gameStateContext.setUsername(data.data.user.username);
 			routerContext.changeRoute('/profile');
 		});
 	});

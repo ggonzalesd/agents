@@ -7,6 +7,7 @@
 	import Loading from '@/views/Loading.svelte';
 	import { uploadSkinService } from '@/services/api.service';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
+	import { onMount } from 'svelte';
 
 	let gameStateContext = getGameStateContext();
 
@@ -32,7 +33,9 @@
 
 		let texture = loadTexture(
 			import.meta.env.VITE_API_URL +
-				'/api/v1/skin/' +
+				'/api/v1/skin/rand/' +
+				Date.now() +
+				'/' +
 				username +
 				'.png?_=' +
 				Date.now(),

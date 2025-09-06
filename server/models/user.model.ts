@@ -7,5 +7,6 @@ export interface UserDB {
 	password: string;
 	hash: string;
 	createdAt: Date;
+	skin: string | null;
 	role: Role;
 }

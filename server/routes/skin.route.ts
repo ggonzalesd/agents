@@ -6,6 +6,7 @@ import { fileSignatureMiddelware } from '$/middlewares/file-signature.middleware
 
 import {
 	getSkinController,
+	getSkinStreamController,
 	uploadSkinController,
 } from '$/controllers/skin.controller';
 
@@ -26,6 +27,7 @@ router.put(
 	uploadSkinController,
 );
 
+router.get('/rand/:hash/:username.png', getSkinStreamController);
 router.get('/:username.png', getSkinController);
 
 export default router;

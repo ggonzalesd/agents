@@ -8,6 +8,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 import { s3ClientConfig } from '$/config/s3.config';
 import envConfig from '$/config/env.config';
+import { Readable } from 'node:stream';
 
 export class S3BucketAdapter {
 	private readonly client: S3Client;
@@ -78,17 +79,14 @@ export class S3BucketAdapter {
 		await this.client.send(command);
 	}
 
-	async streamToBuffer(stream: ReadableStream): Promise<Buffer> {
-		const chunks: Uint8Array[] = [];
-		const reader = stream.getReader();
+	async streamToBuffer(stream: Readable): Promise<Buffer> {
+		return new Promise((resolve, reject) => {
+			const chunks: Buffer[] = [];
 
-		while (true) {
-			const { done, value } = await reader.read();
-			if (done) break;
-			chunks.push(value);
-		}
-
-		return Buffer.concat(chunks);
+			stream.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+			stream.on('error', (err) => reject(err));
+			stream.on('end', () => resolve(Buffer.concat(chunks)));
+		});
 	}
 
 	async getFile(key: string): Promise<Buffer | null> {
@@ -96,7 +94,7 @@ export class S3BucketAdapter {
 
 		const response = await this.client.send(command);
 
-		if (!response.Body || !(response.Body instanceof ReadableStream)) {
+		if (!response.Body || !(response.Body instanceof Readable)) {
 			return null;
 		}
 

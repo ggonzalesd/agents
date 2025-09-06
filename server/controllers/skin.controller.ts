@@ -54,3 +54,22 @@ export const getSkinController = async (req: Request, res: Response) => {
 	// Redirect to the signed URL
 	res.redirect(302, url);
 };
+
+export const getSkinStreamController = async (req: Request, res: Response) => {
+	const username = req.params.username;
+
+	if (typeof username !== 'string' || username.trim() === '') {
+		throw HttpError.badRequest('Username is required');
+	}
+
+	const exists = await s3Service.exists(`skins/${username}.png`);
+	const buffer = await s3Service.getFile(`skins/${username}.png`);
+
+	if (!exists || !buffer) {
+		throw HttpError.notFound('Skin not found');
+	}
+
+	res.setHeader('Content-Type', 'image/png');
+
+	res.end(buffer);
+};
