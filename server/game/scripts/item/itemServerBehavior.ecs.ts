@@ -1,6 +1,5 @@
 import { ComponentEcs } from '#/ecs';
 import { ItemEntityState } from '#/state/inventory.state';
-import { vec3Set, type IVec3 } from '#/utils/math.util';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { ServerDataEcs } from '../serverData.ecs';
 
@@ -8,10 +7,9 @@ export class ItemServerBehavior extends ComponentEcs {
 	public state: ItemEntityState;
 	public character: CharacterBodyServerEcs = null!;
 
-	constructor({ pos }: { pos: IVec3 }) {
+	constructor({ state }: { state: ItemEntityState }) {
 		super();
-
-		this.state = new ItemEntityState(pos, 'item');
+		this.state = state;
 	}
 
 	onStart(): void {
@@ -29,9 +27,5 @@ export class ItemServerBehavior extends ComponentEcs {
 		const parent = this.world.getEntity(this.parent).unwrap('Parent not found');
 
 		gameState.items.set(parent.name, this.state);
-	}
-
-	onLoop(_delta: number): void {
-		vec3Set(this.state.character.position, this.character.body.translation());
 	}
 }

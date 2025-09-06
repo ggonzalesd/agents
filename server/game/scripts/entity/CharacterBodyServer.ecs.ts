@@ -1,9 +1,10 @@
 import * as RAPIER from '@dimforge/rapier3d-compat';
 
 import { ComponentEcs } from '#/ecs';
-import { vec3Flatten, type IVec3 } from '#/utils/math.util';
+import { vec3Flatten, vec3Set } from '#/utils/math.util';
 
 import { ServerDataEcs } from '../serverData.ecs';
+import type { CharacterBodyState } from '#/state/character-body.state';
 
 export class CharacterBodyServerEcs extends ComponentEcs {
 	public physic: RAPIER.World = null!;
@@ -11,7 +12,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 	public collider: RAPIER.Collider = null!;
 
 	constructor(
-		private iPos: IVec3,
+		private characterState: CharacterBodyState,
 		private configShape: 'capsule' | 'cuboid' = 'capsule',
 	) {
 		super();
@@ -24,7 +25,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 			.unwrap('RAPIER World not found');
 
 		const bodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(
-			...vec3Flatten(this.iPos),
+			...vec3Flatten(this.characterState.position),
 		);
 		this.body = this.physic.createRigidBody(bodyDesc);
 
@@ -44,5 +45,9 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 			this.physic.removeCollider(this.collider, true);
 			this.physic.removeRigidBody(this.body);
 		});
+	}
+
+	onLoop(_delta: number): void {
+		vec3Set(this.characterState.position, this.body.translation());
 	}
 }

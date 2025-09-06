@@ -1,22 +1,20 @@
 import { ComponentEcs } from '#/ecs';
-import { vec3Set, type IVec2, type IVec3 } from '#/utils/math.util';
+import { type IVec2 } from '#/utils/math.util';
 import { PlayerState } from '#/state/player.state';
 
 import { ServerDataEcs } from '../serverData.ecs';
-import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { MovementServerEcs } from '../entity/MovementServer.ecs';
 
 export class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
 
-	public character: CharacterBodyServerEcs = null!;
 	public movement: MovementServerEcs = null!;
 	public serverData: ServerDataEcs = null!;
 
-	constructor({ pos, username }: { pos: IVec3; username: string }) {
+	constructor({ state }: { state: PlayerState }) {
 		super();
 
-		this.state = new PlayerState({ pos, skin: username });
+		this.state = state;
 
 		this.onClientState = this.onClientState.bind(this);
 		this.onClientActions = this.onClientActions.bind(this);
@@ -37,10 +35,6 @@ export class PlayerServerBehavior extends ComponentEcs {
 			gameState.players.delete(parent.name);
 		});
 
-		this.character = parent
-			.get(CharacterBodyServerEcs)
-			.unwrap('CharacterBodyServerEcs not found');
-
 		this.movement = parent
 			.get(MovementServerEcs)
 			.unwrap('MovementServerEcs not found');
@@ -56,8 +50,6 @@ export class PlayerServerBehavior extends ComponentEcs {
 		this.world.stacker
 			.one(`client:${this.parent}:state`)
 			.ifSome(this.onClientState);
-
-		vec3Set(this.state.character.position, this.character.body.translation());
 	}
 
 	onClientActions(message: unknown) {

@@ -27,7 +27,10 @@ export class MovementServerEcs extends ComponentEcs {
 
 	public direction: IVec3 = { x: 0, y: 0, z: 0 };
 	public clientDirection: IVec2 = { x: 0, y: 0 };
-	public movementState: MovementState = new MovementState();
+
+	constructor(public movementState: MovementState) {
+		super();
+	}
 
 	onStart(): void {
 		this.physic = this.world
