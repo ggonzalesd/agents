@@ -12,14 +12,14 @@ import { ColyseusClientEcs } from '../colyseusClient.ecs';
 import { UIClientEcs } from '../uiClient.ecs';
 import { RenderClientEcs } from '../renderClient.ecs';
 
-import { Player3DEcs } from './player3D.ecs';
+import { Character3DEcs } from './character3D.ecs';
 
 export class PlayerCameraFollowEcs extends ComponentEcs {
 	room: Room<GameState> = null!;
 	input: GameInput = null!;
 	camera: THREE.Camera = null!;
 
-	player3D: Player3DEcs = null!;
+	object3D: THREE.Object3D = null!;
 
 	angleH = 0;
 	angleV = 0;
@@ -51,7 +51,9 @@ export class PlayerCameraFollowEcs extends ComponentEcs {
 
 		const player = this.world.getEntity(this.parent).unwrap('No Player found');
 
-		this.player3D = player.get(Player3DEcs).unwrap('No Player3DEcs found');
+		this.object3D = player
+			.get(Character3DEcs)
+			.unwrap('No Character3DEcs found').object3D;
 
 		this.smoothCamera = this.camera.position.clone();
 	}
@@ -68,7 +70,7 @@ export class PlayerCameraFollowEcs extends ComponentEcs {
 		if (this.angleV > Math.PI / 2) this.angleV = Math.PI / 2;
 		if (this.angleV < 0) this.angleV = 0;
 
-		const obj = this.player3D.object3D;
+		const obj = this.object3D;
 
 		const radius = 5;
 

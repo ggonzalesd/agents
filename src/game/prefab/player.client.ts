@@ -5,7 +5,7 @@ import type { PlayerState } from '#/state/player.state';
 import { MessageRenderEcs } from '../scripts/common/message-render.ecs';
 
 import { ClientAuthoritative } from '../scripts/player/clientAuthoritative.ecs';
-import { Player3DEcs } from '../scripts/player/player3D.ecs';
+import { Character3DEcs } from '../scripts/player/character3D.ecs';
 import { PlayerCameraFollowEcs } from '../scripts/player/playerCameraFollow.ecs';
 import { PlayerClientBehavior } from '../scripts/player/playerClientBehavior.ecs';
 
@@ -17,7 +17,11 @@ export const playerClientFactoryGenerator =
 			components: {
 				[RecordEcs.name]: new RecordEcs({ state }),
 				[ClientAuthoritative.name]: new ClientAuthoritative(),
-				[Player3DEcs.name]: new Player3DEcs(state),
+				[Character3DEcs.name]: new Character3DEcs(
+					state.character,
+					state.movement,
+					state.skin,
+				),
 				[MessageRenderEcs.name]: new MessageRenderEcs(),
 				[PlayerCameraFollowEcs.name]: new PlayerCameraFollowEcs(),
 				[PlayerClientBehavior.name]: new PlayerClientBehavior(),

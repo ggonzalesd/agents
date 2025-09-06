@@ -2,6 +2,8 @@ import { EntityEcs, type WorldEcs } from '#/ecs';
 import type { IVec3 } from '#/utils/math.util';
 
 import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';
+import { MovementServerEcs } from '../scripts/entity/MovementServer.ecs';
+import { NpcServerBehavior } from '../scripts/npc/npcServerBehavior.ecs';
 
 export const npcServerFactoryGenerator =
 	(world: WorldEcs) =>
@@ -11,6 +13,11 @@ export const npcServerFactoryGenerator =
 			world,
 			components: {
 				[CharacterBodyServerEcs.name]: new CharacterBodyServerEcs(pos),
+				[MovementServerEcs.name]: new MovementServerEcs(),
+				[NpcServerBehavior.name]: new NpcServerBehavior({
+					pos,
+					username: name,
+				}),
 			},
 		});
 	};

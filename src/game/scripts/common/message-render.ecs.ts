@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
-import { Player3DEcs } from '../player/player3D.ecs';
+import { Character3DEcs } from '../player/character3D.ecs';
 import { createTextTexture } from '@/utils/text.utils';
 import { RenderClientEcs } from '../renderClient.ecs';
 import { UIClientEcs } from '../uiClient.ecs';
@@ -47,11 +47,11 @@ export class MessageRenderEcs extends ComponentEcs {
 			.getEntity(this.parent)
 			.unwrap('Parent not found!');
 
-		const player3d = parentEntity
-			.get(Player3DEcs)
-			.unwrap('Player3D not found!');
+		const character3D = parentEntity
+			.get(Character3DEcs)
+			.unwrap('Character3D not found!');
 
-		player3d.object3D.add(this.spot);
+		character3D.object3D.add(this.spot);
 
 		this.renderClient = this.world
 			.get(RenderClientEcs)

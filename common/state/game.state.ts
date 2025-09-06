@@ -4,6 +4,7 @@ import { MapSchema, Schema, type } from '@colyseus/schema';
 import { PlayerState } from './player.state';
 import { ItemEntityState } from './inventory.state';
 import { CharacterBodyState } from './character-body.state';
+import { MovementState } from './movement.state';
 
 export class NPCState extends Schema {
 	@type('string')
@@ -11,6 +12,9 @@ export class NPCState extends Schema {
 
 	@type(CharacterBodyState)
 	public character: CharacterBodyState;
+
+	@type(MovementState)
+	public movement: MovementState = new MovementState();
 
 	constructor(pos: IVec3, skin: string) {
 		super();

@@ -37,10 +37,21 @@ export class MainRoom extends Room<GameState> {
 
 		this.playerServerFactory = playerServerFactoryGenerator(this.worldEcs);
 
+		this.roomId = options.id;
+
+		this.autoDispose = false;
+
+		this.setSimulationInterval(this.onUpdate.bind(this), 1000 / 60);
+
+		this.onMessage('client:state', this.onClientState.bind(this));
+		this.onMessage('client:action', this.onClientAction.bind(this));
+		this.onMessage('*', () => {});
+
 		const npcServerFactory = npcServerFactoryGenerator(this.worldEcs);
 
 		// Add some NPCs
-		for (let i = 0; i < 2; i++) {
+		for (let i = 0; i < 10; i++) {
+			console.log('Adding NPC', i);
 			this.worldEcs.addEntity(
 				npcServerFactory({
 					name: `npc_${i}`,
@@ -52,16 +63,6 @@ export class MainRoom extends Room<GameState> {
 				}),
 			);
 		}
-
-		this.roomId = options.id;
-
-		this.autoDispose = false;
-
-		this.setSimulationInterval(this.onUpdate.bind(this), 1000 / 60);
-
-		this.onMessage('client:state', this.onClientState.bind(this));
-		this.onMessage('client:action', this.onClientAction.bind(this));
-		this.onMessage('*', () => {});
 	}
 
 	onClientAction(client: Client, message: any) {

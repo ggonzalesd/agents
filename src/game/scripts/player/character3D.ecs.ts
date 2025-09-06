@@ -8,17 +8,23 @@ import { RenderClientEcs } from '../renderClient.ecs';
 import { ColyseusClientEcs } from '../colyseusClient.ecs';
 import { cloneMesh, loadGLB, loadTexture } from '@/utils/assets.utils';
 import { ClientAuthoritative } from './clientAuthoritative.ecs';
+import type { CharacterBodyState } from '#/state/character-body.state';
+import type { MovementState } from '#/state/movement.state';
 
-export class Player3DEcs extends ComponentEcs {
+export class Character3DEcs extends ComponentEcs {
 	public object3D: THREE.Object3D = new THREE.Object3D();
 
 	private renderClient: RenderClientEcs = null!;
 
 	private actions: Record<'IDLE' | 'WALK', THREE.AnimationAction> = null!;
 	private mixer: THREE.AnimationMixer = null!;
-	private clientAuth: ClientAuthoritative = null!;
+	private clientAuth: ClientAuthoritative | null = null;
 
-	constructor(private state: PlayerState) {
+	constructor(
+		private characterState: CharacterBodyState,
+		private movementState: MovementState,
+		private skin: string,
+	) {
 		super();
 
 		const mesh = new THREE.Mesh(
@@ -37,7 +43,7 @@ export class Player3DEcs extends ComponentEcs {
 		// Skinning /3d/gordon.png with transparency
 		const material = new THREE.MeshStandardMaterial({
 			map: loadTexture(
-				import.meta.env.VITE_API_URL + '/api/v1/skin/' + state.skin + '.png',
+				import.meta.env.VITE_API_URL + '/api/v1/skin/' + this.skin + '.png',
 			),
 		});
 		material.transparent = true;
@@ -85,26 +91,26 @@ export class Player3DEcs extends ComponentEcs {
 		this.callOnDelete(() => this.renderClient.scene.remove(this.object3D));
 
 		// Sync Position
-		proxy(this.state.character.position).onChange(() => {
-			vec3Set(this.object3D.position, this.state.character.position);
+		proxy(this.characterState.position).onChange(() => {
+			vec3Set(this.object3D.position, this.characterState.position);
 		});
 
 		this.clientAuth = this.world
 			.getEntity(this.parent)
 			.map((p) => p.getUnsafe(ClientAuthoritative))
-			.unwrap('No ClientAuthoritative found');
+			.raw();
 	}
 
 	onLoop(_delta: number): void {
 		this.mixer.update(_delta * 0.001);
 
 		this.object3D.quaternion.setFromEuler(
-			new THREE.Euler(0, this.state.character.rotationY, 0),
+			new THREE.Euler(0, this.characterState.rotationY, 0),
 		);
 
 		// TODO: Is Moving from Share State
 		const isMoving =
-			this.clientAuth.state.isMoving || this.state.movement.isMoving;
+			this.clientAuth?.state.isMoving || this.movementState.isMoving;
 		if (isMoving) {
 			this.actions.IDLE.stop();
 			this.actions.WALK.play();

@@ -3,12 +3,8 @@ import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import type { WorldEcs } from '#/ecs/World.ecs';
 import type { NPCState } from '#/state/game.state';
 import { MessageRenderEcs } from '../scripts/common/message-render.ecs';
+import { Character3DEcs } from '../scripts/player/character3D.ecs';
 
-import { ClientAuthoritative } from '../scripts/player/clientAuthoritative.ecs';
-import { Player3DEcs } from '../scripts/player/player3D.ecs';
-import { PlayerCameraFollowEcs } from '../scripts/player/playerCameraFollow.ecs';
-import { PlayerClientBehavior } from '../scripts/player/playerClientBehavior.ecs';
-/*
 export const npcClientFactoryGenerator =
 	(world: WorldEcs) => (name: string, state: NPCState) =>
 		new EntityEcs({
@@ -16,10 +12,11 @@ export const npcClientFactoryGenerator =
 			world,
 			components: {
 				[RecordEcs.name]: new RecordEcs({ state }),
-				[Player3DEcs.name]: new Player3DEcs(state),
+				[Character3DEcs.name]: new Character3DEcs(
+					state.character,
+					state.movement,
+					'user',
+				),
 				[MessageRenderEcs.name]: new MessageRenderEcs(),
-				[PlayerCameraFollowEcs.name]: new PlayerCameraFollowEcs(),
-				[PlayerClientBehavior.name]: new PlayerClientBehavior(),
 			},
 		});
- */
