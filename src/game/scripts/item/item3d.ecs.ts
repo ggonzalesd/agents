@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
-import type { ItemEntityState } from '#/state/game.state';
 import { RenderClientEcs } from '../renderClient.ecs';
 import { ColyseusClientEcs } from '../colyseusClient.ecs';
 import { vec3Set } from '#/utils/math.util';
+import type { ItemEntityState } from '#/state/inventory.state';
 
 export class Item3DEcs extends ComponentEcs {
 	public object3D: THREE.Object3D = new THREE.Object3D();
@@ -36,8 +36,8 @@ export class Item3DEcs extends ComponentEcs {
 			.unwrap('No Connection found');
 
 		// Sync Position
-		proxy(this.state.position).onChange(() => {
-			vec3Set(this.object3D.position, this.state.position);
+		proxy(this.state.character.position).onChange(() => {
+			vec3Set(this.object3D.position, this.state.character.position);
 		});
 
 		// Render Config

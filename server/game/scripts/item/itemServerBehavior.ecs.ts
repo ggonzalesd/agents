@@ -1,5 +1,5 @@
 import { ComponentEcs } from '#/ecs';
-import { ItemEntityState } from '#/state/game.state';
+import { ItemEntityState } from '#/state/inventory.state';
 import { vec3Set, type IVec3 } from '#/utils/math.util';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { ServerDataEcs } from '../serverData.ecs';
@@ -32,6 +32,6 @@ export class ItemServerBehavior extends ComponentEcs {
 	}
 
 	onLoop(_delta: number): void {
-		vec3Set(this.state.position, this.character.body.translation());
+		vec3Set(this.state.character.position, this.character.body.translation());
 	}
 }

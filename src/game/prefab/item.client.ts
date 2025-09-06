@@ -1,7 +1,8 @@
 import { EntityEcs } from '#/ecs/Entity.ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import type { WorldEcs } from '#/ecs/World.ecs';
-import type { ItemEntityState } from '#/state/game.state';
+import type { ItemEntityState } from '#/state/inventory.state';
+
 import { Item3DEcs } from '../scripts/item/item3d.ecs';
 
 export const itemClientFactoryGenerator =
