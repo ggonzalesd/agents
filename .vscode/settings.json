@@ -1,0 +1,19 @@
+{
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.fontLigatures": true,
+	"editor.formatOnSave": true,
+	"editor.tabSize": 2,
+	"editor.insertSpaces": false,
+	"editor.renderWhitespace": "all",
+	"editor.unicodeHighlight.invisibleCharacters": true,
+	"editor.unicodeHighlight.ambiguousCharacters": true,
+	"editor.unicodeHighlight.nonBasicASCII": true,
+	"editor.guides.bracketPairs": true,
+	"editor.guides.bracketPairsHorizontal": true,
+	"editor.bracketPairColorization.enabled": true,
+	"prettier.configPath": ".prettierrc",
+	"indentRainbow.colors": ["rgba(255,64,92,0.05)", "rgba(0,205,255,0.05)"],
+	"[prisma]": {
+		"editor.defaultFormatter": "Prisma.prisma"
+	}
+}
