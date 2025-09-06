@@ -4,11 +4,13 @@ import { vec3Set, type IVec2, type IVec3 } from '#/utils/math.util';
 
 import { ServerDataEcs } from '../serverData.ecs';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
+import type { MovementServerEcs } from '../entity/MovementServer.ecs';
 
 export class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
 
 	public character: CharacterBodyServerEcs = null!;
+	public movement: MovementServerEcs = null!;
 	public serverData: ServerDataEcs = null!;
 
 	constructor({ pos, username }: { pos: IVec3; username: string }) {
@@ -59,7 +61,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 
 		switch (message.type) {
 			case 'jump':
-				this.character.isJumping = true;
+				this.movement.isJumping = true;
 				break;
 			case 'message':
 				// TODO:
@@ -81,7 +83,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 			message.isMoving != null &&
 			typeof message.isMoving === 'boolean'
 		) {
-			this.character.isMoving = message.isMoving;
+			this.movement.isMoving = message.isMoving;
 			this.state.character.isMoving = message.isMoving;
 		}
 
@@ -95,7 +97,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 				x: Math.cos(angle),
 				y: -Math.sin(angle),
 			};
-			this.character.clientDirection = direction;
+			this.movement.clientDirection = direction;
 			this.state.character.rotationY = angle;
 		}
 	}

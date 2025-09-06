@@ -2,6 +2,7 @@ import { EntityEcs, type WorldEcs } from '#/ecs';
 import { type IVec3 } from '#/utils/math.util';
 
 import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';
+import { MovementServerEcs } from '../scripts/entity/MovementServer.ecs';
 import { PlayerServerBehavior } from '../scripts/player/playerServerBehavior.ecs';
 
 export const playerServerFactoryGenerator =
@@ -12,6 +13,7 @@ export const playerServerFactoryGenerator =
 			world,
 			components: {
 				[CharacterBodyServerEcs.name]: new CharacterBodyServerEcs(pos),
+				[MovementServerEcs.name]: new MovementServerEcs(),
 				[PlayerServerBehavior.name]: new PlayerServerBehavior({
 					pos,
 					username,
