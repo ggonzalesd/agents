@@ -5,7 +5,7 @@ export class GameInput {
 
 	private keyMap: Map<string, number> = new Map();
 	private prevent: boolean = true;
-	public disabled: boolean = false;
+	public disabled: boolean = true;
 	private contextMenu: boolean = false;
 
 	public moveX: number = 0;
@@ -15,6 +15,7 @@ export class GameInput {
 		this.setup = this.setup.bind(this);
 		this.onKeyDown = this.onKeyDown.bind(this);
 		this.setup = this.setup.bind(this);
+		this.onContextMenu = this.onContextMenu.bind(this);
 
 		this.setup();
 	}
@@ -38,14 +39,6 @@ export class GameInput {
 				this.moveY = 0;
 			}
 		});
-
-		/* document.addEventListener('mouseup', (e) => {
-			document.exitPointerLock();
-			if (e.button !== 2) return;
-
-			this.moveX = 0;
-			this.moveY = 0;
-		}); */
 
 		document.addEventListener('mousemove', (e) => {
 			if (document.pointerLockElement !== document.body) return;

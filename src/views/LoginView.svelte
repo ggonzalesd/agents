@@ -7,7 +7,7 @@
 	import { loginRequestSchema } from '#/schema/auth.schema';
 
 	import InputText from '@/components/InputText.svelte';
-	import Button from '@/components/Button.svelte';
+	import Button from '@/components/ui/Button.svelte';
 
 	import emailSvgContent from '@/assets/icons/email.svg?raw';
 	import passwordSvgContent from '@/assets/icons/password.svg?raw';
@@ -35,6 +35,8 @@
 
 	onMount(() => {
 		gameInputContext.disabled = true;
+
+		if (localStorage.getItem('token') == null) return;
 
 		profileService().then((data) => {
 			if (!data.ok) return;
@@ -79,39 +81,46 @@
 	{/if}
 {/snippet}
 
-<form class="flex flex-col gap-2" onsubmit={onSubmit}>
-	<InputText
-		disabled={loading}
-		name="username"
-		placeholder="Email"
-		iconSvgContent={emailSvgContent}
-		onchange={(value) => (data.username = value)}
-		color={errors?.username ? 'error' : 'default'}
-	/>
-	{@render renderErrors(errors?.username?.errors)}
+<div data-login class="absolute flex size-full bg-cover bg-right bg-no-repeat">
+	<form
+		class="absolute right-0 z-20 flex h-full w-full max-w-xl flex-col justify-center gap-2 p-12 backdrop-blur-3xl md:p-24"
+		onsubmit={onSubmit}
+	>
+		<InputText
+			disabled={loading}
+			name="username"
+			placeholder="Email"
+			iconSvgContent={emailSvgContent}
+			onchange={(value) => (data.username = value)}
+			color={errors?.username ? 'error' : 'default'}
+		/>
+		{@render renderErrors(errors?.username?.errors)}
 
-	<InputText
-		disabled={loading}
-		name="password"
-		placeholder="Password"
-		iconSvgContent={passwordSvgContent}
-		type="password"
-		color={errors?.password ? 'error' : 'default'}
-		onchange={(value) => (data.password = value)}
-	/>
-	{@render renderErrors(errors?.password?.errors)}
+		<InputText
+			disabled={loading}
+			name="password"
+			placeholder="Password"
+			iconSvgContent={passwordSvgContent}
+			type="password"
+			color={errors?.password ? 'error' : 'default'}
+			onchange={(value) => (data.password = value)}
+		/>
+		{@render renderErrors(errors?.password?.errors)}
 
-	<Button
-		disabled={loading}
-		type="submit"
-		color="success"
-		iconSvgContent={lockSvgContent}
-		label="Submit"
-	/>
+		<Button type="submit" disabled={loading} svgContent={lockSvgContent}>
+			Submit
+		</Button>
 
-	{#if errorMessage}
-		<div class="text-red-500">
-			<p class="text-xs text-red-500">* {errorMessage}</p>
-		</div>
-	{/if}
-</form>
+		{#if errorMessage}
+			<div class="text-red-500">
+				<p class="text-xs text-red-500">* {errorMessage}</p>
+			</div>
+		{/if}
+	</form>
+</div>
+
+<style>
+	div[data-login] {
+		background-image: url('/background-login.png');
+	}
+</style>

@@ -1,1 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Zen+Dots&display=swap');
+
 @import "tailwindcss";
+
+@theme {
+	--font-space-mono: 'Space Mono', monospace;
+	--font-zen-dots: 'Zen Dots', cursive;
+
+	--color-azul-50: #e6f1ff;
+	--color-azul-100: #b0d3ff;
+	--color-azul-200: #8abeff;
+	--color-azul-300: #54a1ff;
+	--color-azul-400: #338eff;
+	--color-azul-500: #0072ff;
+	--color-azul-600: #0068e8;
+	--color-azul-700: #0051b5;
+	--color-azul-800: #003f8c;
+	--color-azul-900: #00306b;
+
+	--color-magenta-50: #f0ecfd;
+	--color-magenta-100: #d1c3fa;
+	--color-magenta-200: #bba7f8;
+	--color-magenta-300: #9d7ef4;
+	--color-magenta-400: #8965f2;
+	--color-magenta-500: #6c3fef;
+	--color-magenta-600: #6239d9;
+	--color-magenta-700: #4b2daa;
+	--color-magenta-800: #3b2383;
+	--color-magenta-900: #2d1a64;
+
+	--color-gris-50: #f1f1f1;
+	--color-gris-100: #d3d3d3;
+	--color-gris-200: #bdbdbd;
+	--color-gris-300: #9f9f9f;
+	--color-gris-400: #8d8d8d;
+	--color-gris-500: #707070;
+	--color-gris-600: #666666;
+	--color-gris-700: #505050;
+	--color-gris-800: #3e3e3e;
+	--color-gris-900: #2f2f2f;
+}

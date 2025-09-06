@@ -4,7 +4,7 @@ import { vec3Set, type IVec2, type IVec3 } from '#/utils/math.util';
 
 import { ServerDataEcs } from '../serverData.ecs';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
-import type { MovementServerEcs } from '../entity/MovementServer.ecs';
+import { MovementServerEcs } from '../entity/MovementServer.ecs';
 
 export class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
@@ -37,10 +37,13 @@ export class PlayerServerBehavior extends ComponentEcs {
 			gameState.players.delete(parent.name);
 		});
 
-		this.character = this.world
-			.getEntity(this.parent)
-			.map((p) => p.getUnsafe(CharacterBodyServerEcs))
+		this.character = parent
+			.get(CharacterBodyServerEcs)
 			.unwrap('CharacterBodyServerEcs not found');
+
+		this.movement = parent
+			.get(MovementServerEcs)
+			.unwrap('MovementServerEcs not found');
 	}
 
 	onLoop(_delta: number): void {

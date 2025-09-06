@@ -35,7 +35,8 @@ export class MovementServerEcs extends ComponentEcs {
 			.unwrap('RAPIER World not found');
 
 		this.character = this.world
-			.get(CharacterBodyServerEcs)
+			.getEntity(this.parent)
+			.map((p) => p.getUnsafe(CharacterBodyServerEcs))
 			.unwrap('CharacterBodyServerEcs not found');
 	}
 
