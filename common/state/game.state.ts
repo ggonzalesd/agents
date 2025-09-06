@@ -1,22 +1,11 @@
 import type { IVec3 } from '#/utils/math.util';
 import { MapSchema, Schema, type } from '@colyseus/schema';
+
 import { CharacterState } from './character.state';
 import { AgentState } from './agent.state';
+import { PlayerState } from './player.state';
 
 export class NPCState extends Schema {
-	@type(CharacterState)
-	public character: CharacterState;
-
-	constructor(pos: IVec3, skin: string) {
-		super();
-		this.character = new CharacterState(pos, skin);
-	}
-}
-
-export class PlayerState extends Schema {
-	@type('float32')
-	public life: number = 100;
-
 	@type(CharacterState)
 	public character: CharacterState;
 

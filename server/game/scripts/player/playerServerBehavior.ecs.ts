@@ -1,6 +1,6 @@
 import { ComponentEcs } from '#/ecs';
-import { PlayerState } from '#/state/game.state';
 import { vec3Set, type IVec2, type IVec3 } from '#/utils/math.util';
+import { PlayerState } from '#/state/player.state';
 
 import { ServerDataEcs } from '../serverData.ecs';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
@@ -16,7 +16,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 	constructor({ pos, username }: { pos: IVec3; username: string }) {
 		super();
 
-		this.state = new PlayerState(pos, username);
+		this.state = new PlayerState({ pos, skin: username });
 
 		this.onClientState = this.onClientState.bind(this);
 		this.onClientActions = this.onClientActions.bind(this);
@@ -44,6 +44,8 @@ export class PlayerServerBehavior extends ComponentEcs {
 		this.movement = parent
 			.get(MovementServerEcs)
 			.unwrap('MovementServerEcs not found');
+
+		this.movement.movementState = this.state.movement;
 	}
 
 	onLoop(_delta: number): void {
@@ -64,7 +66,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 
 		switch (message.type) {
 			case 'jump':
-				this.movement.isJumping = true;
+				this.movement.movementState.isJumping = true;
 				break;
 			case 'message':
 				// TODO:
@@ -86,8 +88,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 			message.isMoving != null &&
 			typeof message.isMoving === 'boolean'
 		) {
-			this.movement.isMoving = message.isMoving;
-			this.state.character.isMoving = message.isMoving;
+			this.movement.movementState.isMoving = message.isMoving;
 		}
 
 		if (

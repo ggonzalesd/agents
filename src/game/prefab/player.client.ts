@@ -1,7 +1,7 @@
 import { EntityEcs } from '#/ecs/Entity.ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import type { WorldEcs } from '#/ecs/World.ecs';
-import type { PlayerState } from '#/state/game.state';
+import type { PlayerState } from '#/state/player.state';
 import { MessageRenderEcs } from '../scripts/common/message-render.ecs';
 
 import { ClientAuthoritative } from '../scripts/player/clientAuthoritative.ecs';

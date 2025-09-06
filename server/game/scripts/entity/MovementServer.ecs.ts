@@ -13,6 +13,8 @@ import {
 	type IVec3,
 } from '#/utils/math.util';
 
+import { MovementState } from '#/state/movement.state';
+
 import { vec3ToRapier } from '$/utils/math.utils';
 
 import { ServerDataEcs } from '../serverData.ecs';
@@ -23,10 +25,9 @@ export class MovementServerEcs extends ComponentEcs {
 	physic: RAPIER.World = null!;
 	character: CharacterBodyServerEcs = null!;
 
-	public isMoving = false;
-	public isJumping = false;
 	public direction: IVec3 = { x: 0, y: 0, z: 0 };
 	public clientDirection: IVec2 = { x: 0, y: 0 };
+	public movementState: MovementState = new MovementState();
 
 	onStart(): void {
 		this.physic = this.world
@@ -56,7 +57,7 @@ export class MovementServerEcs extends ComponentEcs {
 
 		const vel = this.character.body.linvel();
 
-		if (this.isMoving) {
+		if (this.movementState.isMoving) {
 			const speed = isGround ? 6 : 3;
 
 			const newVel = vec3Add(vec3Scale(this.direction, speed), vec3Up(vel.y));
@@ -66,8 +67,8 @@ export class MovementServerEcs extends ComponentEcs {
 			this.character.body.applyImpulse(vec3ToRapier(newVel), true);
 		}
 
-		if (this.isJumping && isGround) {
-			this.isJumping = false;
+		if (this.movementState.isJumping && isGround) {
+			this.movementState.isJumping = false;
 			this.character.body.applyImpulse(vec3ToRapier(vec3Up(10)), true);
 		}
 	}

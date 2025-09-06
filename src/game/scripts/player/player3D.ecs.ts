@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
-import type { PlayerState } from '#/state/game.state';
 import { vec3Set } from '#/utils/math.util';
 
+import type { PlayerState } from '#/state/player.state';
 import { RenderClientEcs } from '../renderClient.ecs';
 import { ColyseusClientEcs } from '../colyseusClient.ecs';
 import { cloneMesh, loadGLB, loadTexture } from '@/utils/assets.utils';
@@ -37,10 +37,7 @@ export class Player3DEcs extends ComponentEcs {
 		// Skinning /3d/gordon.png with transparency
 		const material = new THREE.MeshStandardMaterial({
 			map: loadTexture(
-				import.meta.env.VITE_API_URL +
-					'/api/v1/skin/' +
-					state.character.skin +
-					'.png',
+				import.meta.env.VITE_API_URL + '/api/v1/skin/' + state.skin + '.png',
 			),
 		});
 		material.transparent = true;
@@ -107,7 +104,7 @@ export class Player3DEcs extends ComponentEcs {
 
 		// TODO: Is Moving from Share State
 		const isMoving =
-			this.clientAuth.state.isMoving || this.state.character.isMoving;
+			this.clientAuth.state.isMoving || this.state.movement.isMoving;
 		if (isMoving) {
 			this.actions.IDLE.stop();
 			this.actions.WALK.play();
