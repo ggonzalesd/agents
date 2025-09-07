@@ -4,12 +4,14 @@ import { PlayerState } from '#/state/player.state';
 
 import { ServerDataEcs } from '../serverData.ecs';
 import { MovementServerEcs } from '../entity/MovementServer.ecs';
+import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
 
 export class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
 
 	public movement: MovementServerEcs = null!;
 	public serverData: ServerDataEcs = null!;
+	public inventory: InventoryServerEcs = null!;
 
 	constructor({ state }: { state: PlayerState }) {
 		super();
@@ -28,6 +30,10 @@ export class PlayerServerBehavior extends ComponentEcs {
 		const gameState = this.serverData.state;
 
 		const parent = this.world.getEntity(this.parent).unwrap('Parent not found');
+
+		this.inventory = parent
+			.get(InventoryServerEcs)
+			.unwrap('InventoryServerEcs not found');
 
 		gameState.players.set(parent.name, this.state);
 
@@ -59,6 +65,15 @@ export class PlayerServerBehavior extends ComponentEcs {
 		switch (message.type) {
 			case 'jump':
 				this.movement.movementState.isJumping = true;
+				break;
+			case 'pick':
+				const itemId =
+					((message as any)?.itemParent as string | undefined) ?? '';
+				const newId = this.inventory.getAvailableSlot();
+
+				if (itemId && newId != null) {
+					this.inventory.pickItemEntity(itemId, newId);
+				}
 				break;
 			case 'message':
 				// TODO:

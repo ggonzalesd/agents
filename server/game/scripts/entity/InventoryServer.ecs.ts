@@ -115,4 +115,11 @@ export class InventoryServerEcs extends ComponentEcs {
 
 		this.world.deleteEntity(itemEntity);
 	}
+
+	public getAvailableSlot(): number | null {
+		for (let i = 0; i < this.inventoryState.capacity; i++) {
+			if (this.isIdFree(i)) return i;
+		}
+		return null;
+	}
 }

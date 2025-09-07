@@ -4,6 +4,7 @@ import type { IVec3 } from '#/utils/math.util';
 
 import { CharacterBodyState } from './character-body.state';
 import { MovementState } from './movement.state';
+import { InventoryState } from './inventory.state';
 
 export class PlayerState extends Schema {
 	@type('string')
@@ -14,6 +15,9 @@ export class PlayerState extends Schema {
 
 	@type(MovementState)
 	public movement: MovementState = new MovementState();
+
+	@type(InventoryState)
+	public inventory: InventoryState = new InventoryState();
 
 	constructor({ pos, skin }: { pos: IVec3; skin?: string }) {
 		super();

@@ -20,12 +20,14 @@ export class ServerManagerEcs extends ComponentEcs {
 
 		// Random Object
 
-		const item = itemServerFactory({
-			world: this.world,
-			name: 'item1_' + Math.random().toString(36).substring(7),
-			pos: { x: 0, y: 5, z: 0 },
-		});
-		this.world.addEntity(item);
+		for (let i = 0; i < 10; i++) {
+			const item = itemServerFactory({
+				world: this.world,
+				name: 'item1_' + Math.random().toString(36).substring(7),
+				pos: { x: 0, y: 5, z: Math.random() * 10 - 5 },
+			});
+			this.world.addEntity(item);
+		}
 
 		this.callOnDelete(() => {
 			physics.removeCollider(collider, true);

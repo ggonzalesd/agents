@@ -8,11 +8,12 @@ import type { ItemEntityState } from '#/state/inventory.state';
 
 export class Item3DEcs extends ComponentEcs {
 	public object3D: THREE.Object3D = new THREE.Object3D();
+	public mesh: THREE.Mesh;
 
 	constructor(private state: ItemEntityState) {
 		super();
 
-		const mesh = new THREE.Mesh(
+		this.mesh = new THREE.Mesh(
 			new THREE.BoxGeometry(0.5, 0.5, 0.5),
 			new THREE.MeshBasicMaterial({
 				color: Math.random() * 0xffffff,
@@ -20,10 +21,16 @@ export class Item3DEcs extends ComponentEcs {
 			}),
 		);
 
-		this.object3D.add(mesh);
+		this.object3D.add(this.mesh);
 	}
 
 	onStart(): void {
+		this.mesh.userData = {
+			canInteract: true,
+			isItem: true,
+			parent: this.parent,
+		};
+
 		const renderClient = this.world
 			.get(RenderClientEcs)
 			.unwrap('No RenderClientEcs found');

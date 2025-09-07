@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
+import { Option } from '#/utils/Option';
+import { UIClientEcs } from './uiClient.ecs';
 
 export class RenderClientEcs extends ComponentEcs {
 	public scene: THREE.Scene;
@@ -9,6 +11,8 @@ export class RenderClientEcs extends ComponentEcs {
 
 	private raycaster = new THREE.Raycaster();
 	private mouse = new THREE.Vector2();
+
+	private uiClientOp: Option<UIClientEcs> = Option.none();
 
 	constructor(public canvas: HTMLCanvasElement) {
 		super();
@@ -72,6 +76,8 @@ export class RenderClientEcs extends ComponentEcs {
 	}
 
 	onStart(): void {
+		this.uiClientOp = this.world.get(UIClientEcs);
+
 		window.addEventListener(
 			'click',
 			((event: PointerEvent) => {
@@ -85,9 +91,16 @@ export class RenderClientEcs extends ComponentEcs {
 					true,
 				);
 
-				if (intersects.length == 0) return;
+				for (const intersect of intersects) {
+					const userData = intersect?.object?.userData;
+					if (userData == null) continue;
+					if (!userData.canInteract) continue;
 
-				console.log(intersects[0].object);
+					if (userData.isItem) {
+						this.world.stacker.stackLoss('item-interact', userData.parent);
+						break;
+					}
+				}
 			}).bind(this),
 		);
 	}

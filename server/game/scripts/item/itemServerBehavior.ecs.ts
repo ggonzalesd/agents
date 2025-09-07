@@ -25,5 +25,9 @@ export class ItemServerBehavior extends ComponentEcs {
 		const parent = this.world.getEntity(this.parent).unwrap('Parent not found');
 
 		serverData.state.items.set(parent.name, this.state);
+
+		this.callOnDelete(() => {
+			serverData.state.items.delete(parent.name);
+		});
 	}
 }

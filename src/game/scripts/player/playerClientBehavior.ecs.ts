@@ -80,6 +80,13 @@ export class PlayerClientBehavior extends ComponentEcs {
 
 		const angle = Math.atan2(axis.y, axis.x) - cameraAngle;
 
+		this.world.stacker.dispatch(
+			'item-interact',
+			((itemParent: string) => {
+				this.room.send('client:action', { type: 'pick', itemParent });
+			}).bind(this),
+		);
+
 		this.clientAuthoritative.update({
 			isMoving,
 			...(isMoving ? { direction: angle } : {}),
