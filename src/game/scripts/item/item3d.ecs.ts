@@ -43,7 +43,9 @@ export class Item3DEcs extends ComponentEcs {
 		// Render Config
 		renderClient.scene.add(this.object3D);
 		this.callOnDelete(() => renderClient.scene.remove(this.object3D));
+	}
 
-		console.log('Item3DEcs started', this.state);
+	onLoop(_delta: number): void {
+		vec3Set(this.object3D.position, this.state.character.position);
 	}
 }

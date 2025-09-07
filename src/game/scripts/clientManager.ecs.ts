@@ -61,8 +61,6 @@ export class ClientManagerEcs extends ComponentEcs {
 		proxy(room.state).npcs.onAdd((state, index) => {
 			const npc = this.npcClientFactory(index, state);
 			this.world.addEntity(npc);
-
-			console.log('NPC added', state);
 		});
 
 		room.onMessage('message', (message) => {

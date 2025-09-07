@@ -40,7 +40,6 @@ export const cloneMesh = <T extends string>(
 	animations.forEach((name, index) => {
 		const clip = glb.animations[index]!;
 		actions[name] = mixer.clipAction(clip);
-		console.log(name, ' Loaded for ', clip.name);
 	});
 
 	return {

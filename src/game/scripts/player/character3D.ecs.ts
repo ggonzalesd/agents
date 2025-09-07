@@ -55,8 +55,6 @@ export class Character3DEcs extends ComponentEcs {
 				['IDLE', 'WALK'],
 			);
 
-			console.log(actions);
-
 			this.actions = actions;
 			this.mixer = mixer;
 
@@ -90,11 +88,6 @@ export class Character3DEcs extends ComponentEcs {
 		this.renderClient.scene.add(this.object3D);
 		this.callOnDelete(() => this.renderClient.scene.remove(this.object3D));
 
-		// Sync Position
-		proxy(this.characterState.position).onChange(() => {
-			vec3Set(this.object3D.position, this.characterState.position);
-		});
-
 		this.clientAuth = this.world
 			.getEntity(this.parent)
 			.map((p) => p.getUnsafe(ClientAuthoritative))
@@ -103,6 +96,8 @@ export class Character3DEcs extends ComponentEcs {
 
 	onLoop(_delta: number): void {
 		this.mixer.update(_delta * 0.001);
+
+		vec3Set(this.object3D.position, this.characterState.position);
 
 		this.object3D.quaternion.setFromEuler(
 			new THREE.Euler(0, this.characterState.rotationY, 0),

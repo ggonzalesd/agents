@@ -54,7 +54,7 @@ export class MainRoom extends Room<GameState> {
 			console.log('Adding NPC', i);
 			this.worldEcs.addEntity(
 				npcServerFactory({
-					name: `npc_${i}`,
+					name: `npc_${i}_` + Math.random().toString(36).substring(7),
 					pos: {
 						x: (Math.random() - 0.5) * 20,
 						y: 5,

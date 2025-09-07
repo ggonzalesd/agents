@@ -22,7 +22,7 @@ export class ServerManagerEcs extends ComponentEcs {
 
 		const item = itemServerFactory({
 			world: this.world,
-			name: 'item1',
+			name: 'item1_' + Math.random().toString(36).substring(7),
 			pos: { x: 0, y: 5, z: 0 },
 		});
 		this.world.addEntity(item);

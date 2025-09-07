@@ -9,6 +9,7 @@ export class WorldEcs extends BaseEcs {
 	public stacker: Stacker<string, any> = new Stacker();
 
 	private __deferDelete: Set<EntityEcs> = new Set();
+	private __deferAdd: Set<EntityEcs> = new Set();
 
 	constructor(components: Record<string, ComponentEcs> = {}) {
 		super();
@@ -40,8 +41,9 @@ export class WorldEcs extends BaseEcs {
 	}
 
 	addEntity(entity: EntityEcs) {
-		this.entities.set(entity.name, entity);
-		entity.onStart();
+		entity.world = this;
+
+		this.__deferAdd.add(entity);
 	}
 
 	deleteEntityById(id: string) {
@@ -59,6 +61,14 @@ export class WorldEcs extends BaseEcs {
 	}
 
 	onUpdate(delta: number) {
+		for (const entity of this.__deferAdd) {
+			this.entities.set(entity.name, entity);
+			entity.onStart();
+		}
+		if (this.__deferAdd.size > 0) {
+			this.__deferAdd.clear();
+		}
+
 		this.update(delta);
 
 		for (const entity of this.entities.values()) {

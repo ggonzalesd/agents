@@ -22,10 +22,8 @@ export class ItemServerBehavior extends ComponentEcs {
 			.map((p) => p.getUnsafe<CharacterBodyServerEcs>(CharacterBodyServerEcs))
 			.unwrap('CharacterBodyServerEcs not found');
 
-		const gameState = serverData.state;
-
 		const parent = this.world.getEntity(this.parent).unwrap('Parent not found');
 
-		gameState.items.set(parent.name, this.state);
+		serverData.state.items.set(parent.name, this.state);
 	}
 }
