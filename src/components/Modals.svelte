@@ -4,6 +4,7 @@
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
 	import PauseModal from './modals/PauseModal.svelte';
 	import MessageModal from './modals/MessageModal.svelte';
+	import InventoryModal from './modals/InventoryModal.svelte';
 
 	let gameState = getGameStateContext();
 </script>
@@ -16,6 +17,8 @@
 			<PauseModal />
 		{:else if $gameState.view === 'MESSAGE'}
 			<MessageModal />
+		{:else if $gameState.view === 'INVENTORY'}
+			<InventoryModal />
 		{/if}
 	</div>
 {/if}

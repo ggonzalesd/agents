@@ -10,7 +10,7 @@ export class RecordEcs extends ComponentEcs {
 		this.data = initialData;
 	}
 
-	get<T>(key: string): Option<T> {
+	getRecord<T>(key: string): Option<T> {
 		return Option.of(this.data[key] as T);
 	}
 }

@@ -5,7 +5,7 @@ import { Publisher } from '#/utils/Publisher';
 
 type GameType = {
 	paused: boolean;
-	view: 'MENU' | 'MESSAGE' | 'INFO';
+	view: 'MENU' | 'MESSAGE' | 'INFO' | 'INVENTORY';
 	username: string;
 };
 

@@ -65,6 +65,11 @@ export class PlayerClientBehavior extends ComponentEcs {
 			this.input.disabled = true;
 		}
 
+		if (this.input.down('KeyE')) {
+			this.uiClient.game.setPause(true, 'INVENTORY');
+			this.input.disabled = true;
+		}
+
 		if (this.input.down('Space') && this.room.connection.isOpen) {
 			this.room.send('client:action', { type: 'jump' });
 		}
