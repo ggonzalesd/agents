@@ -5,8 +5,9 @@ import sql from '$/config/db.config';
 
 import { getUserByUsername, revokeUserHash } from '$/db/user.db';
 import type { AuthPayload } from '$/models/Payload.model';
-import { signToken } from '$/services/jwt.service';
 import { getAuth } from '$/utils/req.utils';
+import { signToken } from '$/services/jwt.service';
+import { createUserService } from '$/services/auth.service';
 
 import type {
 	loginRequestSchema,
@@ -26,7 +27,7 @@ export const authLoginController = async (req: Request, res: Response) => {
 		HttpError.unauthorized('Invalid username or password'),
 	);
 
-	const isPasswordValid = await bcrypt.compare(password, user.password);
+	const isPasswordValid = bcrypt.compareSync(password, user.password);
 	if (!isPasswordValid) {
 		throw HttpError.unauthorized('Invalid username or password');
 	}
@@ -61,28 +62,14 @@ export const authLoginController = async (req: Request, res: Response) => {
 };
 
 export const authRegisterController = async (req: Request, res: Response) => {
-	const {
-		display,
-		password: _pass,
-		username,
-	} = req.body as ReturnType<typeof registerRequestSchema.parse>;
+	const payload = req.body as ReturnType<typeof registerRequestSchema.parse>;
 
-	const result = await sql.begin(async (sql) => {
-		const users = await getUserByUsername(username, sql);
-
-		if (users.isSome())
-			throw HttpError.badRequest(`Username '${username}' is already taken`);
-
-		const password = bcrypt.hashSync(_pass, 10);
-
-		const result =
-			await sql`INSERT INTO "User" ("display", "password", "username") VALUES (${display}, ${password}, ${username}) RETURNING *`;
-
-		return result;
+	const newUser = await createUserService(payload, {
+		role: 'USER',
 	});
 
 	res.status(201).json(
-		jsonResponse.ok(result, {
+		jsonResponse.ok(newUser, {
 			message: 'User registered successfully',
 			status: 201,
 		}),

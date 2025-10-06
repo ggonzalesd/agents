@@ -8,6 +8,8 @@ const schema = z
 
 		CORS_ORIGINS: z.string().default('http://localhost:5173'),
 
+		ADMIN_PASSWORD: z.string().min(8).max(100),
+
 		CLIENT_URL: z.string(),
 
 		DB_PROTOCOL: z.string().default('postgres'),

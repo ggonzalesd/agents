@@ -1,4 +1,4 @@
-@host=https://game.quorilabs.com/api/v1
+@host=http://localhost:3000
 
 ### HEALTH
 GET {{host}}/auth HTTP/1.1

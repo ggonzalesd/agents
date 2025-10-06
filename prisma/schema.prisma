@@ -70,3 +70,12 @@ model Profile {
 
   @@id([aliveId, userId])
 }
+
+model LongTermMemory {
+  id        String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  text      String                     @db.Text
+  model     String                     @db.VarChar(255)
+  metadata  Json                       @db.JsonB
+  embedding Unsupported("vector(256)")
+  createdAt DateTime                   @default(now()) @db.Timestamp(6)
+}

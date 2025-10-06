@@ -26,6 +26,31 @@ export const getUserByUsername = async (
 	return Option.some(user);
 };
 
+export const createUser = async (
+	{
+		username,
+		password,
+		display,
+		role,
+	}: {
+		username: string;
+		password: string;
+		display?: string;
+		role?: 'USER' | 'ADMIN' | 'MODERATOR';
+	},
+	__sql?: Sql,
+) => {
+	const sql = __sql ?? _sql;
+
+	const hashedPassword = bcrypt.hashSync(password, 10);
+
+	const result = await sql<
+		UserDB[]
+	>`INSERT INTO "User" ("display", "password", "username", "role") VALUES (${display || null}, ${hashedPassword}, ${username}, ${role || 'USER'}) RETURNING *`;
+
+	return Option.of(result[0]);
+};
+
 export const revokeUserHash = async (
 	id: string,
 	withPassword?: string | undefined,
