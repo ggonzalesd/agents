@@ -15,5 +15,8 @@
 	"indentRainbow.colors": ["rgba(255,64,92,0.05)", "rgba(0,205,255,0.05)"],
 	"[prisma]": {
 		"editor.defaultFormatter": "Prisma.prisma"
+	},
+	"[svelte]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
 	}
 }
