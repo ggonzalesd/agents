@@ -6,13 +6,30 @@
 	import MessageModal from './modals/MessageModal.svelte';
 	import InventoryModal from './modals/InventoryModal.svelte';
 	import OnLeaveModal from './modals/OnLeaveModal.svelte';
+	import { getContext } from 'svelte';
+	import { GameInput } from '@/utils/input.utils';
 
 	let gameState = getGameStateContext();
+	let inputs = getContext<GameInput>(GameInput.name);
+
+	const onClick = (e: MouseEvent) => {
+		e.stopPropagation();
+		e.preventDefault();
+
+		if (e.target !== e.currentTarget) return;
+
+		gameState.continueGame();
+		inputs.disabled = false;
+	};
 </script>
 
 {#if $gameState.paused}
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_interactive_supports_focus -->
 	<div
 		class="absolute top-0 left-0 z-10 flex size-full items-center justify-center bg-black/75 transition-colors starting:bg-transparent"
+		role="button"
+		onclick={onClick}
 	>
 		{#if $gameState.view === 'MENU'}
 			<PauseModal />

@@ -33,9 +33,18 @@ export const useGameState = () => {
 		});
 	};
 
+	const continueGame = () => {
+		update((state) => {
+			const newValue = { ...state, paused: false };
+			publisher.publish('game:continue', newValue);
+			return newValue;
+		});
+	};
+
 	return {
 		subscribe,
 		setPause,
+		continueGame,
 		setUsername,
 		publisher: { subscribe: publisher.subscribe },
 	};

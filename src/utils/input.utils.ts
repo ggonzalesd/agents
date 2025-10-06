@@ -11,6 +11,12 @@ export class GameInput {
 	public moveX: number = 0;
 	public moveY: number = 0;
 
+	private lastX: number = 0;
+	private lastY: number = 0;
+
+	public yaw: number = 0;
+	public pitch: number = 0;
+
 	constructor() {
 		this.setup = this.setup.bind(this);
 		this.onKeyDown = this.onKeyDown.bind(this);
@@ -43,8 +49,21 @@ export class GameInput {
 		document.addEventListener('mousemove', (e) => {
 			if (document.pointerLockElement !== document.body) return;
 
-			this.moveX = e.movementX;
-			this.moveY = e.movementY;
+			this.yaw -= e.movementX * 0.002;
+			this.pitch += e.movementY * 0.002;
+
+			this.pitch = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, this.pitch));
+
+			this.lastX = this.moveX;
+			this.lastY = this.moveY;
+
+			this.moveX = e.movementX * 0.75 + this.lastX * 0.25;
+			this.moveY = e.movementY * 0.75 + this.lastY * 0.25;
+
+			setTimeout(() => {
+				this.moveX = 0;
+				this.moveY = 0;
+			}, 0);
 		});
 
 		const umount = () => {

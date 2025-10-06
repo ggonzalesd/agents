@@ -21,9 +21,6 @@ export class PlayerCameraFollowEcs extends ComponentEcs {
 
 	object3D: THREE.Object3D = null!;
 
-	angleH = 0;
-	angleV = 0;
-
 	smoothCamera = new THREE.Vector3();
 	smoothCube = new THREE.Vector3();
 
@@ -61,23 +58,14 @@ export class PlayerCameraFollowEcs extends ComponentEcs {
 	onLoop(_delta: number): void {
 		if (this.room.sessionId !== this.parent) return;
 
-		this.angleH += (this.input.moveX * Math.PI) / 180;
-		this.angleV += (this.input.moveY * Math.PI) / 180;
-
-		if (this.angleH > Math.PI * 2) this.angleH -= Math.PI * 2;
-		if (this.angleH < 0) this.angleH += Math.PI * 2;
-
-		if (this.angleV > Math.PI / 2) this.angleV = Math.PI / 2;
-		if (this.angleV < 0) this.angleV = 0;
-
 		const obj = this.object3D;
 
 		const radius = 5;
 
 		const offset = vec3dNew(
-			Math.cos(this.angleH),
-			Math.sin(this.angleV),
-			Math.sin(this.angleH),
+			Math.sin(this.input.yaw) * Math.cos(this.input.pitch),
+			Math.sin(this.input.pitch),
+			Math.cos(this.input.yaw) * Math.cos(this.input.pitch),
 		);
 
 		const newSmooth = vec3Add(obj.position, vec3Scale(offset, radius));
