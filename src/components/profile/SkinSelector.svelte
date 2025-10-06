@@ -75,15 +75,18 @@
 
 		camera.position.z = 2;
 
+		const clock = new THREE.Clock();
+
 		let requestId = 0;
 		function animate() {
 			requestId = requestAnimationFrame(animate);
 			renderer.render(scene, camera);
 
 			modelSpot.rotation.y += 0.01; // Rotate model for some animation
+			const delta = clock.getDelta();
 
 			if (mixer) {
-				mixer.update(0.01);
+				mixer.update(delta * 0.5);
 			}
 		}
 		animate();

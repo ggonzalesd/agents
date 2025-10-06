@@ -5,4 +5,10 @@ export default {
 	// Consult https://svelte.dev/docs#compile-time-svelte-preprocess
 	// for more information about preprocessors
 	preprocess: vitePreprocess(),
+	vitePlugin: {
+		inspector: {
+			toggleKeyCombo: 'meta-shift', // default: 'meta-shift'
+			holdMode: false, // default: false
+		},
+	},
 };
