@@ -1,5 +1,6 @@
 onlyBuiltDependencies:
   - '@prisma/engines'
+  - '@tailwindcss/oxide'
   - bcrypt
   - esbuild
   - msgpackr-extract

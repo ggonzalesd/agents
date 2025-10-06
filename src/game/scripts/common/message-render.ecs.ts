@@ -5,7 +5,7 @@ import { Character3DEcs } from '../player/character3D.ecs';
 import { createTextTexture } from '@/utils/text.utils';
 import { RenderClientEcs } from '../renderClient.ecs';
 import { UIClientEcs } from '../uiClient.ecs';
-import { ColyseusClientEcs } from '../colyseusClient.ecs';
+import { ColyseusClientEcs } from '../colyseus-client.ecs';
 
 export class MessageRenderEcs extends ComponentEcs {
 	private spot: THREE.Object3D;

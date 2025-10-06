@@ -4,7 +4,7 @@ import type { GameState } from '#/state/game.state';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
 
-import { ColyseusClientEcs } from '../colyseusClient.ecs';
+import { ColyseusClientEcs } from '../colyseus-client.ecs';
 
 type ClientAuthoritativeSharedState = {
 	isMoving: boolean;

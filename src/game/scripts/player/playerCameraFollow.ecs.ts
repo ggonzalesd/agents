@@ -8,7 +8,7 @@ import type { GameState } from '#/state/game.state';
 
 import type { GameInput } from '@/utils/input.utils';
 
-import { ColyseusClientEcs } from '../colyseusClient.ecs';
+import { ColyseusClientEcs } from '../colyseus-client.ecs';
 import { UIClientEcs } from '../uiClient.ecs';
 import { RenderClientEcs } from '../renderClient.ecs';
 

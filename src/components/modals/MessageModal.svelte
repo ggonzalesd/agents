@@ -3,7 +3,7 @@
 <script lang="ts">
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
-	import { ColyseusClientEcs } from '@/game/scripts/colyseusClient.ecs';
+	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
 	import { GameInput } from '@/utils/input.utils';
 	import { getContext, onMount } from 'svelte';

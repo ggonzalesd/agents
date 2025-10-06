@@ -1,4 +1,4 @@
-@host=http://localhost:3000/api/v1
+@host=https://game.quorilabs.com/api/v1
 
 ### HEALTH
 GET {{host}}/auth HTTP/1.1
@@ -15,11 +15,12 @@ Content-Type: application/json
 ### Register
 POST {{host}}/auth/register HTTP/1.1
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijc2MGM0YzQ1LTQ4NTUtNDA3My05NDNiLTg1YTgwNzJiYWQ1MiIsInVzZXJuYW1lIjoiYXJjaGlzbyIsImhhc2giOiJkODc4NmZhNC05MTJkLTQ2NmQtYjc0MC1hNDFkYTFhNjJhYjkiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTk1MTUwOTksImV4cCI6MTc1OTYwMTQ5OX0.Ih2xaknXazItEtbtYxNzGRQJxyXxVyGs-YrPNGwB6vo
 
 {
-	"username": "user",
+	"username": "cristian",
 	"password": "12345678",
-	"display": "USER_XD"
+	"display": "Cristian"
 }
 
 ### Revoke

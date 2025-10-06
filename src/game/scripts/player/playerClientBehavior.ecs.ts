@@ -8,7 +8,7 @@ import type { GameInput } from '@/utils/input.utils';
 
 import { RenderClientEcs } from '../renderClient.ecs';
 import { UIClientEcs } from '../uiClient.ecs';
-import { ColyseusClientEcs } from '../colyseusClient.ecs';
+import { ColyseusClientEcs } from '../colyseus-client.ecs';
 
 import { ClientAuthoritative } from './clientAuthoritative.ecs';
 

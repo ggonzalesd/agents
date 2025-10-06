@@ -5,7 +5,7 @@ import { vec3Set } from '#/utils/math.util';
 
 import type { PlayerState } from '#/state/player.state';
 import { RenderClientEcs } from '../renderClient.ecs';
-import { ColyseusClientEcs } from '../colyseusClient.ecs';
+import { ColyseusClientEcs } from '../colyseus-client.ecs';
 import { cloneMesh, loadGLB, loadTexture } from '@/utils/assets.utils';
 import { ClientAuthoritative } from './clientAuthoritative.ecs';
 import type { CharacterBodyState } from '#/state/character-body.state';

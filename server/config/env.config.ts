@@ -6,6 +6,8 @@ const schema = z
 		NODE_ENV: z.enum(['development', 'production']).default('development'),
 		JWT_SECRET: z.string().min(10).max(100),
 
+		CORS_ORIGINS: z.string().default('http://localhost:5173'),
+
 		CLIENT_URL: z.string(),
 
 		DB_PROTOCOL: z.string().default('postgres'),

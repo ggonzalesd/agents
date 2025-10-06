@@ -4,7 +4,7 @@ import { itemClientFactoryGenerator } from '../prefab/item.client';
 import { npcClientFactoryGenerator } from '../prefab/npc.client';
 
 import { playerClientFactoryGenerator } from '../prefab/player.client';
-import { ColyseusClientEcs } from './colyseusClient.ecs';
+import { ColyseusClientEcs } from './colyseus-client.ecs';
 import { UIClientEcs } from './uiClient.ecs';
 
 export class ClientManagerEcs extends ComponentEcs {

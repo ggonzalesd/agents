@@ -5,6 +5,7 @@ import { ComponentEcs } from '#/ecs/Component.ecs';
 import { GameState } from '#/state/game.state';
 import { Option } from '#/utils/Option';
 import { Observer } from '#/utils/Observer';
+import { UIClientEcs } from './uiClient.ecs';
 
 export class ColyseusClientEcs extends ComponentEcs {
 	private connectionString: string;
@@ -32,6 +33,14 @@ export class ColyseusClientEcs extends ComponentEcs {
 	async connect() {
 		const room = await this.client.joinById<GameState>(this.roomId);
 		const proxy = getStateCallbacks(room);
+
+		room.onLeave((code, reason) => {
+			console.warn(`Left the room: ${code} (${reason})`);
+			this.connection.clear();
+			this.world.get(UIClientEcs).ifSome((ui) => {
+				ui.game.setPause(true, 'ONLEAVE');
+			});
+		});
 
 		this.connection.populate({ room, proxy });
 

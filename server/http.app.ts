@@ -13,6 +13,8 @@ import authRoute from '$/routes/auth.route';
 import skinRoute from '$/routes/skin.route';
 import experimentalRoute from '$/routes/experimental.route';
 
+import envConfig from '$/config/env.config';
+
 export const applyHttpApplication = (
 	server: ReturnType<typeof createServer>,
 ) => {
@@ -25,7 +27,7 @@ export const applyHttpApplication = (
 	// TODO: CORS - Change Origin for production
 	app.use(
 		cors({
-			origin: ['http://192.168.1.6:5173', 'http://localhost:5173'],
+			origin: envConfig.CORS_ORIGINS.split(','),
 			credentials: true,
 			methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 		}),

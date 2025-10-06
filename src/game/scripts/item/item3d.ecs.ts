@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { RenderClientEcs } from '../renderClient.ecs';
-import { ColyseusClientEcs } from '../colyseusClient.ecs';
+import { ColyseusClientEcs } from '../colyseus-client.ecs';
 import { vec3Set } from '#/utils/math.util';
 import type { ItemEntityState } from '#/state/inventory.state';
 

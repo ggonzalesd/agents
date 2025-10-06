@@ -5,8 +5,7 @@
 
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import type { Option } from '#/utils/Option';
-	import { ColyseusClientEcs } from '@/game/scripts/colyseusClient.ecs';
-	import { PlayerClientBehavior } from '@/game/scripts/player/playerClientBehavior.ecs';
+	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
 	import { RecordEcs } from '#/ecs/lib/Record.ecs';
 	import type { PlayerState } from '#/state/player.state';
 	import { SvelteMap } from 'svelte/reactivity';

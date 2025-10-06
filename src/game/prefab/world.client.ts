@@ -5,7 +5,7 @@ import type { useDebugHook } from '@/hooks/useDebug.svelte';
 import type { useActions } from '@/hooks/useActions.svelte';
 
 import { ClientManagerEcs } from '../scripts/clientManager.ecs';
-import { ColyseusClientEcs } from '../scripts/colyseusClient.ecs';
+import { ColyseusClientEcs } from '../scripts/colyseus-client.ecs';
 import { RenderClientEcs } from '../scripts/renderClient.ecs';
 import { UIClientEcs } from '../scripts/uiClient.ecs';
 import type { useGameState } from '@/hooks/useGameState.svelte';
@@ -35,7 +35,7 @@ export const worldPrefab = ({
 			game,
 		}),
 		[ColyseusClientEcs.name]: new ColyseusClientEcs(
-			'ws://localhost:3000',
+			import.meta.env.VITE_WS_URL,
 			token,
 			'main-room',
 		),

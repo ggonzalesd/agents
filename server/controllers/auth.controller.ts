@@ -26,7 +26,7 @@ export const authLoginController = async (req: Request, res: Response) => {
 		HttpError.unauthorized('Invalid username or password'),
 	);
 
-	const isPasswordValid = bcrypt.compareSync(password, user.password);
+	const isPasswordValid = await bcrypt.compare(password, user.password);
 	if (!isPasswordValid) {
 		throw HttpError.unauthorized('Invalid username or password');
 	}
