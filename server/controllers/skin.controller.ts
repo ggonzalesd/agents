@@ -6,6 +6,7 @@ import { S3BucketAdapter } from '$/services/s3.service';
 
 import { getAuth } from '$/utils/req.utils';
 import { HttpError } from '#/utils/HttpError';
+import { jsonResponse } from '#/utils/HttpResponse';
 
 const s3Service = new S3BucketAdapter();
 
@@ -63,13 +64,32 @@ export const getSkinStreamController = async (req: Request, res: Response) => {
 	}
 
 	const exists = await s3Service.exists(`skins/${username}.png`);
-	const buffer = await s3Service.getFile(`skins/${username}.png`);
 
-	if (!exists || !buffer) {
+	if (!exists) {
 		throw HttpError.notFound('Skin not found');
 	}
+
+	const buffer = await s3Service.getFile(`skins/${username}.png`);
 
 	res.setHeader('Content-Type', 'image/png');
 
 	res.end(buffer);
+};
+
+export const getExistsController = async (req: Request, res: Response) => {
+	const username = req.params.username;
+
+	if (typeof username !== 'string' || username.trim() === '') {
+		throw HttpError.badRequest('Username is required');
+	}
+
+	const exists = await s3Service.exists(`skins/${username}.png`);
+
+	if (!exists) {
+		throw HttpError.notFound('Skin not found');
+	}
+
+	res.json(
+		jsonResponse.ok({ exists }),
+	);
 };

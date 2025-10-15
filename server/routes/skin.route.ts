@@ -5,6 +5,7 @@ import { authMiddleware } from '$/middlewares/auth.middleware';
 import { fileSignatureMiddelware } from '$/middlewares/file-signature.middleware';
 
 import {
+	getExistsController,
 	getSkinController,
 	getSkinStreamController,
 	uploadSkinController,
@@ -29,5 +30,6 @@ router.put(
 
 router.get('/rand/:hash/:username.png', getSkinStreamController);
 router.get('/:username.png', getSkinController);
+router.get('/exists/:username', getExistsController);
 
 export default router;
