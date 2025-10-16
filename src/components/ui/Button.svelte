@@ -24,7 +24,7 @@
 	{disabled}
 	{type}
 	{onclick}
-	class="disabled:text-gris-600 disabled:bg-gris-300 bg-magenta-700 hover:bg-magenta-600 pointer-events-auto relative inline-flex h-10 items-center justify-center rounded-md font-bold transition-all duration-300 hover:cursor-pointer active:scale-90 disabled:pointer-events-none starting:scale-90"
+	class="disabled:text-gris-600 disabled:bg-gris-300 bg-magenta-700 hover:bg-magenta-600 pointer-events-auto relative inline-flex h-14 items-center justify-center rounded-sm px-10 text-xl font-bold transition-all duration-300 hover:cursor-pointer active:scale-90 disabled:pointer-events-none starting:scale-90"
 >
 	{#if svgContent}
 		<span class="absolute left-3 inline-flex h-full items-center">

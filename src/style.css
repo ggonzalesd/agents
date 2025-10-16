@@ -1,0 +1,115 @@
+/* ----------------------------
+  Variables (ajusta aquí)
+   ---------------------------- */
+:root {
+	--scroll-thumb: #6b7280; /* color del "pulgar" (thumb) */
+	--scroll-thumb-hover: #4b5563; /* color al pasar el ratón */
+	--scroll-track: transparent; /* fondo del track */
+	--scroll-track-border: rgba(0, 0, 0, 0.04); /* sutil borde/contraste */
+	--scroll-size: 12px; /* ancho del scrollbar */
+	--scroll-radius: 8px; /* radio del pulgar */
+	--scroll-gap: 6px; /* espacio interno para hit area */
+}
+
+/* ----------------------------
+  Global: comportamiento cross-browser
+   ---------------------------- */
+/* Firefox */
+* {
+	scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+	/* "auto" sería el valor por defecto, usamos thin+color como orientación */
+	scrollbar-width: thin; /* auto | thin | none */
+}
+
+/* ----------------------------
+  WebKit / Blink (Chrome, Safari, Edge Chromium, Opera)
+   ---------------------------- */
+/* Aplicar a todo el documento: html / body y elementos con overflow */
+*::-webkit-scrollbar {
+	width: var(--scroll-size);
+	height: var(--scroll-size); /* para scroll horizontal */
+}
+
+/* Track (fondo) */
+*::-webkit-scrollbar-track {
+	/* opcional padding visual en track: crea separación entre thumb y edge */
+	margin: var(--scroll-gap);
+	box-shadow: inset 0 0 0 1px var(--scroll-track-border);
+	border-radius: calc(var(--scroll-radius) + 2px);
+	background: var(--scroll-track);
+}
+
+/* Thumb (la "perilla" que se arrastra) */
+*::-webkit-scrollbar-thumb {
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+	border: 3px solid transparent; /* crea espacio alrededor del thumb */
+	border-radius: var(--scroll-radius);
+	background-clip: padding-box; /* para que border funcione como espacio */
+	background-color: var(--scroll-thumb);
+	min-height: 28px; /* intento de accesibilidad en webkit (no garantizado) */
+}
+
+/* Thumb al hover/focus */
+*::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:active {
+	transform: none; /* evita animaciones inesperadas */
+	background-color: var(--scroll-thumb-hover);
+}
+
+/* ----------------------------
+  Nueva especificación (estándar): ::scrollbar / ::scrollbar-thumb
+  Navegadores modernos están implementándolos; esto sirve como futura prueba
+   ---------------------------- */
+:root ::-webkit-scrollbar,
+:root ::-moz-scrollbar,
+:root ::scrollbar {
+	/* Placeholder: si el navegador soporta ::scrollbar, los selectores previos
+     con ::-webkit-scrollbar no aplicarán, pero la prioridad está dada arriba. */
+}
+
+/* Ejemplo usando la pseudo-especificación estandarizada (si está soportada) */
+*::scrollbar {
+	background: var(--scroll-track);
+	inline-size: var(--scroll-size);
+	block-size: var(--scroll-size);
+}
+*::scrollbar-thumb {
+	border: 3px solid transparent;
+	border-radius: var(--scroll-radius);
+	background: var(--scroll-thumb);
+}
+
+/* ----------------------------
+  Scrollbars en contenedores concretos
+   ---------------------------- */
+/* Si solo quieres estilizar scroll en elementos con .custom-scroll */
+.custom-scroll {
+	overflow: auto;
+	scrollbar-gutter: stable both-edges; /* reserva espacio para evitar "reflow" */
+}
+.custom-scroll::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+.custom-scroll::-webkit-scrollbar-thumb {
+	border-radius: 6px;
+}
+
+/* ----------------------------
+  Preferencias accesibilidad
+   ---------------------------- */
+/* Si el usuario prefiere reducción de movimiento, evita animaciones en scrollbar */
+@media (prefers-reduced-motion: reduce) {
+	*::-webkit-scrollbar-thumb {
+		transition: none !important;
+	}
+}
+
+/* Si el usuario necesita alto contraste, respetar su preferencia */
+@media (prefers-contrast: more) {
+	:root {
+		--scroll-thumb: #000000;
+		--scroll-track: #ffffff;
+		--scroll-thumb-hover: #111111;
+	}
+}

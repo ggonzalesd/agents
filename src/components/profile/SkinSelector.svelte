@@ -18,9 +18,9 @@
 		const username = get(gameStateContext).username as string;
 
 		const scene = new THREE.Scene();
-		const camera = new THREE.PerspectiveCamera(75, 450 / 450, 0.1, 1000);
+		const camera = new THREE.PerspectiveCamera(75, 450 / 756, 0.1, 1000);
 		const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
-		renderer.setSize(450, 450);
+		renderer.setSize(450, 756);
 
 		const light = new THREE.DirectionalLight(0xffffff, 1);
 		light.position.set(5, 5, 5).normalize();
@@ -131,14 +131,15 @@
 	{#await preloadGLB('/3d/SkinModel.glb')}
 		<Loading />
 	{:then models}
-		<div class="relative flex justify-center">
+		<div class="relative flex h-full w-full justify-center">
 			<canvas
 				class="drop-shadow-2xl drop-shadow-rose-700/25"
 				{@attach canvasAttach}
 			>
 			</canvas>
+
 			<label
-				class="pointer-events-auto absolute bottom-0 inline-flex rounded-md bg-white/25 px-4 py-2 hover:cursor-pointer"
+				class="bg-magenta-700 font-space-mono pointer-events-auto absolute bottom-0 inline-flex h-14 rounded-md px-10 py-4 text-xl font-bold hover:cursor-pointer"
 			>
 				<span>Select Skin</span>
 				<input onchange={handleOnChange} type="file" class="sr-only" />

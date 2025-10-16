@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Button from '@/components/ui/Button.svelte';
 	import SkinSelector from '@/components/profile/SkinSelector.svelte';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
 	import { GameInput } from '@/utils/input.utils';
@@ -21,38 +22,81 @@
 	}
 </script>
 
-<section class="flex h-full w-full flex-col items-center gap-4 p-4">
-	<h1>Profile View</h1>
+{#snippet renderUserInformation(title: string, description: string)}
+	<div class="text-gris-50 font-space-mono flex flex-col gap-2">
+		<p class="text-md font-bold">{title}</p>
+		<p class="text-lg">{description}</p>
+	</div>
+{/snippet}
+
+{#snippet renderLists(name: string, data?: string[][] | null)}
+	{#if data && data.length > 0}
+		<div class="font-space-mono flex h-[220px] flex-col gap-2 overflow-y-auto">
+			<p class="text-center text-xl font-bold">{name}</p>
+
+			{#each data as item, index}
+				<div
+					class="text-gris-50 font-space-mono flex flex-col gap-2 rounded-lg px-5 py-2.5"
+					class:bg-azul-900={index % 2 === 0}
+					class:bg-magenta-900={index % 2 !== 0}
+				>
+					<p class="text-md font-bold">{item[0]}</p>
+					<div class="flex w-full justify-between">
+						<p class="text-lg">{item[1]}</p>
+						<p class="text-gris-200 text-lg">{item[2]}</p>
+					</div>
+				</div>
+			{/each}
+		</div>
+	{/if}
+{/snippet}
+
+<section
+	class="flex h-screen w-full flex-col items-center justify-between gap-8 bg-[url(/background-profile.png)] bg-cover bg-center bg-no-repeat p-10"
+>
+	<h1 class="font-zen-dots text-center text-4xl">Account information</h1>
 	<div
-		class=" flex w-full flex-col items-center gap-4 lg:max-w-4xl xl:max-w-7xl xl:flex-row"
+		class=" flex h-full w-full flex-col items-center gap-8 lg:max-w-4xl xl:max-w-7xl xl:flex-row"
 	>
 		<div class="flex-1">
 			<SkinSelector />
 		</div>
-		<div class="flex flex-1 gap-2">
-			<button
-				class="pointer-events-auto"
-				onclick={() => router.changeRoute('/game')}
+
+		<div class="flex flex-1 flex-col gap-8">
+			<div class="font-space-mono flex flex-col gap-2">
+				<p class="text-center text-xl font-bold">Player information</p>
+
+				<div class="flex w-full justify-between">
+					{@render renderUserInformation('Username', 'CristianMauricio')}
+					{@render renderUserInformation('Age', '23 años')}
+				</div>
+				{@render renderUserInformation(
+					'About',
+					'Estudiante de ciencias de la computación en la UPC',
+				)}
+			</div>
+
+			{@render renderLists('Logros completados', [
+				['First Steps', 'Completed the tutorial', '01/01/2024'],
+				['Explorer', 'Visited all areas', '15/02/2024'],
+				['Collector', 'Collected 100 items', '20/03/2024'],
+			])}
+
+			{@render renderLists('Misiones completadas', [
+				['Games Played', '150', 'N/A'],
+				['Highest Score', '2000', 'N/A'],
+				['Total Playtime', '300 hours', 'N/A'],
+			])}
+
+			<div
+				class="flex h-full w-full flex-row items-center justify-center gap-8"
 			>
-				Go to Game
-			</button>
-			<button
-				type='button'
-				onclick={logoutHandler}
-			> Logout </button>
+				<Button type="button" onclick={() => router.changeRoute('/game')}
+					>Go to Game</Button
+				>
+
+				<Button type="button" onclick={logoutHandler}>Logout</Button>
+			</div>
 		</div>
 	</div>
 </section>
-
-<style>
-	button {
-		transition: background-color 0.3s ease;
-		cursor: pointer;
-		border: none;
-		border-radius: 0.375rem;
-		background-color: #3b82f6;
-		padding: 0.5rem 1rem;
-		color: white;
-		font-size: 1rem;
-	}
-</style>
