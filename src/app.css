@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Zen+Dots&display=swap');
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
 	--font-space-mono: 'Space Mono', monospace;
@@ -36,7 +36,7 @@
 	--color-gris-400: #8d8d8d;
 	--color-gris-500: #707070;
 	--color-gris-600: #666666;
-	--color-gris-700: #505050;
-	--color-gris-800: #3e3e3e;
-	--color-gris-900: #2f2f2f;
+	--color-gris-700: #3a3a3a;
+	--color-gris-800: #1f1f1f;
+	--color-gris-900: #101010;
 }

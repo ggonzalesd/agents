@@ -44,9 +44,9 @@
 	data-input-color={color}
 	aria-disabled={disabled}
 	class={[
-		'pointer-events-none inline-flex h-8 justify-between overflow-hidden rounded-full border  bg-gray-900 shadow-lg transition-all aria-disabled:opacity-50 aria-disabled:saturate-0',
+		'bg-gris-700 pointer-events-none inline-flex h-14 justify-between overflow-hidden rounded-sm border shadow-lg transition-all aria-disabled:opacity-50 aria-disabled:saturate-0',
 		{
-			default: 'border-gray-500 text-gray-300',
+			default: 'text-gris-300 border-transparent',
 			error: 'border-red-500 text-red-300',
 			success: 'border-lime-500 text-lime-300',
 			warning: 'border-yellow-500 text-yellow-300',
@@ -69,7 +69,7 @@
 		{required}
 		{disabled}
 		bind:value
-		class="pointer-events-auto flex flex-1 px-2 outline-none disabled:pointer-events-none"
+		class="text-gris-300 pointer-events-auto flex flex-1 bg-transparent px-2 ring-0 outline-none disabled:pointer-events-none"
 		onchange={(e) => onchange?.((e.target as HTMLInputElement).value)}
 		bind:this={element}
 	/>
@@ -96,11 +96,11 @@
 	}
 
 	div[data-input-color='default']:has(input:focus) {
-		border-color: var(--color-gray-300);
+		border-color: var(--color-azul-900);
 	}
 
 	div[data-input-color='error']:has(input:focus) {
-		border-color: var(--color-red-300);
+		border-color: var(--color-red-600);
 	}
 
 	div[data-input-color='success']:has(input:focus) {

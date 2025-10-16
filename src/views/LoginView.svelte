@@ -9,10 +9,6 @@
 	import InputText from '@/components/InputText.svelte';
 	import Button from '@/components/ui/Button.svelte';
 
-	import emailSvgContent from '@/assets/icons/email.svg?raw';
-	import passwordSvgContent from '@/assets/icons/password.svg?raw';
-	import lockSvgContent from '@/assets/icons/lock.svg?raw';
-
 	import { GameInput } from '@/utils/input.utils';
 	import { loginService, profileService } from '@/services/api.service';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
@@ -73,9 +69,9 @@
 
 {#snippet renderErrors(errors?: string[] | null)}
 	{#if errors}
-		<div class="text-red-500">
+		<div class="text-gris-500">
 			{#each errors as err}
-				<p class="text-xs text-red-500">* {err}</p>
+				<p class="text-gris-50 text-xs">* {err}</p>
 			{/each}
 		</div>
 	{/if}
@@ -83,33 +79,39 @@
 
 <div data-login class="absolute flex size-full bg-cover bg-right bg-no-repeat">
 	<form
-		class="absolute right-0 z-20 flex h-full w-full max-w-xl flex-col justify-center gap-2 p-12 backdrop-blur-3xl md:p-24"
+		class="absolute right-0 z-20 flex h-full w-full max-w-3xl flex-col justify-center gap-10 p-12 backdrop-blur-3xl md:px-40 md:py-20"
 		onsubmit={onSubmit}
 	>
-		<InputText
-			disabled={loading}
-			name="username"
-			placeholder="Email"
-			iconSvgContent={emailSvgContent}
-			onchange={(value) => (data.username = value)}
-			color={errors?.username ? 'error' : 'default'}
-		/>
-		{@render renderErrors(errors?.username?.errors)}
+		<div class="flex w-full justify-center">
+			<h1 class="font-zen-dots text-4xl text-white">Login</h1>
+		</div>
 
-		<InputText
-			disabled={loading}
-			name="password"
-			placeholder="Password"
-			iconSvgContent={passwordSvgContent}
-			type="password"
-			color={errors?.password ? 'error' : 'default'}
-			onchange={(value) => (data.password = value)}
-		/>
-		{@render renderErrors(errors?.password?.errors)}
+		<div class="flex w-full flex-col gap-3">
+			<span class="font-space-mono text-md text-white">Username:</span>
+			<InputText
+				disabled={loading}
+				name="username"
+				placeholder="Username or Email"
+				onchange={(value) => (data.username = value)}
+				color={errors?.username ? 'error' : 'default'}
+			/>
+			{@render renderErrors(errors?.username?.errors)}
+		</div>
 
-		<Button type="submit" disabled={loading} svgContent={lockSvgContent}>
-			Submit
-		</Button>
+		<div class="flex w-full flex-col gap-3">
+			<span class="font-space-monotext-md text-white">Password:</span>
+			<InputText
+				disabled={loading}
+				name="password"
+				placeholder="Min of 8 characters"
+				type="password"
+				color={errors?.password ? 'error' : 'default'}
+				onchange={(value) => (data.password = value)}
+			/>
+			{@render renderErrors(errors?.password?.errors)}
+		</div>
+
+		<Button type="submit" disabled={loading}>Log In</Button>
 
 		{#if errorMessage}
 			<div class="text-red-500">

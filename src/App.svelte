@@ -11,7 +11,7 @@
 	import { GameInput } from './utils/input.utils';
 	import Modals from './components/Modals.svelte';
 	import { useGameState } from './hooks/useGameState.svelte';
-	import { preloadGLB } from './utils/assets.utils';
+	import { preloadGLB, waitFor } from './utils/assets.utils';
 	import { useRouter } from './hooks/useRouter.svelte';
 	import Router from './components/lib/Router.svelte';
 	import ProfileView from './views/ProfileView.svelte';
@@ -45,7 +45,15 @@
 	</Router>
 
 	<Router route="/profile">
-		<ProfileView />
+		{#await Promise.all( [waitFor(Number(import.meta.env.VITE_WAIT_TIME) || 0), preloadGLB('/3d/SkinModel.glb')], )}
+			<Loading />
+		{:then _}
+			<ProfileView />
+		{:catch error}
+			<p class="text-red-500">
+				Error loading information profile: {error.message}
+			</p>
+		{/await}
 	</Router>
 
 	<Router route="/game">
