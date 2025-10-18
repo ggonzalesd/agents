@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { Option } from '#/utils/Option';
 import { UIClientEcs } from './uiClient.ecs';
+import type { SkyboxEcs } from './skybox.ecs';
 
 export class RenderClientEcs extends ComponentEcs {
 	public scene: THREE.Scene;
@@ -61,18 +62,6 @@ export class RenderClientEcs extends ComponentEcs {
 		pointLight.position.set(0, 2.5, 0);
 
 		this.scene.add(pointLight);
-
-		// Plane
-		const plane = new THREE.Mesh(
-			new THREE.PlaneGeometry(100, 100),
-			new THREE.MeshStandardMaterial({
-				color: 0x404040,
-				side: THREE.DoubleSide,
-			}),
-		);
-		plane.receiveShadow = true;
-		plane.rotateX(Math.PI / 2);
-		this.scene.add(plane);
 	}
 
 	onStart(): void {
@@ -107,7 +96,6 @@ export class RenderClientEcs extends ComponentEcs {
 
 	onLoop(_delta: number): void {
 		this.renderer.clearColor();
-
 		this.renderer.render(this.scene, this.camera);
 	}
 }
