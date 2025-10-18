@@ -9,6 +9,8 @@ import { ColyseusClientEcs } from '../scripts/colyseus-client.ecs';
 import { RenderClientEcs } from '../scripts/renderClient.ecs';
 import { UIClientEcs } from '../scripts/uiClient.ecs';
 import type { useGameState } from '@/hooks/useGameState.svelte';
+import { SkyboxEcs } from '../scripts/skybox.ecs';
+import { SeasonManagerEcs } from '../scripts/seasonManager.ecs';
 
 type WorldPrefabProps = {
 	canvas: HTMLCanvasElement;
@@ -41,4 +43,6 @@ export const worldPrefab = ({
 		),
 		[RenderClientEcs.name]: new RenderClientEcs(canvas),
 		[ClientManagerEcs.name]: new ClientManagerEcs(),
+		[SkyboxEcs.name]: new SkyboxEcs(),
+		[SeasonManagerEcs.name]: new SeasonManagerEcs(),
 	});

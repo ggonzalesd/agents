@@ -18,9 +18,39 @@
 		const username = get(gameStateContext).username as string;
 
 		const scene = new THREE.Scene();
-		const camera = new THREE.PerspectiveCamera(75, 450 / 756, 0.1, 1000);
-		const renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
-		renderer.setSize(450, 756);
+		const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+		const renderer = new THREE.WebGLRenderer({
+			canvas,
+			alpha: true,
+			antialias: true,
+		});
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, 2));
+
+		// Medir el padre del canvas y ajustar cámara + renderer
+		const parentEl = canvas.parentElement as HTMLElement | null;
+		const getParentSize = () => {
+			if (parentEl) {
+				const rect = parentEl.getBoundingClientRect();
+				const size = Math.max(1, Math.floor(rect.height)); // usar altura del padre (mínimo 1)
+				return { width: 450, height: size };
+			}
+			// Fallback si no hay padre o no tiene altura todavía
+			const fallback = Math.max(1, canvas.clientHeight || 450);
+			return { width: fallback, height: fallback };
+		};
+
+		const applySize = () => {
+			const { width, height } = getParentSize();
+			renderer.setSize(width, height);
+			camera.aspect = width / height;
+			camera.updateProjectionMatrix();
+		};
+
+		applySize();
+		const resizeObserver = new ResizeObserver(() => applySize());
+		if (parentEl) resizeObserver.observe(parentEl);
+		const onWindowResize = () => applySize();
+		window.addEventListener('resize', onWindowResize);
 
 		const light = new THREE.DirectionalLight(0xffffff, 1);
 		light.position.set(5, 5, 5).normalize();
@@ -102,7 +132,10 @@
 
 		return () => {
 			cancelAnimationFrame(requestId);
+			resizeObserver.disconnect();
+			window.removeEventListener('resize', onWindowResize);
 			texture.dispose();
+			renderer.dispose();
 		};
 	}
 
@@ -131,7 +164,7 @@
 	{#await preloadGLB('/3d/SkinModel.glb')}
 		<Loading />
 	{:then models}
-		<div class="relative flex h-full w-full justify-center">
+		<div class="relative flex h-full justify-center">
 			<canvas
 				class="drop-shadow-2xl drop-shadow-rose-700/25"
 				{@attach canvasAttach}

@@ -24,15 +24,17 @@
 
 {#snippet renderUserInformation(title: string, description: string)}
 	<div class="text-gris-50 font-space-mono flex flex-col gap-2">
-		<p class="text-md font-bold">{title}</p>
-		<p class="text-lg">{description}</p>
+		<p class="text-[12px] font-bold">{title}</p>
+		<p class="text-[14px]">{description}</p>
 	</div>
 {/snippet}
 
 {#snippet renderLists(name: string, data?: string[][] | null)}
 	{#if data && data.length > 0}
-		<div class="font-space-mono flex h-[220px] flex-col gap-2 overflow-y-auto">
-			<p class="text-center text-xl font-bold">{name}</p>
+		<div
+			class="font-space-mono flex max-h-[180px] flex-col gap-2 overflow-y-auto"
+		>
+			<p class="text-center text-[16px] font-bold">{name}</p>
 
 			{#each data as item, index}
 				<div
@@ -40,10 +42,10 @@
 					class:bg-azul-900={index % 2 === 0}
 					class:bg-magenta-900={index % 2 !== 0}
 				>
-					<p class="text-md font-bold">{item[0]}</p>
+					<p class="text-[14px] font-bold">{item[0]}</p>
 					<div class="flex w-full justify-between">
-						<p class="text-lg">{item[1]}</p>
-						<p class="text-gris-200 text-lg">{item[2]}</p>
+						<p class="text-[14px]">{item[1]}</p>
+						<p class="text-gris-200 text-[14px]">{item[2]}</p>
 					</div>
 				</div>
 			{/each}
@@ -52,19 +54,19 @@
 {/snippet}
 
 <section
-	class="flex h-screen w-full flex-col items-center justify-between gap-8 bg-[url(/background-profile.png)] bg-cover bg-center bg-no-repeat p-10"
+	class="flex h-screen w-full flex-col items-center justify-between gap-8 overflow-auto bg-[url(/background-profile.png)] bg-cover bg-center bg-no-repeat p-10"
 >
-	<h1 class="font-zen-dots text-center text-4xl">Account information</h1>
+	<h1 class="font-zen-dots text-center text-2xl">Account information</h1>
 	<div
 		class=" flex h-full w-full flex-col items-center gap-8 lg:max-w-4xl xl:max-w-7xl xl:flex-row"
 	>
-		<div class="flex-1">
+		<div class="flex h-full flex-1 justify-center">
 			<SkinSelector />
 		</div>
 
-		<div class="flex flex-1 flex-col gap-8">
+		<div class="flex h-full w-full flex-1 flex-col justify-between gap-2">
 			<div class="font-space-mono flex flex-col gap-2">
-				<p class="text-center text-xl font-bold">Player information</p>
+				<p class="text-center text-[16px] font-bold">Player information</p>
 
 				<div class="flex w-full justify-between">
 					{@render renderUserInformation('Username', 'CristianMauricio')}
@@ -88,9 +90,7 @@
 				['Total Playtime', '300 hours', 'N/A'],
 			])}
 
-			<div
-				class="flex h-full w-full flex-row items-center justify-center gap-8"
-			>
+			<div class="flex w-full flex-row items-center justify-center gap-8">
 				<Button type="button" onclick={() => router.changeRoute('/game')}
 					>Go to Game</Button
 				>
