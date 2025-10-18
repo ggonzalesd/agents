@@ -4,6 +4,7 @@ const schema = z
 	.object({
 		PORT: z.coerce.number().min(1024).max(65535).default(3000),
 		NODE_ENV: z.enum(['development', 'production']).default('development'),
+		WORKER_THREADS: z.coerce.number().min(1).max(32).default(2),
 		JWT_SECRET: z.string().min(10).max(100),
 
 		CORS_ORIGINS: z.string().default('http://localhost:5173'),
