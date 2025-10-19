@@ -12,7 +12,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 	public collider: RAPIER.Collider = null!;
 
 	constructor(
-		private characterState: CharacterBodyState,
+		public characterState: CharacterBodyState,
 		private configShape: 'capsule' | 'cuboid' = 'capsule',
 	) {
 		super();

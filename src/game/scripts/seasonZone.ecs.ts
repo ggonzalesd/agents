@@ -1,3 +1,4 @@
+import { loadTexture } from '@/utils/assets.utils';
 import * as THREE from 'three';
 
 export enum Season {
@@ -57,8 +58,7 @@ export class SeasonZoneEcs {
 		};
 
 		// Cargar la textura usando TextureLoader
-		const textureLoader = new THREE.TextureLoader();
-		const texture = textureLoader.load(texturePaths[season]);
+		const texture = loadTexture(texturePaths[season]);
 
 		// Configurar la textura para que se repita
 		texture.wrapS = THREE.RepeatWrapping;
@@ -66,7 +66,10 @@ export class SeasonZoneEcs {
 		texture.repeat.set(4, 4); // Repetir 4 veces en cada dirección
 
 		// Configuraciones específicas por estación
-		const materialConfigs: Record<Season, THREE.MeshStandardMaterialParameters> = {
+		const materialConfigs: Record<
+			Season,
+			THREE.MeshStandardMaterialParameters
+		> = {
 			[Season.SPRING]: {
 				map: texture,
 				roughness: 0.8,
@@ -104,7 +107,10 @@ export class SeasonZoneEcs {
 				mat.dispose();
 			});
 		} else {
-			if (this.mesh.material instanceof THREE.MeshStandardMaterial && this.mesh.material.map) {
+			if (
+				this.mesh.material instanceof THREE.MeshStandardMaterial &&
+				this.mesh.material.map
+			) {
 				this.mesh.material.map.dispose();
 			}
 			this.mesh.material.dispose();

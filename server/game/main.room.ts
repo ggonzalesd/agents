@@ -11,10 +11,9 @@ import * as RAPIER from '@dimforge/rapier3d-compat';
 import { GameState } from '#/state/game.state';
 import { WorldEcs } from '#/ecs/World.ecs';
 import { playerServerFactoryGenerator } from './prefab/player.server';
-import { ServerDataEcs } from './scripts/serverData.ecs';
-import { ServerManagerEcs } from './scripts/serverManager.ecs';
 import { verifyToken } from '$/services/jwt.service';
 import { npcServerFactoryGenerator } from './prefab/npc.server';
+import { worldServerFactory } from './prefab/world.server';
 
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
@@ -30,9 +29,10 @@ export class MainRoom extends Room<GameState> {
 		this.state = new GameState();
 		this.worldPhy = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
 
-		this.worldEcs = new WorldEcs({
-			[ServerDataEcs.name]: new ServerDataEcs(this.state, this.worldPhy, this),
-			[ServerManagerEcs.name]: new ServerManagerEcs(),
+		this.worldEcs = worldServerFactory({
+			state: this.state,
+			worldPhysics: this.worldPhy,
+			room: this,
 		});
 
 		this.playerServerFactory = playerServerFactoryGenerator(this.worldEcs);
@@ -50,8 +50,7 @@ export class MainRoom extends Room<GameState> {
 		const npcServerFactory = npcServerFactoryGenerator(this.worldEcs);
 
 		// Add some NPCs
-		for (let i = 0; i < 10; i++) {
-			console.log('Adding NPC', i);
+		for (let i = 0; i < 5; i++) {
 			this.worldEcs.addEntity(
 				npcServerFactory({
 					name: `npc_${i}_` + Math.random().toString(36).substring(7),
