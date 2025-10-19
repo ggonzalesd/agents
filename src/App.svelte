@@ -11,13 +11,14 @@
 	import { GameInput } from './utils/input.utils';
 	import Modals from './components/Modals.svelte';
 	import { useGameState } from './hooks/useGameState.svelte';
-	import { preloadGLB, waitFor } from './utils/assets.utils';
+	import { preloadGLB, preloadTextures, waitFor } from './utils/assets.utils';
 	import { useRouter } from './hooks/useRouter.svelte';
 	import Router from './components/lib/Router.svelte';
 	import ProfileView from './views/ProfileView.svelte';
 	import Loading from './views/Loading.svelte';
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
+	import axios from 'axios';
 
 	setContext(useDebugHook.name, useDebugHook());
 	setContext(useActions.name, useActions());
@@ -57,7 +58,13 @@
 	</Router>
 
 	<Router route="/game">
-		{#await preloadGLB('/3d/SkinModel.glb')}
+		{#await Promise.all([
+			preloadGLB('/3d/SkinModel.glb'),
+			preloadTextures('/3d/textures/seasons/autumn_ground.jpg'),
+			preloadTextures('/3d/textures/seasons/summer_ground.jpg'),
+			preloadTextures('/3d/textures/seasons/winter_ground.jpg'),
+			preloadTextures('/3d/textures/seasons/spring_ground.jpg'),
+		])}
 			<Loading />
 		{:then _}
 			<GameView />

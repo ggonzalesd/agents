@@ -1,4 +1,4 @@
-import PF from 'pathfinding';
+import { AStar } from '#/pathfinding/a-star';
 
 interface AStarWorkerInput {
 	grid: number[][];
@@ -6,11 +6,32 @@ interface AStarWorkerInput {
 	end: [number, number];
 }
 
+const astar = new AStar({ allowDiagonal: true });
+
 export default async ({ grid, start, end }: AStarWorkerInput) => {
-	const pfGrid = new PF.Grid(grid);
-	const finder = new PF.AStarFinder();
+	const path = astar.findPath(
+		grid,
+		{ x: start[0], y: start[1] },
+		{ x: end[0], y: end[1] },
+	);
 
-	const path = finder.findPath(start[0], start[1], end[0], end[1], pfGrid);
-
+	/*
+	for (const p of path) {
+		grid[p[1]][p[0]] = 2;
+	}
+	for (const row of grid) {
+		let rowStr = '';
+		for (const cell of row) {
+			if (cell === 0) {
+				rowStr += ' ';
+			} else if (cell === 1) {
+				rowStr += '█';
+			} else {
+				rowStr += '·';
+			}
+		}
+		console.log(rowStr);
+	}
+ */
 	return { result: path };
 };

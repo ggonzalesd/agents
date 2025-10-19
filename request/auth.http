@@ -1,4 +1,4 @@
-@host=http://localhost:3000
+@host=http://localhost:3000/api/v1
 
 ### HEALTH
 GET {{host}}/auth HTTP/1.1
@@ -8,7 +8,7 @@ POST {{host}}/auth/login HTTP/1.1
 Content-Type: application/json
 
 {
-	"username": "archiso",
+	"username": "superadmin",
 	"password": "12345678"
 }
 
@@ -42,6 +42,9 @@ GET {{host}}/room HTTP/1.1
 
 ### Start ROOM
 POST {{host}}/room/1 HTTP/1.1
+
+### Stop ROOM
+POST {{host}}/room/stop/main-room HTTP/1.1
 
 ### Experimental
 GET {{host}}/experimental/manual-request-llm HTTP/1.1

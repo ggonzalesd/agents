@@ -21,6 +21,29 @@ export const loadTexture = (url: string, useCache = true): THREE.Texture => {
 	return texture;
 };
 
+export const preloadTextures = async (
+	url: string,
+	useCache = true,
+): Promise<THREE.Texture> => {
+	if (useCache && textureCache.has(url)) {
+		return textureCache.get(url)!;
+	}
+
+	const loader = new THREE.TextureLoader();
+	const texture = await loader.loadAsync(url);
+
+	texture.magFilter = THREE.NearestFilter;
+	texture.minFilter = THREE.NearestFilter;
+	texture.generateMipmaps = false;
+	texture.colorSpace = THREE.SRGBColorSpace;
+	texture.flipY = false;
+	texture.needsUpdate = true;
+
+	textureCache.set(url, texture);
+
+	return texture;
+};
+
 export const cloneMesh = <T extends string>(
 	glb: GLTF,
 	material: THREE.Material,

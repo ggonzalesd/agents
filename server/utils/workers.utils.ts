@@ -1,7 +1,11 @@
 import path from 'node:path';
 import envConfig from '$/config/env.config';
 
-export function getWorkerFile(name: string) {
+export enum WorkerType {
+	A_STAR = 'a-star',
+}
+
+export function getWorkerFile(name: WorkerType) {
 	const rootDir = envConfig.NODE_ENV === 'development' ? 'server' : 'build';
 	const ext =
 		envConfig.NODE_ENV === 'development' ? '.worker.ts' : '.worker.js';

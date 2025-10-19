@@ -5,6 +5,8 @@ import { Option } from '#/utils/Option';
 import { UIClientEcs } from './uiClient.ecs';
 import type { SkyboxEcs } from './skybox.ecs';
 
+import { defaultMap } from '#/maps/default.map';
+
 export class RenderClientEcs extends ComponentEcs {
 	public scene: THREE.Scene;
 	public renderer: THREE.WebGLRenderer;
@@ -92,6 +94,24 @@ export class RenderClientEcs extends ComponentEcs {
 				}
 			}).bind(this),
 		);
+
+		for (let i = 0; i < defaultMap.grid.length; i++) {
+			for (let j = 0; j < defaultMap.grid[i].length; j++) {
+				const cell = defaultMap.grid[i][j];
+				if (cell === 1) {
+					const geometry = new THREE.BoxGeometry(1, 1, 1);
+					const material = new THREE.MeshStandardMaterial({ color: 0x228b22 });
+					const plane = new THREE.Mesh(geometry, material);
+					plane.rotation.x = -Math.PI / 2;
+					plane.position.set(
+						0.5 + j - defaultMap.grid[i].length / 2,
+						0,
+						0.5 + i - defaultMap.grid.length / 2,
+					);
+					this.scene.add(plane);
+				}
+			}
+		}
 	}
 
 	onLoop(_delta: number): void {

@@ -9,7 +9,7 @@ console.log(`Output directory: build`);
 
 esbuild
 	.build({
-		entryPoints: [entry, './server/workers/*'],
+		entryPoints: [entry, './server/workers/*.worker.ts'],
 		outdir: 'build',
 
 		bundle: true,
