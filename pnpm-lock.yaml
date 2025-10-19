@@ -23,9 +23,6 @@ importers:
       '@dimforge/rapier3d-compat':
         specifier: ^0.18.2
         version: 0.18.2
-      '@types/pathfinding':
-        specifier: ^0.1.0
-        version: 0.1.0
       axios:
         specifier: ^1.11.0
         version: 1.11.0
@@ -1183,9 +1180,6 @@ packages:
 
   '@types/offscreencanvas@2019.7.3':
     resolution: {integrity: sha512-ieXiYmgSRXUDeOntE1InxjWyvEelZGP63M+cGuquuRLuIKKT1osnkXjxev9B7d1nXSug5vpunx+gNlbVxMlC9A==}
-
-  '@types/pathfinding@0.1.0':
-    resolution: {integrity: sha512-QkKZqdAPhfkHIoiCWa/4yVolcCDin10qScbdiyqtDsY9cxlcslVgoU1g9yVdFytsHqJQevkYNcNBgD/P7OZbQg==}
 
   '@types/qs@6.14.0':
     resolution: {integrity: sha512-eOunJqu0K1923aExK6y8p6fsihYEn/BYuQ4g0CxAAgFc4b/ZLN4CrsRZ55srTdqoiLzU2B2evC+apEIxprEzkQ==}
@@ -3901,8 +3895,6 @@ snapshots:
       undici-types: 7.10.0
 
   '@types/offscreencanvas@2019.7.3': {}
-
-  '@types/pathfinding@0.1.0': {}
 
   '@types/qs@6.14.0': {}
 
