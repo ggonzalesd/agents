@@ -1,0 +1,103 @@
+import type { EntityEcs } from '#/ecs';
+import { posRealToGrid } from '#/utils/map.utils';
+import type { WorldPathfinderEcs } from '../../world/world-grid.ecs';
+import { CharacterBodyServerEcs } from '../CharacterBodyServer.ecs';
+import type { IFollowOption } from './follow-option.interface';
+import type { FollowPathEcs } from './follow-path.ecs';
+
+export class FollowPositionOption implements IFollowOption {
+	done: boolean = false;
+
+	pathfinder: WorldPathfinderEcs;
+	followPath: FollowPathEcs;
+	position: { x: number; z: number };
+	pivotPosition?: { x: number; z: number } | null;
+
+	character: CharacterBodyServerEcs = null!;
+
+	constructor(props: {
+		pathfinder: WorldPathfinderEcs;
+		followPath: FollowPathEcs;
+		position: { x: number; z: number };
+		entity: EntityEcs;
+		pivotPosition?: { x: number; z: number } | null;
+	}) {
+		this.pathfinder = props.pathfinder;
+		this.followPath = props.followPath;
+		this.position = props.position;
+		this.pivotPosition = props.pivotPosition;
+
+		this.character = props.entity
+			.get(CharacterBodyServerEcs)
+			.unwrap('CharacterBodyServerEcs not found');
+	}
+
+	private canRecalculatePath = true;
+
+	loop(_: number): void {
+		if (this.done) return;
+
+		// Update if stop moving
+		if (this.followPath.timeSinceLast < 1 || !this.canRecalculatePath) return;
+
+		// If too far from target position, recalculate path
+		const targetPos = this.position;
+		const currentPos = this.character.body.translation();
+
+		const distX = targetPos.x - currentPos.x;
+		const distZ = targetPos.z - currentPos.z;
+
+		const distance = Math.sqrt(distX * distX + distZ * distZ);
+
+		if (distance > 5) {
+			// Get Current grid position
+			const currentGridPos = posRealToGrid(
+				{ x: currentPos.x, z: currentPos.z },
+				this.pathfinder.map,
+			);
+
+			let targetGridPos: [number, number];
+
+			// Go To target
+			if (this.pivotPosition != null) {
+				this.pivotPosition = null;
+				targetGridPos = posRealToGrid(
+					{ x: targetPos.x, z: targetPos.z },
+					this.pathfinder.map,
+				);
+			} else {
+				// Get random position around current position
+				const randomOffsetX = (Math.random() - 0.5) * 10;
+				const randomOffsetZ = (Math.random() - 0.5) * 10;
+				this.pivotPosition = {
+					x: currentPos.x + randomOffsetX,
+					z: currentPos.z + randomOffsetZ,
+				};
+
+				targetGridPos = posRealToGrid(
+					{ x: currentPos.x + randomOffsetX, z: currentPos.z + randomOffsetZ },
+					this.pathfinder.map,
+				);
+			}
+
+			this.pathfinder
+				.getPathFromAtoB(currentGridPos, targetGridPos)
+				// .set the new path
+				.then(({ result }) => {
+					this.followPath.path = result;
+				})
+				// on finally allow path recalculation again
+				.finally(() => {
+					this.canRecalculatePath = true;
+					this.followPath.timeSinceLast = 0;
+				});
+			this.canRecalculatePath = false;
+		} else {
+			this.done = true;
+		}
+	}
+
+	isDone(): boolean {
+		return this.done;
+	}
+}
