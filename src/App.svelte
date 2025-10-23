@@ -58,13 +58,7 @@
 	</Router>
 
 	<Router route="/game">
-		{#await Promise.all([
-			preloadGLB('/3d/SkinModel.glb'),
-			preloadTextures('/3d/textures/seasons/autumn_ground.jpg'),
-			preloadTextures('/3d/textures/seasons/summer_ground.jpg'),
-			preloadTextures('/3d/textures/seasons/winter_ground.jpg'),
-			preloadTextures('/3d/textures/seasons/spring_ground.jpg'),
-		])}
+		{#await Promise.all( [preloadGLB('/3d/SkinModel.glb'), preloadTextures('/3d/textures/seasons/autumn_ground.jpg'), preloadTextures('/3d/textures/seasons/summer_ground.jpg'), preloadTextures('/3d/textures/seasons/winter_ground.jpg'), preloadTextures('/3d/textures/seasons/spring_ground.jpg')], )}
 			<Loading />
 		{:then _}
 			<GameView />

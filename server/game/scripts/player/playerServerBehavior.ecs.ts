@@ -5,6 +5,7 @@ import { PlayerState } from '#/state/player.state';
 import { ServerDataEcs } from '../serverData.ecs';
 import { MovementServerEcs } from '../entity/MovementServer.ecs';
 import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
+import { NPCEventQueueEcs } from '../ai/npc-event-queue.ecs';
 
 export class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
@@ -82,6 +83,19 @@ export class PlayerServerBehavior extends ComponentEcs {
 						id: this.parent,
 						message: message.message,
 					});
+
+					this.world
+						.getFromEntitiesWith(NPCEventQueueEcs)
+						.forEach(({ component }) =>
+							component.pushEvent(
+								{
+									type: 'message',
+									from: this.parent,
+									message: message.message,
+								},
+								10,
+							),
+						);
 				}
 				break;
 		}

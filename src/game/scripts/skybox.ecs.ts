@@ -95,9 +95,13 @@ export class SkyboxEcs extends ComponentEcs {
 		if (!this.sky) return;
 
 		const uniforms = this.sky.material.uniforms;
-		if (params.turbidity !== undefined) uniforms['turbidity'].value = params.turbidity;
-		if (params.rayleigh !== undefined) uniforms['rayleigh'].value = params.rayleigh;
-		if (params.mieCoefficient !== undefined) uniforms['mieCoefficient'].value = params.mieCoefficient;
-		if (params.mieDirectionalG !== undefined) uniforms['mieDirectionalG'].value = params.mieDirectionalG;
+		if (params.turbidity !== undefined)
+			uniforms['turbidity'].value = params.turbidity;
+		if (params.rayleigh !== undefined)
+			uniforms['rayleigh'].value = params.rayleigh;
+		if (params.mieCoefficient !== undefined)
+			uniforms['mieCoefficient'].value = params.mieCoefficient;
+		if (params.mieDirectionalG !== undefined)
+			uniforms['mieDirectionalG'].value = params.mieDirectionalG;
 	}
 }
