@@ -1,4 +1,25 @@
+import net from 'node:net';
 import type { createServer } from 'node:http';
+
+const checkPort = (port: number, host = '127.0.0.1') => {
+	return new Promise<boolean>((resolve) => {
+		const server = net.createServer();
+
+		server.once('error', () => {
+			resolve(false);
+		});
+
+		server.once('listening', () => {
+			server.close();
+		});
+
+		server.on('close', () => {
+			resolve(true);
+		});
+
+		server.listen(port, host);
+	});
+};
 
 export const checkServerListen = async (
 	server: ReturnType<typeof createServer>,
@@ -7,31 +28,20 @@ export const checkServerListen = async (
 ) => {
 	let attempts = attemptsLeft;
 
-	while (attempts > 0) {
-		try {
-			console.log(`Starting server on port ${port}...`);
+	do {
+		console.log(`Checking port ${port}... Attempts left: ${attempts}`);
+		attempts -= 1;
 
-			const s = server.listen(port, () => {
-				console.log(`Server is listening on port ${port}`);
-			});
+		const isFree = await checkPort(port);
 
-			// check error during startup
-			await new Promise<void>((resolve, reject) => {
-				s.on('listening', () => resolve());
-				s.on('error', (err) => reject(err));
-			});
-
+		if (isFree) {
 			break;
-		} catch (_error) {
-			attempts--;
-			console.log(
-				`Server failed to start. Retrying... (${attempts} attempts left)`,
-			);
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-			if (attempts <= 0) {
-				console.error('Max attempts reached. Server failed to start.');
-				process.exit(1);
-			}
 		}
-	}
+
+		await new Promise((resolve) => setTimeout(resolve, 1000));
+	} while (attempts > 0);
+
+	server.listen(port, () => {
+		console.log(`Server is listening on port ${port}`);
+	});
 };
