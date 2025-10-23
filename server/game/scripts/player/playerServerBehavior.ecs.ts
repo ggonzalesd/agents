@@ -1,6 +1,6 @@
 import { ComponentEcs } from '#/ecs';
-import { type IVec2 } from '#/utils/math.util';
-import { PlayerState } from '#/state/player.state';
+import type { IVec2 } from '#/utils/math.util';
+import type { PlayerState } from '#/state/player.state';
 
 import { ServerDataEcs } from '../serverData.ecs';
 import { MovementServerEcs } from '../entity/MovementServer.ecs';
@@ -67,15 +67,17 @@ export class PlayerServerBehavior extends ComponentEcs {
 			case 'jump':
 				this.movement.movementState.isJumping = true;
 				break;
-			case 'pick':
+			case 'pick': {
 				const itemId =
 					((message as any)?.itemParent as string | undefined) ?? '';
+
 				const newId = this.inventory.getAvailableSlot();
 
 				if (itemId && newId != null) {
 					this.inventory.pickItemEntity(itemId, newId);
 				}
 				break;
+			}
 			case 'message':
 				// TODO:
 				if ('message' in message && typeof message.message === 'string') {

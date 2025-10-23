@@ -14,7 +14,7 @@ export class InventoryServerEcs extends ComponentEcs {
 	}
 
 	public isIdValid(id: number): boolean {
-		if (isNaN(id)) return false;
+		if (Number.isNaN(id)) return false;
 		if (!Number.isInteger(id)) return false;
 
 		return id >= 0 && id < this.inventoryState.capacity;

@@ -8,10 +8,6 @@ export class SeasonManagerEcs extends ComponentEcs {
 	private readonly ZONE_SIZE = 100;
 	private readonly TOTAL_SIZE = 200;
 
-	constructor() {
-		super();
-	}
-
 	onStart(): void {
 		this.createSeasonZones();
 	}

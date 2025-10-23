@@ -1,14 +1,12 @@
-import type { ComponentEcs } from './Component.ecs';
-
 import { Option } from '#/utils/Option';
+
+import type { ComponentEcs } from './Component.ecs';
 
 export class BaseEcs {
 	protected components: Map<string, ComponentEcs> = new Map();
 
 	private __world: any = null!;
 	private __parent: string | null = null!;
-
-	constructor() {}
 
 	protected init(
 		world: any,

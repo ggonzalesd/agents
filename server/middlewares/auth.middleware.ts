@@ -8,7 +8,7 @@ import * as JwtService from '$/services/jwt.service';
 export const validateJwtToken =
 	() => async (req: Request, _: Response, next: NextFunction) => {
 		const _token =
-			req.cookies?.['token'] ?? req.headers?.authorization?.split(' ')?.[1];
+			req.cookies?.token ?? req.headers?.authorization?.split(' ')?.[1];
 
 		// Verify token
 		const payload = JwtService.verifyToken(_token).orElseThrow(

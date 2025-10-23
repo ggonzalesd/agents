@@ -9,10 +9,6 @@ export class SkyboxEcs extends ComponentEcs {
 	private lastUpdateTime: number = 0;
 	private renderClient: RenderClientEcs = null!;
 
-	constructor() {
-		super();
-	}
-
 	onStart(): void {
 		this.renderClient = this.world
 			.get(RenderClientEcs)
@@ -44,7 +40,7 @@ export class SkyboxEcs extends ComponentEcs {
 		const minutes = now.getMinutes();
 		const timeDecimal = hours + minutes / 60;
 
-		let elevation;
+		let elevation: number;
 		if (timeDecimal >= 6 && timeDecimal <= 18) {
 			const progress = (timeDecimal - 6) / 12;
 			elevation = Math.sin(progress * Math.PI) * 60 - 10;
@@ -53,17 +49,17 @@ export class SkyboxEcs extends ComponentEcs {
 		}
 
 		const uniforms = this.sky.material.uniforms;
-		uniforms['turbidity'].value = 10;
-		uniforms['rayleigh'].value = 3;
-		uniforms['mieCoefficient'].value = 0.005;
-		uniforms['mieDirectionalG'].value = 0.7;
+		uniforms.turbidity.value = 10;
+		uniforms.rayleigh.value = 3;
+		uniforms.mieCoefficient.value = 0.005;
+		uniforms.mieDirectionalG.value = 0.7;
 
 		const phi = THREE.MathUtils.degToRad(90 - elevation);
 		const theta = THREE.MathUtils.degToRad(180);
 
 		const sun = new THREE.Vector3();
 		sun.setFromSphericalCoords(1, phi, theta);
-		uniforms['sunPosition'].value.copy(sun);
+		uniforms.sunPosition.value.copy(sun);
 	}
 
 	onLoop(_delta: number): void {
@@ -83,7 +79,7 @@ export class SkyboxEcs extends ComponentEcs {
 
 		const sun = new THREE.Vector3();
 		sun.setFromSphericalCoords(1, phi, theta);
-		uniforms['sunPosition'].value.copy(sun);
+		uniforms.sunPosition.value.copy(sun);
 	}
 
 	public setSkyParameters(params: {
@@ -96,12 +92,12 @@ export class SkyboxEcs extends ComponentEcs {
 
 		const uniforms = this.sky.material.uniforms;
 		if (params.turbidity !== undefined)
-			uniforms['turbidity'].value = params.turbidity;
+			uniforms.turbidity.value = params.turbidity;
 		if (params.rayleigh !== undefined)
-			uniforms['rayleigh'].value = params.rayleigh;
+			uniforms.rayleigh.value = params.rayleigh;
 		if (params.mieCoefficient !== undefined)
-			uniforms['mieCoefficient'].value = params.mieCoefficient;
+			uniforms.mieCoefficient.value = params.mieCoefficient;
 		if (params.mieDirectionalG !== undefined)
-			uniforms['mieDirectionalG'].value = params.mieDirectionalG;
+			uniforms.mieDirectionalG.value = params.mieDirectionalG;
 	}
 }

@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { z } from 'zod';
+import type { z } from 'zod';
 
 export const parseWithSchema =
 	(schema: z.ZodType<any>, source: 'body' | 'query' | 'params') =>

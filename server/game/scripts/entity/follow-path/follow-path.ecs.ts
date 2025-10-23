@@ -1,4 +1,4 @@
-import { ComponentEcs, EntityEcs } from '#/ecs';
+import { ComponentEcs } from '#/ecs';
 import { posGridToReal } from '#/utils/map.utils';
 import { WorldPathfinderEcs } from '../../world/world-grid.ecs';
 import { CharacterBodyServerEcs } from '../CharacterBodyServer.ecs';

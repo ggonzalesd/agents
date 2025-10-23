@@ -7,10 +7,6 @@ export class NPCActionProcessEcs extends ComponentEcs {
 
 	npcContextEcs: NPCContextEcs = null!;
 
-	constructor() {
-		super();
-	}
-
 	onStart(): void {
 		const parent = this.world
 			.getEntity(this.parent)

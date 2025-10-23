@@ -5,10 +5,6 @@ export class NPCEventQueueEcs extends ComponentEcs {
 
 	private eventQueue: { id: string; data: any; weight: number }[] = [];
 
-	constructor() {
-		super();
-	}
-
 	pushEvent(data: any, weight = 1) {
 		this.eventQueue.push({ id: crypto.randomUUID(), data, weight });
 	}

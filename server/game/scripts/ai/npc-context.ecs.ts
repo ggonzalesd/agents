@@ -23,10 +23,6 @@ export class NPCContextEcs extends ComponentEcs {
 	record: RecordEcs = null!;
 	eventQueue: NPCEventQueueEcs = null!;
 
-	constructor() {
-		super();
-	}
-
 	onStart(): void {
 		const parent = this.world
 			.getEntity(this.parent)

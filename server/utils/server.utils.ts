@@ -1,4 +1,4 @@
-import { type createServer } from 'node:http';
+import type { createServer } from 'node:http';
 
 export const checkServerListen = async (
 	server: ReturnType<typeof createServer>,
@@ -9,10 +9,10 @@ export const checkServerListen = async (
 
 	while (attempts > 0) {
 		try {
-			console.log('Starting server on port ' + port + '...');
+			console.log(`Starting server on port ${port}...`);
 
 			const s = server.listen(port, () => {
-				console.log('Server is listening on port ' + port);
+				console.log(`Server is listening on port ${port}`);
 			});
 
 			// check error during startup
@@ -22,7 +22,7 @@ export const checkServerListen = async (
 			});
 
 			break;
-		} catch (error) {
+		} catch (_error) {
 			attempts--;
 			console.log(
 				`Server failed to start. Retrying... (${attempts} attempts left)`,

@@ -3,7 +3,7 @@ import {
 	DeleteObjectCommand,
 	GetObjectCommand,
 	PutObjectCommand,
-	S3Client,
+	type S3Client,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl as _getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
@@ -62,7 +62,7 @@ export const exists = async (key: string): Promise<boolean> => {
 		const command = getObject(key);
 
 		await client.send(command);
-	} catch (error) {
+	} catch (_error) {
 		return false;
 	}
 

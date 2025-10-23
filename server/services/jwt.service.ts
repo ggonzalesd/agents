@@ -22,7 +22,7 @@ export const verifyToken = (token?: string | null): Option<AuthPayload> => {
 		const parsed = authPayloadSchema.parse(decoded);
 
 		return Option.some(parsed);
-	} catch (error) {
+	} catch (_error) {
 		return Option.none();
 	}
 };

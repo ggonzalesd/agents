@@ -2,7 +2,7 @@ import { Client, getStateCallbacks, type Room } from 'colyseus.js';
 import type { SchemaCallbackProxy } from '@colyseus/schema';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
-import { GameState } from '#/state/game.state';
+import type { GameState } from '#/state/game.state';
 import { Option } from '#/utils/Option';
 import { Observer } from '#/utils/Observer';
 import { Result } from '#/utils/Result';

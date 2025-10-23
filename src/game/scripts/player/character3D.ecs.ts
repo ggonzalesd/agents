@@ -3,7 +3,6 @@ import * as THREE from 'three';
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { vec3Set } from '#/utils/math.util';
 
-import type { PlayerState } from '#/state/player.state';
 import { RenderClientEcs } from '../renderClient.ecs';
 import { ColyseusClientEcs } from '../colyseus-client.ecs';
 import { cloneMesh, loadGLB, loadTexture } from '@/utils/assets.utils';
@@ -43,7 +42,7 @@ export class Character3DEcs extends ComponentEcs {
 		// Skinning /3d/gordon.png with transparency
 		const material = new THREE.MeshStandardMaterial({
 			map: loadTexture(
-				import.meta.env.VITE_API_URL + '/api/v1/skin/' + this.skin + '.png',
+				`${import.meta.env.VITE_API_URL}/api/v1/skin/${this.skin}.png`,
 			),
 		});
 		material.transparent = true;
@@ -78,7 +77,7 @@ export class Character3DEcs extends ComponentEcs {
 			.unwrap('No RenderClientEcs found');
 
 		// Colyseus Components
-		const { proxy } = this.world
+		this.world
 			.get(ColyseusClientEcs)
 			.pick('connection')
 			.collapse()

@@ -1,9 +1,6 @@
 import * as THREE from 'three';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
-import { Option } from '#/utils/Option';
-import { UIClientEcs } from './uiClient.ecs';
-import type { SkyboxEcs } from './skybox.ecs';
 
 import { defaultMap } from '#/maps/default.map';
 
@@ -14,8 +11,6 @@ export class RenderClientEcs extends ComponentEcs {
 
 	private raycaster = new THREE.Raycaster();
 	private mouse = new THREE.Vector2();
-
-	private uiClientOp: Option<UIClientEcs> = Option.none();
 
 	constructor(public canvas: HTMLCanvasElement) {
 		super();
@@ -67,8 +62,6 @@ export class RenderClientEcs extends ComponentEcs {
 	}
 
 	onStart(): void {
-		this.uiClientOp = this.world.get(UIClientEcs);
-
 		window.addEventListener(
 			'click',
 			((event: PointerEvent) => {

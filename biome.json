@@ -1,0 +1,37 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.2.7/schema.json",
+
+	"formatter": {
+		"enabled": false
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"style": {
+				"noNonNullAssertion": "info"
+			},
+			"suspicious": {
+				"noExplicitAny": "off",
+				"useIterableCallbackReturn": "off"
+			}
+		}
+	},
+
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "off"
+			}
+		}
+	},
+
+	"files": {
+		"includes": ["common/**/*.ts", "server/**/*.ts", "src/**/*.ts"]
+	},
+
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git"
+	}
+}

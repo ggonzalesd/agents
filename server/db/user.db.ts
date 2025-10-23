@@ -3,7 +3,7 @@ import * as bcrypt from 'bcrypt';
 
 import { Option } from '#/utils/Option';
 
-import _sql, { sqlBuilder } from '$/config/db.config';
+import { sqlBuilder } from '$/config/db.config';
 
 import type { UserDB } from '$/models/user.model';
 

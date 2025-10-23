@@ -1,4 +1,4 @@
-import { type createServer } from 'node:http';
+import type { createServer } from 'node:http';
 
 import { matchMaker, Server } from 'colyseus';
 import { WebSocketTransport } from '@colyseus/ws-transport';

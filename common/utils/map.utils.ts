@@ -1,4 +1,4 @@
-import { mapSchema } from '#/schema/map.schema';
+import type { mapSchema } from '#/schema/map.schema';
 
 type Map = ReturnType<typeof mapSchema.parse>;
 

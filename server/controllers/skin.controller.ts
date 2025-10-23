@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Response, Request } from 'express';
 
 import envConfig from '$/config/env.config';
 
@@ -25,8 +25,7 @@ export const uploadSkinController = async (req: Request, res: Response) => {
 		`skins/${user.username}.png`,
 		24 * 3600,
 	); // 24 hours
-	const url =
-		envConfig.S3_URL + `/${envConfig.S3_NAME}/skins/${user.username}.png`;
+	const url = `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/${user.username}.png`;
 
 	res.json({
 		ok: true,
@@ -47,8 +46,8 @@ export const getSkinController = async (req: Request, res: Response) => {
 
 	const exists = await S3Service.exists(`skins/${username}.png`);
 	const url = exists
-		? envConfig.S3_URL + `/${envConfig.S3_NAME}/skins/${username}.png`
-		: envConfig.CLIENT_URL + '/3d/gordon.png';
+		? `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/${username}.png`
+		: `${envConfig.CLIENT_URL}/3d/gordon.png`;
 
 	// Redirect to the signed URL
 	res.redirect(302, url);

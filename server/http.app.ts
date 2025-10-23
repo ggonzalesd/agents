@@ -50,14 +50,13 @@ export const applyHttpApplication = (
 	app.use(express.static(join(process.cwd(), 'dist')));
 
 	const group = express.Router();
-	{
-		app.use('/api/v1', group);
 
-		group.use('/room', roomRoute);
-		group.use('/auth', authRoute);
-		group.use('/skin', skinRoute);
-		group.use('/experimental', experimentalRoute);
-	}
+	app.use('/api/v1', group);
+
+	group.use('/room', roomRoute);
+	group.use('/auth', authRoute);
+	group.use('/skin', skinRoute);
+	group.use('/experimental', experimentalRoute);
 
 	app.use((_, res) => {
 		res.status(404).json({

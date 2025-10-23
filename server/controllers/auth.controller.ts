@@ -100,7 +100,7 @@ export const revokeTokensController = async (req: Request, res: Response) => {
 export const profileAuthController = async (req: Request, res: Response) => {
 	const { user } = getAuth(req);
 
-	const { password, hash, ...result } = user;
+	const { password: _, hash: __, ...result } = user;
 
 	res.json(
 		jsonResponse.ok(
