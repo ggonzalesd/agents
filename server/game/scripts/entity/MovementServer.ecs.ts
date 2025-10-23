@@ -13,7 +13,7 @@ import {
 	type IVec3,
 } from '#/utils/math.util';
 
-import { MovementState } from '#/state/movement.state';
+import type { MovementState } from '#/state/movement.state';
 
 import { vec3ToRapier } from '$/utils/math.utils';
 

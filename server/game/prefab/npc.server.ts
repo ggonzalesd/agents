@@ -1,6 +1,10 @@
 import { EntityEcs, type WorldEcs } from '#/ecs';
+import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { NPCState } from '#/state/game.state';
 import type { IVec3 } from '#/utils/math.util';
+import { NPCActionProcessEcs } from '../scripts/ai/npc-action-process.ecs';
+import { NPCContextEcs } from '../scripts/ai/npc-context.ecs';
+import { NPCEventQueueEcs } from '../scripts/ai/npc-event-queue.ecs';
 
 import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';
 import { FollowPathEcs } from '../scripts/entity/follow-path/follow-path.ecs';
@@ -16,11 +20,28 @@ export const npcServerFactoryGenerator =
 			name,
 			world,
 			components: {
+				// Basic data components
+				[RecordEcs.name]: new RecordEcs({
+					stats: {
+						id: name,
+						name: 'Goblin',
+						description: `${name} description`,
+						life: 100,
+					},
+				}),
+				// Events for NPC AI
+				[NPCEventQueueEcs.name]: new NPCEventQueueEcs(),
+
+				// Movement components
 				[CharacterBodyServerEcs.name]: new CharacterBodyServerEcs(
 					state.character,
 				),
 				[MovementServerEcs.name]: new MovementServerEcs(state.movement),
 				[FollowPathEcs.name]: new FollowPathEcs(),
+
+				// NPC specific AI components
+				[NPCContextEcs.name]: new NPCContextEcs(),
+				[NPCActionProcessEcs.name]: new NPCActionProcessEcs(),
 				[NpcServerBehavior.name]: new NpcServerBehavior({
 					state,
 				}),

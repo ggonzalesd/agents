@@ -24,10 +24,6 @@ export class PlayerCameraFollowEcs extends ComponentEcs {
 	smoothCamera = new THREE.Vector3();
 	smoothCube = new THREE.Vector3();
 
-	constructor() {
-		super();
-	}
-
 	onStart(): void {
 		this.room = this.world
 			.get(ColyseusClientEcs)

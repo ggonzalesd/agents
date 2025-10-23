@@ -31,7 +31,7 @@ export class AStar {
 		let closestDist = h(start, end);
 
 		while (open.size > 0) {
-			let currentKey = [...open].reduce((a, b) =>
+			const currentKey = [...open].reduce((a, b) =>
 				(fScore.get(a) ?? Infinity) < (fScore.get(b) ?? Infinity) ? a : b,
 			);
 

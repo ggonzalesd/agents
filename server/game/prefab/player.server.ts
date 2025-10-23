@@ -1,6 +1,6 @@
 import { EntityEcs, type WorldEcs } from '#/ecs';
 import { PlayerState } from '#/state/player.state';
-import { type IVec3 } from '#/utils/math.util';
+import type { IVec3 } from '#/utils/math.util';
 
 import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';
 import { InventoryServerEcs } from '../scripts/entity/InventoryServer.ecs';

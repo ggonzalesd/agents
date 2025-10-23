@@ -266,7 +266,7 @@ export class Option<T = unknown> {
 		return Option.some(opts.map((opt) => opt.value));
 	}
 
-	build(fn: (opt: Option<T>) => null | undefined | void): Option<unknown>;
+	build(fn: (opt: Option<T>) => null | undefined): Option<unknown>;
 	build<R extends readonly Option<any>[]>(
 		fn: (opt: Option<T>) => R,
 	): Option<{ [K in keyof R]: R[K] extends Option<infer U> ? U : never }>;

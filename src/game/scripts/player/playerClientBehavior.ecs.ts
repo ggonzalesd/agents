@@ -20,10 +20,6 @@ export class PlayerClientBehavior extends ComponentEcs {
 
 	public clientAuthoritative: ClientAuthoritative = null!;
 
-	constructor() {
-		super();
-	}
-
 	onStart(): void {
 		const player = this.world.getEntity(this.parent).unwrap('No Player found');
 

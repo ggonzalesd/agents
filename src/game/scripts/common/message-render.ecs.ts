@@ -4,13 +4,11 @@ import { ComponentEcs } from '#/ecs/Component.ecs';
 import { Character3DEcs } from '../player/character3D.ecs';
 import { createTextTexture } from '@/utils/text.utils';
 import { RenderClientEcs } from '../renderClient.ecs';
-import { UIClientEcs } from '../uiClient.ecs';
 import { ColyseusClientEcs } from '../colyseus-client.ecs';
 
 export class MessageRenderEcs extends ComponentEcs {
 	private spot: THREE.Object3D;
 	private renderClient: RenderClientEcs = null!;
-	private uiClient: UIClientEcs = null!;
 	private colyseusClient: ColyseusClientEcs = null!;
 
 	private messages: Array<{
@@ -56,8 +54,6 @@ export class MessageRenderEcs extends ComponentEcs {
 		this.renderClient = this.world
 			.get(RenderClientEcs)
 			.unwrap('RenderClient not found!');
-
-		this.uiClient = this.world.get(UIClientEcs).unwrap('UIClient not found!');
 	}
 
 	onLoop(_delta: number): void {

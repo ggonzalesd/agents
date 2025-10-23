@@ -13,6 +13,8 @@
 	let worldEcsContext = getContext<Option<WorldEcs>>(WorldEcs.name);
 
 	function onSubmit(event: SubmitEvent) {
+		console.log('Message sent to server:', event);
+
 		event.preventDefault();
 		const form = event.target as HTMLFormElement;
 		const message = (form.elements.namedItem('message') as HTMLInputElement)
@@ -43,10 +45,14 @@
 	});
 </script>
 
-<div>
+<div class="pointer-events-auto bg-zinc-900">
 	<p>Send a Message</p>
-	<form onsubmit={onSubmit}>
+	<form onsubmit={onSubmit} class="mt-4 flex gap-2">
 		<input bind:this={inputRef} type="text" name="message" id="message" />
-		<button type="submit">Send</button>
+		<input
+			class="pointer-events-auto flex h-5 items-center rounded-md bg-blue-600 px-4 transition-transform active:scale-95"
+			type="submit"
+			value="Send"
+		/>
 	</form>
 </div>

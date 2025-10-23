@@ -1,9 +1,13 @@
 import { ComponentEcs } from '#/ecs';
-import { NPCState } from '#/state/game.state';
+import type { NPCState } from '#/state/game.state';
+import { Option } from '#/utils/Option';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
+import { FollowEntityOption } from '../entity/follow-path/follow-entity.class';
 import { FollowPathEcs } from '../entity/follow-path/follow-path.ecs';
+// biome-ignore lint/correctness/noUnusedImports: For Testing
 import { FollowPositionOption } from '../entity/follow-path/follow-position.class';
 import { MovementServerEcs } from '../entity/MovementServer.ecs';
+import { PlayerServerBehavior } from '../player/playerServerBehavior.ecs';
 import { ServerDataEcs } from '../serverData.ecs';
 import { WorldPathfinderEcs } from '../world/world-grid.ecs';
 
@@ -50,10 +54,35 @@ export class NpcServerBehavior extends ComponentEcs {
 			.unwrap('MovementServerEcs not found');
 
 		this.follower = parent.get(FollowPathEcs).unwrap('FollowPathEcs not found');
+
+		setTimeout(() => {
+			Option.of(
+				this.world.getEntityLike({
+					behavior: PlayerServerBehavior,
+					character: CharacterBodyServerEcs,
+				})[0],
+			)
+				.filter(() => Math.random() < 0.0)
+				.ifSome(({ entity }) => {
+					this.serverData.room.broadcast('agent:message', {
+						id: this.parent,
+						message: 'Following you now!',
+					});
+
+					this.follower.option = new FollowEntityOption({
+						pathfinder: this.pathfinder,
+						followPath: this.follower,
+						target: entity,
+						entity: this.world
+							.getEntity(this.parent)
+							.unwrap('Parent not found'),
+					});
+				});
+		}, 7500);
 	}
 
 	onLoop(_delta: number): void {
-		if (this.follower.option.isDone()) {
+		/* if (this.follower.option.isDone()) {
 			console.log('NPC returning to start position', {});
 
 			const randX = Math.random() * 20 - 10;
@@ -68,6 +97,6 @@ export class NpcServerBehavior extends ComponentEcs {
 				},
 				entity: this.world.getEntity(this.parent).unwrap('Parent not found'),
 			});
-		}
+		} */
 	}
 }

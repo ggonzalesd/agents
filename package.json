@@ -11,10 +11,12 @@
 		"server:dev": "NODE_ENV=development tsx --watch --tsconfig tsconfig.node.json --env-file=.env server/index.ts",
 		"server:build": "node esbuild.config.ts",
 		"check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
-		"format": "prettier --check --write src",
-		"indev": "concurrently --names \"docker,client,server\" --prefix-colors \"black.bgBlue,black.bgYellow,black.bgYellowBright\" \"docker compose up\" \"pnpm dev\" \"pnpm server:dev\""
+		"indev": "concurrently --names \"docker,client,server\" --prefix-colors \"black.bgBlue,black.bgYellow,black.bgYellowBright\" \"docker compose up\" \"pnpm dev\" \"pnpm server:dev\"",
+		"lint": "biome lint --skip=style/noNonNullAssertion",
+		"format": "prettier --check --write src"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "^2.2.7",
 		"@sveltejs/vite-plugin-svelte": "^6.1.1",
 		"@tailwindcss/vite": "^4.1.12",
 		"@tsconfig/svelte": "^5.0.4",
@@ -45,7 +47,6 @@
 		"@colyseus/schema": "^3.0.56",
 		"@colyseus/ws-transport": "^0.16.5",
 		"@dimforge/rapier3d-compat": "^0.18.2",
-		"@types/pathfinding": "^0.1.0",
 		"axios": "^1.11.0",
 		"bcrypt": "^6.0.0",
 		"colyseus": "^0.16.4",
@@ -57,6 +58,7 @@
 		"jsonwebtoken": "^9.0.2",
 		"morgan": "^1.10.1",
 		"multer": "^2.0.2",
+		"openai": "^6.5.0",
 		"piscina": "^5.1.3",
 		"postgres": "^3.4.7",
 		"prisma": "^6.14.0",

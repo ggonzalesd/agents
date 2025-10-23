@@ -9,9 +9,10 @@ import {
 import * as RAPIER from '@dimforge/rapier3d-compat';
 
 import { GameState } from '#/state/game.state';
-import { WorldEcs } from '#/ecs/World.ecs';
+import type { WorldEcs } from '#/ecs/World.ecs';
+import * as JwtService from '$/services/jwt.service';
+
 import { playerServerFactoryGenerator } from './prefab/player.server';
-import { verifyToken } from '$/services/jwt.service';
 import { npcServerFactoryGenerator } from './prefab/npc.server';
 import { worldServerFactory } from './prefab/world.server';
 
@@ -21,7 +22,7 @@ export class MainRoom extends Room<GameState> {
 
 	playerServerFactory: ReturnType<typeof playerServerFactoryGenerator> = null!;
 
-	onCreate(options: any): void | Promise<any> {
+	onCreate(options: any): void | Promise<void> {
 		if (!['1', '2', 'main-room'].includes(options.id)) {
 			throw new ServerError(401, 'Invalid room ID');
 		}
@@ -50,10 +51,10 @@ export class MainRoom extends Room<GameState> {
 		const npcServerFactory = npcServerFactoryGenerator(this.worldEcs);
 
 		// Add some NPCs
-		for (let i = 0; i < 5; i++) {
+		for (let i = 0; i < 3; i++) {
 			this.worldEcs.addEntity(
 				npcServerFactory({
-					name: `npc_${i}_` + Math.random().toString(36).substring(7),
+					name: `npc_${i}_${Math.random().toString(36).substring(7)}`,
 					pos: {
 						x: (Math.random() - 0.5) * 20,
 						y: 5,
@@ -86,7 +87,7 @@ export class MainRoom extends Room<GameState> {
 	}
 
 	onAuth(_client: Client<any, any>, _options: any, _context: AuthContext) {
-		const payloadOp = verifyToken(_context.token);
+		const payloadOp = JwtService.verifyToken(_context.token);
 
 		if (payloadOp.isNone()) {
 			return false;
@@ -137,6 +138,6 @@ export class MainRoom extends Room<GameState> {
 	}
 
 	onUncaughtException(error: RoomException<this>, methodName: string): void {
-		console.error(methodName + ' ' + error.name, error);
+		console.error(`${methodName} ${error.name}`, error);
 	}
 }

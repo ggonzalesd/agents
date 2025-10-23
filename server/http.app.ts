@@ -39,22 +39,24 @@ export const applyHttpApplication = (
 	app.get('/health', (_, res) => {
 		res.json({
 			ok: true,
-			message: 'Healthy',
-			data: null,
+			message: 'Server is healthy',
+			data: {
+				timestamp: Date.now(),
+				environment: envConfig.NODE_ENV,
+			},
 		});
 	});
 
 	app.use(express.static(join(process.cwd(), 'dist')));
 
 	const group = express.Router();
-	{
-		app.use('/api/v1', group);
 
-		group.use('/room', roomRoute);
-		group.use('/auth', authRoute);
-		group.use('/skin', skinRoute);
-		group.use('/experimental', experimentalRoute);
-	}
+	app.use('/api/v1', group);
+
+	group.use('/room', roomRoute);
+	group.use('/auth', authRoute);
+	group.use('/skin', skinRoute);
+	group.use('/experimental', experimentalRoute);
 
 	app.use((_, res) => {
 		res.status(404).json({

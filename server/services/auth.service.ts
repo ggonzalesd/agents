@@ -3,9 +3,9 @@ import { HttpError } from '#/utils/HttpError';
 
 import sql from '$/config/db.config';
 
-import { createUser, getUserByUsername } from '$/db/user.db';
+import * as UserRepository from '$/db/user.db';
 
-export const createUserService = async (
+export const createUser = async (
 	payload: ReturnType<typeof registerRequestSchema.parse>,
 	options?: {
 		role: 'USER' | 'ADMIN' | 'MODERATOR';
@@ -15,7 +15,7 @@ export const createUserService = async (
 	const { username } = payload;
 
 	const result = await sql.begin(async (sql) => {
-		const users = await getUserByUsername(username, sql);
+		const users = await UserRepository.getUserByUsername({ username }, sql);
 
 		if (throws && users.isSome())
 			throw HttpError.badRequest(`Username '${username}' is already taken`);
@@ -23,7 +23,7 @@ export const createUserService = async (
 			return users;
 		}
 
-		const created = await createUser({
+		const created = await UserRepository.createUser({
 			...payload,
 			role: options?.role ?? 'USER',
 		});

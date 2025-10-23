@@ -1,4 +1,4 @@
-import { EntityEcs, WorldEcs } from '#/ecs';
+import { EntityEcs, type WorldEcs } from '#/ecs';
 import { ItemEntityState } from '#/state/inventory.state';
 import type { IVec3 } from '#/utils/math.util';
 import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';

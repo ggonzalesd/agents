@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-import { type LLMService } from '.';
+import type { LLMService } from '.';
 import { Option } from '#/utils/Option';
 
 export class ManualLLMService implements LLMService {
@@ -51,7 +51,7 @@ export class ManualLLMService implements LLMService {
 	}
 
 	async speechToText(audio: Blob): Promise<string> {
-		return 'Manual transcription of audio size: ' + audio.size;
+		return `Manual transcription of audio size: ${audio.size}`;
 	}
 
 	async vectorize(text: string): Promise<number[]> {

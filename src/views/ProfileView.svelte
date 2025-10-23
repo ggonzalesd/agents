@@ -10,6 +10,15 @@
 
 	onMount(() => {
 		gameInputContext.disabled = true;
+
+		const timeout = setTimeout(() => {
+			if (import.meta.env.VITE_AUTO_JOIN === 'true')
+				router.changeRoute('/game');
+		}, 1000);
+
+		return () => {
+			clearTimeout(timeout);
+		};
 	});
 
 	function logoutHandler() {

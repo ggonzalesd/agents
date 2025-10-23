@@ -18,5 +18,10 @@
 	},
 	"[svelte]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	}
+	},
+
+	"eslint.enable": false,
+	"biome.enabled": true,
+
+	"svelte.plugin.svelte.format.enable": false
 }

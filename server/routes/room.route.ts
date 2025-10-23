@@ -1,14 +1,16 @@
-import { matchMaker } from 'colyseus';
 import { Router } from 'express';
+import { matchMaker } from 'colyseus';
 
-import { authMiddleware } from '$/middlewares/auth.middleware';
-import { roleMiddleware } from '$/middlewares/role.middleware';
-import { getAuth } from '$/utils/req.utils';
 import { HttpError } from '#/utils/HttpError';
+
+import { getAuth } from '$/utils/req.utils';
+
+import * as AuthMiddleware from '$/middlewares/auth.middleware';
+import * as RoleMiddleware from '$/middlewares/role.middleware';
 
 const router = Router();
 
-router.get('/', authMiddleware(), async (_, res) => {
+router.get('/', AuthMiddleware.validateJwtToken(), async (_, res) => {
 	const data = await matchMaker.query({});
 
 	res.json({ message: 'Room route works', data: data.map((d) => d.roomId) });
@@ -16,8 +18,8 @@ router.get('/', authMiddleware(), async (_, res) => {
 
 router.post(
 	'/:id',
-	authMiddleware(),
-	roleMiddleware('ADMIN', 'MOD'),
+	AuthMiddleware.validateJwtToken(),
+	RoleMiddleware.withRoles('ADMIN', 'MOD'),
 	async (req, res) => {
 		const { token } = getAuth(req);
 		const { id } = req.params;
@@ -33,8 +35,8 @@ router.post(
 
 router.post(
 	'/stop/:id',
-	authMiddleware(),
-	roleMiddleware('ADMIN', 'MOD'),
+	AuthMiddleware.validateJwtToken(),
+	RoleMiddleware.withRoles('ADMIN', 'MOD'),
 	async (req, res) => {
 		const { id } = req.params;
 

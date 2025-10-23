@@ -10,7 +10,7 @@ type GameType = {
 };
 
 export const useGameState = () => {
-	let { subscribe, update } = writable<GameType>({
+	const { subscribe, update } = writable<GameType>({
 		paused: false,
 		view: 'MENU',
 		username: '',

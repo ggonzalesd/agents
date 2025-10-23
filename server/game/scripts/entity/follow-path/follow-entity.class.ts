@@ -9,7 +9,7 @@ export class FollowEntityOption implements IFollowOption {
 	private pathfinder: WorldPathfinderEcs;
 	private followPath: FollowPathEcs;
 
-	private updatePathTimer = 0;
+	private updatePathTimer = Infinity;
 
 	positionGetter?: () => { x: number; z: number };
 	target: EntityEcs;
@@ -59,7 +59,7 @@ export class FollowEntityOption implements IFollowOption {
 		if (this.updatePathTimer < 0) return;
 		this.updatePathTimer += _delta / 1000;
 
-		if (this.updatePathTimer >= 5) return;
+		if (this.updatePathTimer <= 2.5) return;
 		this.updatePathTimer = -1;
 
 		// Get target position
@@ -82,6 +82,11 @@ export class FollowEntityOption implements IFollowOption {
 			// .set the new path
 			.then(({ result }) => {
 				this.followPath.path = result;
+				console.log('FollowEntityOption: New path calculated', {
+					from: currentGridPos,
+					to: targetGridPos,
+					pathLength: result.length,
+				});
 			})
 			// on finally allow path recalculation again
 			.finally(() => {

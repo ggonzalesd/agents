@@ -21,10 +21,6 @@ export class ClientManagerEcs extends ComponentEcs {
 
 	private idMessage: string = '';
 
-	constructor() {
-		super();
-	}
-
 	onConnection() {
 		const { proxy, room } = this.colyseusClient
 			.map((c) => c.connection)
@@ -36,14 +32,14 @@ export class ClientManagerEcs extends ComponentEcs {
 			this.world.addEntity(player);
 
 			this.uiClient.ifSome((uiClient) => {
-				uiClient.debug.add('Player ' + index, {
+				uiClient.debug.add(`Player ${index}`, {
 					isCode: false,
 					type: 'error',
 				});
 			});
 		});
 
-		proxy(room.state).players.onRemove((state, index) => {
+		proxy(room.state).players.onRemove((_state, index) => {
 			this.world.deleteEntityById(index);
 		});
 
@@ -54,7 +50,7 @@ export class ClientManagerEcs extends ComponentEcs {
 			console.log('Item added', state);
 		});
 
-		proxy(room.state).items.onRemove((state, index) => {
+		proxy(room.state).items.onRemove((_state, index) => {
 			this.world.deleteEntityById(index);
 		});
 
