@@ -1,6 +1,6 @@
 import { HttpError } from '#/utils/HttpError';
-import { verifyToken } from '$/services/jwt.service';
-import { getUserByUsername } from '$/db/user.db';
+import { JwtService } from '$/services/jwt.service';
+import { UserRepository } from '$/db/user.db';
 import type { NextFunction, Request, Response } from 'express';
 
 export const authMiddleware =
@@ -9,12 +9,14 @@ export const authMiddleware =
 			req.cookies?.['token'] ?? req.headers?.authorization?.split(' ')?.[1];
 
 		// Verify token
-		const payload = verifyToken(_token).orElseThrow(
+		const payload = JwtService.verifyToken(_token).orElseThrow(
 			HttpError.forbidden('Token is invalid or expired'),
 		);
 
 		// Get user from database
-		const userOption = await getUserByUsername(payload.username);
+		const userOption = await UserRepository.getUserByUsername({
+			username: payload.username,
+		});
 		const user = userOption.orElseThrow(HttpError.notFound('User not found'));
 
 		// Check if user hash matches

@@ -3,11 +3,11 @@ import * as bcrypt from 'bcrypt';
 
 import sql from '$/config/db.config';
 
-import { getUserByUsername, revokeUserHash } from '$/db/user.db';
+import { UserRepository } from '$/db/user.db';
 import type { AuthPayload } from '$/models/Payload.model';
 import { getAuth } from '$/utils/req.utils';
-import { signToken } from '$/services/jwt.service';
-import { createUserService } from '$/services/auth.service';
+import { JwtService } from '$/services/jwt.service';
+import { AuthService } from '$/services/auth.service';
 
 import type {
 	loginRequestSchema,
@@ -22,7 +22,7 @@ export const authLoginController = async (req: Request, res: Response) => {
 		typeof loginRequestSchema.parse
 	>;
 
-	const userOption = await getUserByUsername(username);
+	const userOption = await UserRepository.getUserByUsername({ username });
 	const user = userOption.orElseThrow(
 		HttpError.unauthorized('Invalid username or password'),
 	);
@@ -39,7 +39,7 @@ export const authLoginController = async (req: Request, res: Response) => {
 		role: user.role,
 	};
 
-	const token = signToken(payload);
+	const token = JwtService.signToken(payload);
 
 	res.cookie('token', token, {
 		httpOnly: true,
@@ -64,7 +64,7 @@ export const authLoginController = async (req: Request, res: Response) => {
 export const authRegisterController = async (req: Request, res: Response) => {
 	const payload = req.body as ReturnType<typeof registerRequestSchema.parse>;
 
-	const newUser = await createUserService(payload, {
+	const newUser = await AuthService.createUser(payload, {
 		role: 'USER',
 	});
 
@@ -79,8 +79,14 @@ export const authRegisterController = async (req: Request, res: Response) => {
 export const revokeTokensController = async (req: Request, res: Response) => {
 	const body = req.body as ReturnType<typeof revokeRequestSchema.parse>;
 
-	await sql.begin(async (sql) =>
-		revokeUserHash(body.id, body.newPassword, sql),
+	await sql.begin((sql) =>
+		UserRepository.revokeUserHash(
+			{
+				id: body.id,
+				withPassword: body.newPassword,
+			},
+			sql,
+		),
 	);
 
 	res.json(

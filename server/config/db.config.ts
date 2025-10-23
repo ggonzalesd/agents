@@ -1,4 +1,4 @@
-import postgres from 'postgres';
+import postgres, { type Sql } from 'postgres';
 
 import envConfig from './env.config';
 
@@ -8,6 +8,15 @@ const sql = postgres(envConfig.DB_URL, {
 	idle_timeout: 0,
 	max_lifetime: 60 * 30,
 });
+
+export function sqlBuilder<P extends { [key: string]: unknown }, R>(
+	fn: (args: P, sql: Sql) => Promise<R>,
+) {
+	return (args: P, __sql?: Sql): Promise<R> => {
+		const _sql = __sql ?? sql;
+		return fn({ ...args, sql: _sql } as P, sql);
+	};
+}
 
 export async function checkDbConnection() {
 	let attempts = 20;

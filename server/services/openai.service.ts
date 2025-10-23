@@ -1,9 +1,7 @@
 import openaiCli from '$/config/openai.config';
 
-export default class OpenAIService {
-	constructor() {}
-
-	async ask(_question: string): Promise<string> {
+export namespace OpenAIService {
+	export const ask = async (_question: string): Promise<string> => {
 		const output = await openaiCli.responses.create({
 			model: 'gpt-4',
 			instructions:
@@ -12,5 +10,5 @@ export default class OpenAIService {
 		});
 
 		return output.output_text;
-	}
+	};
 }

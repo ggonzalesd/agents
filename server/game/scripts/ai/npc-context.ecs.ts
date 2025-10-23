@@ -1,11 +1,14 @@
+import { z } from 'zod';
+
 import { ComponentEcs } from '#/ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
+import { actionsSchema } from '#/schema/actions.schema';
+
+import { OpenAIService } from '$/services/openai.service';
+
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 
-import { z } from 'zod';
 import { NPCEventQueueEcs } from './npc-event-queue.ecs';
-import OpenAIService from '$/services/openai.service';
-import { actionsSchema } from '#/schema/actions.schema';
 
 export const statsSchema = z
 	.object({
@@ -19,8 +22,6 @@ export class NPCContextEcs extends ComponentEcs {
 	character: CharacterBodyServerEcs = null!;
 	record: RecordEcs = null!;
 	eventQueue: NPCEventQueueEcs = null!;
-
-	openaiService: OpenAIService = new OpenAIService();
 
 	constructor() {
 		super();
@@ -193,8 +194,7 @@ export class NPCContextEcs extends ComponentEcs {
 
 		const context = this.buildContext();
 		console.log('NPCContextEcs asking OpenAI with context:\n', context);
-		this.openaiService
-			.ask(context)
+		OpenAIService.ask(context)
 			.then((response) => {
 				this.processActions(response);
 			})

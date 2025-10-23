@@ -1,85 +1,85 @@
+import { Readable } from 'node:stream';
 import {
 	DeleteObjectCommand,
 	GetObjectCommand,
 	PutObjectCommand,
 	S3Client,
 } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { getSignedUrl as _getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
-import { s3ClientConfig } from '$/config/s3.config';
 import envConfig from '$/config/env.config';
-import { Readable } from 'node:stream';
+import { s3ClientConfig } from '$/config/s3.config';
 
-export class S3BucketAdapter {
-	private readonly client: S3Client;
-	private readonly bucketName;
+export namespace S3Service {
+	const client: S3Client = s3ClientConfig;
+	const bucketName = envConfig.S3_NAME;
 
-	constructor() {
-		this.client = s3ClientConfig;
-		this.bucketName = envConfig.S3_NAME;
-	}
-
-	getObject(key: string): GetObjectCommand {
+	export const getObject = (key: string): GetObjectCommand => {
 		return new GetObjectCommand({
-			Bucket: this.bucketName,
+			Bucket: bucketName,
 			Key: key,
 		});
-	}
+	};
 
-	getSignedUrl(key: string, expiresIn?: number): Promise<string> {
-		const command = this.getObject(key);
+	export const getSignedUrl = (
+		key: string,
+		expiresIn?: number,
+	): Promise<string> => {
+		const command = getObject(key);
 
-		return getSignedUrl(this.client, command, {
+		return _getSignedUrl(client, command, {
 			expiresIn: expiresIn ?? 3600, // Default to 1 hour if not specified
 		});
-	}
+	};
 
-	async uploadFile(
+	export const uploadFile = async (
 		key: string,
 		file: Buffer,
 		contentType?: string,
 		metadata?: Record<string, string>,
-	): Promise<void> {
+	): Promise<void> => {
 		const command = new PutObjectCommand({
-			Bucket: this.bucketName,
+			Bucket: bucketName,
 			Key: key,
 			Body: file,
 			ContentType: contentType,
 			Metadata: metadata,
 		});
 
-		await this.client.send(command);
-	}
+		await client.send(command);
+	};
 
-	async getMetadata(key: string): Promise<Record<string, any> | null> {
-		const command = this.getObject(key);
+	export const getMetadata = async (
+		key: string,
+	): Promise<Record<string, any> | null> => {
+		const command = getObject(key);
 
-		const response = await this.client.send(command);
+		const response = await client.send(command);
 		return response.Metadata ?? null;
-	}
+	};
 
-	async exists(key: string): Promise<boolean> {
+	export const exists = async (key: string): Promise<boolean> => {
 		try {
-			const command = this.getObject(key);
+			const command = getObject(key);
 
-			await this.client.send(command);
+			await client.send(command);
 		} catch (error) {
 			return false;
 		}
 
 		return true;
-	}
+	};
 
-	async delete(key: string): Promise<void> {
+	export const deleteFile = async (key: string): Promise<void> => {
 		const command = new DeleteObjectCommand({
-			Bucket: this.bucketName,
+			Bucket: bucketName,
 			Key: key,
 		});
 
-		await this.client.send(command);
-	}
+		await client.send(command);
+	};
 
-	async streamToBuffer(stream: Readable): Promise<Buffer> {
+	export const streamToBuffer = async (stream: Readable): Promise<Buffer> => {
 		return new Promise((resolve, reject) => {
 			const chunks: Buffer[] = [];
 
@@ -87,17 +87,17 @@ export class S3BucketAdapter {
 			stream.on('error', (err) => reject(err));
 			stream.on('end', () => resolve(Buffer.concat(chunks)));
 		});
-	}
+	};
 
-	async getFile(key: string): Promise<Buffer | null> {
-		const command = this.getObject(key);
+	export const getFile = async (key: string): Promise<Buffer | null> => {
+		const command = getObject(key);
 
-		const response = await this.client.send(command);
+		const response = await client.send(command);
 
 		if (!response.Body || !(response.Body instanceof Readable)) {
 			return null;
 		}
 
-		return this.streamToBuffer(response.Body);
-	}
+		return streamToBuffer(response.Body);
+	};
 }
