@@ -1,9 +1,11 @@
-import { HttpError } from '#/utils/HttpError';
-import { JwtService } from '$/services/jwt.service';
-import { UserRepository } from '$/db/user.db';
 import type { NextFunction, Request, Response } from 'express';
 
-export const authMiddleware =
+import { HttpError } from '#/utils/HttpError';
+
+import * as UserRepository from '$/db/user.db';
+import * as JwtService from '$/services/jwt.service';
+
+export const validateJwtToken =
 	() => async (req: Request, _: Response, next: NextFunction) => {
 		const _token =
 			req.cookies?.['token'] ?? req.headers?.authorization?.split(' ')?.[1];

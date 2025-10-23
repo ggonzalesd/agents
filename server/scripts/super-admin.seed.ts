@@ -1,6 +1,6 @@
 import envConfig from '$/config/env.config';
 
-import { AuthService } from '$/services/auth.service';
+import * as AuthService from '$/services/auth.service';
 
 export const superAdminSeed = async () => {
 	const userOp = await AuthService.createUser(

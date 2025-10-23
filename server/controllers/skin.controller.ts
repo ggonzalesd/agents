@@ -2,7 +2,7 @@ import type { Request, Response } from 'express';
 
 import envConfig from '$/config/env.config';
 
-import { S3Service } from '$/services/s3.service';
+import * as S3Service from '$/services/s3.service';
 
 import { getAuth } from '$/utils/req.utils';
 import { HttpError } from '#/utils/HttpError';

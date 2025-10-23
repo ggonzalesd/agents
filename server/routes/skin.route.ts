@@ -1,15 +1,9 @@
 import express from 'express';
 import multer from 'multer';
 
-import { authMiddleware } from '$/middlewares/auth.middleware';
-import { fileSignatureMiddelware } from '$/middlewares/file-signature.middleware';
-
-import {
-	getExistsController,
-	getSkinController,
-	getSkinStreamController,
-	uploadSkinController,
-} from '$/controllers/skin.controller';
+import * as AuthMiddleware from '$/middlewares/auth.middleware';
+import * as FileSignatureMiddleware from '$/middlewares/file-signature.middleware';
+import * as SkinController from '$/controllers/skin.controller';
 
 const router = express.Router();
 
@@ -20,16 +14,18 @@ const upload = multer({
 
 router.put(
 	'/upload',
-	authMiddleware(),
+	AuthMiddleware.validateJwtToken(),
 	upload.single('file'),
-	fileSignatureMiddelware(
+	FileSignatureMiddleware.fileSignature(
 		Buffer.from([0x89, 0x50, 0x4e, 0x47]), // READ First 4 bytes of PNG file
 	),
-	uploadSkinController,
+	SkinController.uploadSkinController,
 );
 
-router.get('/rand/:hash/:username.png', getSkinStreamController);
-router.get('/:username.png', getSkinController);
-router.get('/exists/:username', getExistsController);
+router.get('/rand/:hash/:username.png', SkinController.getSkinStreamController);
+
+router.get('/:username.png', SkinController.getSkinController);
+
+router.get('/exists/:username', SkinController.getExistsController);
 
 export default router;

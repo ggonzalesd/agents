@@ -11,7 +11,7 @@ import * as RAPIER from '@dimforge/rapier3d-compat';
 import { GameState } from '#/state/game.state';
 import { WorldEcs } from '#/ecs/World.ecs';
 import { playerServerFactoryGenerator } from './prefab/player.server';
-import { JwtService } from '$/services/jwt.service';
+import * as JwtService from '$/services/jwt.service';
 import { npcServerFactoryGenerator } from './prefab/npc.server';
 import { worldServerFactory } from './prefab/world.server';
 

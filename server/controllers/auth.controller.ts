@@ -1,21 +1,22 @@
 import type { Request, Response } from 'express';
 import * as bcrypt from 'bcrypt';
 
-import sql from '$/config/db.config';
-
-import { UserRepository } from '$/db/user.db';
-import type { AuthPayload } from '$/models/Payload.model';
-import { getAuth } from '$/utils/req.utils';
-import { JwtService } from '$/services/jwt.service';
-import { AuthService } from '$/services/auth.service';
-
+import { HttpError } from '#/utils/HttpError';
+import { jsonResponse } from '#/utils/HttpResponse';
 import type {
 	loginRequestSchema,
 	registerRequestSchema,
 	revokeRequestSchema,
 } from '#/schema/auth.schema';
-import { HttpError } from '#/utils/HttpError';
-import { jsonResponse } from '#/utils/HttpResponse';
+
+import sql from '$/config/db.config';
+
+import { getAuth } from '$/utils/req.utils';
+import type { AuthPayload } from '$/models/Payload.model';
+
+import * as UserRepository from '$/db/user.db';
+import * as JwtService from '$/services/jwt.service';
+import * as AuthService from '$/services/auth.service';
 
 export const authLoginController = async (req: Request, res: Response) => {
 	const { password, username } = req.body as ReturnType<

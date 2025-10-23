@@ -1,7 +1,7 @@
 import { HttpError } from '#/utils/HttpError';
 import type { NextFunction, Request, Response } from 'express';
 
-export const fileSignatureMiddelware =
+export const fileSignature =
 	(signature: Buffer) => (req: Request, _: Response, next: NextFunction) => {
 		const fileSignature = req.file!.buffer.subarray(0, 4);
 

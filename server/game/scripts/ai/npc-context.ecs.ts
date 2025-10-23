@@ -4,7 +4,7 @@ import { ComponentEcs } from '#/ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { actionsSchema } from '#/schema/actions.schema';
 
-import { OpenAIService } from '$/services/openai.service';
+import * as OpenAIService from '$/services/openai.service';
 
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 

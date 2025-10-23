@@ -39,8 +39,11 @@ export const applyHttpApplication = (
 	app.get('/health', (_, res) => {
 		res.json({
 			ok: true,
-			message: 'Healthy',
-			data: null,
+			message: 'Server is healthy',
+			data: {
+				timestamp: Date.now(),
+				environment: envConfig.NODE_ENV,
+			},
 		});
 	});
 
