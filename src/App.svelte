@@ -18,7 +18,6 @@
 	import Loading from './views/Loading.svelte';
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
-	import axios from 'axios';
 
 	setContext(useDebugHook.name, useDebugHook());
 	setContext(useActions.name, useActions());
@@ -31,6 +30,16 @@
 		const debugContext = getDebugContext();
 		debugContext.add('App mounted', { type: 'info', isCode: false });
 	});
+
+	function preloadResources() {
+		return Promise.all([
+			preloadGLB('/3d/SkinModel.glb'),
+			preloadTextures('/3d/textures/seasons/autumn_ground.jpg'),
+			preloadTextures('/3d/textures/seasons/summer_ground.jpg'),
+			preloadTextures('/3d/textures/seasons/winter_ground.jpg'),
+			preloadTextures('/3d/textures/seasons/spring_ground.jpg'),
+		]);
+	}
 </script>
 
 <Router route="/game">
@@ -58,7 +67,7 @@
 	</Router>
 
 	<Router route="/game">
-		{#await Promise.all( [preloadGLB('/3d/SkinModel.glb'), preloadTextures('/3d/textures/seasons/autumn_ground.jpg'), preloadTextures('/3d/textures/seasons/summer_ground.jpg'), preloadTextures('/3d/textures/seasons/winter_ground.jpg'), preloadTextures('/3d/textures/seasons/spring_ground.jpg')], )}
+		{#await preloadResources()}
 			<Loading />
 		{:then _}
 			<GameView />
