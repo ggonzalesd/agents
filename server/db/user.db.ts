@@ -3,20 +3,23 @@ import * as bcrypt from 'bcrypt';
 
 import { Option } from '#/utils/Option';
 
-import { sqlBuilder } from '$/config/db.config';
+import { sqlBuilder, type InferSqlBuilder } from '$/config/db.config';
 
 import type { UserDB } from '$/models/user.model';
 
+const USER_TABLE_NAME = 'User';
+
 // * Get user by username
-type GetUserByUsernameType = ReturnType<
-	typeof sqlBuilder<{ username: string }, Option<UserDB>>
+type GetUserByUsernameType = InferSqlBuilder<
+	{ username: string },
+	Option<UserDB>
 >;
 
 export const getUserByUsername: GetUserByUsernameType = sqlBuilder(
 	async ({ username }, sql) => {
 		const _user = await sql<
 			UserDB[]
-		>`SELECT * FROM "User" WHERE "username" = ${username} LIMIT 1`;
+		>`SELECT * FROM ${sql(USER_TABLE_NAME)} WHERE "username" = ${username} LIMIT 1`;
 
 		const user = _user[0];
 
@@ -29,16 +32,14 @@ export const getUserByUsername: GetUserByUsernameType = sqlBuilder(
 );
 
 // * Create user
-type CreateUserType = ReturnType<
-	typeof sqlBuilder<
-		{
-			username: string;
-			password: string;
-			display?: string;
-			role?: 'USER' | 'ADMIN' | 'MODERATOR';
-		},
-		Option<UserDB>
-	>
+type CreateUserType = InferSqlBuilder<
+	{
+		username: string;
+		password: string;
+		display?: string;
+		role?: 'USER' | 'ADMIN' | 'MODERATOR';
+	},
+	Option<UserDB>
 >;
 
 export const createUser: CreateUserType = sqlBuilder(
@@ -54,14 +55,12 @@ export const createUser: CreateUserType = sqlBuilder(
 );
 
 // * Revoke user hash (and optionally password)
-type RevokeUserHashType = ReturnType<
-	typeof sqlBuilder<
-		{
-			id: string;
-			withPassword?: string | undefined;
-		},
-		Option<boolean>
-	>
+type RevokeUserHashType = InferSqlBuilder<
+	{
+		id: string;
+		withPassword?: string | undefined;
+	},
+	Option<boolean>
 >;
 
 export const revokeUserHash: RevokeUserHashType = sqlBuilder(
