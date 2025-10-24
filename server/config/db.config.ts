@@ -7,6 +7,13 @@ const sql = postgres(envConfig.DB_URL, {
 	connect_timeout: 10,
 	idle_timeout: 0,
 	max_lifetime: 60 * 30,
+	debug: (conn, query) => {
+		if (envConfig.NODE_ENV === 'development') {
+			console.log(
+				`\n\u001b[38;5;208m[SQL:${conn}] \u001b[33m${query}\n\u001b[0m`,
+			);
+		}
+	},
 });
 
 export function sqlBuilder<P extends { [key: string]: unknown }, R>(
@@ -17,6 +24,11 @@ export function sqlBuilder<P extends { [key: string]: unknown }, R>(
 		return fn({ ...args, sql: _sql } as P, sql);
 	};
 }
+
+export type InferSqlBuilder<
+	P extends { [key: string]: unknown },
+	R,
+> = ReturnType<typeof sqlBuilder<P, R>>;
 
 export async function checkDbConnection() {
 	let attempts = 20;
