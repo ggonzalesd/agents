@@ -51,7 +51,7 @@ export class MainRoom extends Room<GameState> {
 		const npcServerFactory = npcServerFactoryGenerator(this.worldEcs);
 
 		// Add some NPCs
-		for (let i = 0; i < 3; i++) {
+		for (let i = 0; i < 1; i++) {
 			this.worldEcs.addEntity(
 				npcServerFactory({
 					name: `npc_${i}_${Math.random().toString(36).substring(7)}`,

@@ -6,11 +6,8 @@ const actionTalkSchema = z.object({
 });
 
 const actionMoveSchema = z.object({
-	type: z.literal('move'),
-	destination: z.object({
-		x: z.number(),
-		y: z.number(),
-	}),
+	type: z.literal('follow-entity'),
+	entityId: z.string(),
 });
 
 export const actionsSchema = z.union([actionTalkSchema, actionMoveSchema]);

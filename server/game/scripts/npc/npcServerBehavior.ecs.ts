@@ -4,7 +4,6 @@ import { Option } from '#/utils/Option';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { FollowEntityOption } from '../entity/follow-path/follow-entity.class';
 import { FollowPathEcs } from '../entity/follow-path/follow-path.ecs';
-// biome-ignore lint/correctness/noUnusedImports: For Testing
 import { FollowPositionOption } from '../entity/follow-path/follow-position.class';
 import { MovementServerEcs } from '../entity/MovementServer.ecs';
 import { PlayerServerBehavior } from '../player/playerServerBehavior.ecs';
@@ -83,7 +82,7 @@ export class NpcServerBehavior extends ComponentEcs {
 
 	onLoop(_delta: number): void {
 		/* if (this.follower.option.isDone()) {
-			console.log('NPC returning to start position', {});
+			// console.log('NPC returning to start position', {});
 
 			const randX = Math.random() * 20 - 10;
 			const randZ = Math.random() * 20 - 10;
