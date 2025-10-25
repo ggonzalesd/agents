@@ -62,31 +62,36 @@ export class RenderClientEcs extends ComponentEcs {
 	}
 
 	onStart(): void {
-		window.addEventListener(
-			'click',
-			((event: PointerEvent) => {
-				this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-				this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+		const clickEventListener = (event: MouseEvent) => {
+			this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-				this.raycaster.setFromCamera(this.mouse, this.camera);
+			this.raycaster.setFromCamera(this.mouse, this.camera);
 
-				const intersects = this.raycaster.intersectObjects(
-					this.scene.children,
-					true,
-				);
+			const intersects = this.raycaster.intersectObjects(
+				this.scene.children,
+				true,
+			);
 
-				for (const intersect of intersects) {
-					const userData = intersect?.object?.userData;
-					if (userData == null) continue;
-					if (!userData.canInteract) continue;
+			for (const intersect of intersects) {
+				const userData = intersect?.object?.userData;
+				if (userData == null) continue;
+				if (!userData.canInteract) continue;
 
-					if (userData.isItem) {
-						this.world.stacker.stackLoss('item-interact', userData.parent);
-						break;
-					}
+				if (userData.isItem) {
+					this.world.stacker.stackLoss('item-interact', userData.parent);
+					break;
 				}
-			}).bind(this),
-		);
+			}
+		};
+
+		const bindedClickListener = clickEventListener.bind(this);
+
+		window.addEventListener('click', bindedClickListener);
+
+		this.callOnDelete(() => {
+			window.removeEventListener('click', bindedClickListener);
+		});
 
 		for (let i = 0; i < defaultMap.grid.length; i++) {
 			for (let j = 0; j < defaultMap.grid[i].length; j++) {

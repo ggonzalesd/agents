@@ -1,51 +1,54 @@
 import { Option } from '#/utils/Option';
-import { sqlBuilder, type InferSqlBuilder } from '$/config/db.config';
 import type { ProfileDB } from '$/models/Profile.model';
+
+import * as SQL from '$/utils/sql.utils';
 
 export const PROFILE_TABLE_NAME = 'Profile';
 
 // * Get profiles by userId
-type GetProfilesByUserIdType = InferSqlBuilder<{ userId: string }, ProfileDB[]>;
+type GetProfilesByUserIdType = SQL.InferSqlBuilder<
+	{ userId: string },
+	ProfileDB[]
+>;
 
-export const getProfilesByUserId: GetProfilesByUserIdType = sqlBuilder(
-	async ({ userId }, sql) => {
-		const profiles = await sql<
-			ProfileDB[]
-		>`SELECT * FROM ${sql(PROFILE_TABLE_NAME)} WHERE ${sql('userId')} = ${userId}`;
-
-		return profiles;
-	},
+export const getProfilesByUserId: GetProfilesByUserIdType = SQL.sqlBuilder(
+	({ userId }, sql) =>
+		SQL.selectByProperty<ProfileDB, string>(
+			{
+				table: PROFILE_TABLE_NAME,
+				property: 'userId',
+				value: userId,
+				many: true,
+			},
+			sql,
+		),
 );
 
 // * Get profile by entityId
-type GetProfileByEntityIdType = InferSqlBuilder<
+type GetProfileByEntityIdType = SQL.InferSqlBuilder<
 	{ entityId: string },
 	Option<ProfileDB>
 >;
 
-export const getProfileByEntityId: GetProfileByEntityIdType = sqlBuilder(
-	async ({ entityId }, sql) => {
-		const result = await sql<
-			ProfileDB[]
-		>`SELECT * FROM ${sql(PROFILE_TABLE_NAME)} WHERE ${sql(
-			'entityId',
-		)} = ${entityId} LIMIT 1`;
-
-		if (result.length === 0) {
-			return Option.none();
-		}
-
-		return Option.of(result[0]);
-	},
+export const getProfileByEntityId: GetProfileByEntityIdType = SQL.sqlBuilder(
+	async ({ entityId }, sql) =>
+		SQL.selectByProperty<ProfileDB, string>(
+			{
+				table: PROFILE_TABLE_NAME,
+				property: 'entityId',
+				value: entityId,
+			},
+			sql,
+		).then(Option.of),
 );
 
 // * Create profile
-type CreateProfileType = InferSqlBuilder<
+type CreateProfileType = SQL.InferSqlBuilder<
 	{ userId: string; entityId: string },
 	ProfileDB
 >;
 
-export const createProfile: CreateProfileType = sqlBuilder(
+export const createProfile: CreateProfileType = SQL.sqlBuilder(
 	async ({ userId, entityId }, sql) => {
 		const result = await sql<ProfileDB[]>`INSERT INTO ${sql(
 			PROFILE_TABLE_NAME,

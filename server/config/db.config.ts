@@ -1,4 +1,4 @@
-import postgres, { type Sql } from 'postgres';
+import postgres from 'postgres';
 
 import envConfig from './env.config';
 
@@ -15,20 +15,6 @@ const sql = postgres(envConfig.DB_URL, {
 		}
 	},
 });
-
-export function sqlBuilder<P extends { [key: string]: unknown }, R>(
-	fn: (args: P, sql: Sql) => Promise<R>,
-) {
-	return (args: P, __sql?: Sql): Promise<R> => {
-		const _sql = __sql ?? sql;
-		return fn({ ...args, sql: _sql } as P, sql);
-	};
-}
-
-export type InferSqlBuilder<
-	P extends { [key: string]: unknown },
-	R,
-> = ReturnType<typeof sqlBuilder<P, R>>;
 
 export async function checkDbConnection() {
 	let attempts = 20;

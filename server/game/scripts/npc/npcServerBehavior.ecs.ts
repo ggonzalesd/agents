@@ -4,7 +4,7 @@ import { Option } from '#/utils/Option';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { FollowEntityOption } from '../entity/follow-path/follow-entity.class';
 import { FollowPathEcs } from '../entity/follow-path/follow-path.ecs';
-import { FollowPositionOption } from '../entity/follow-path/follow-position.class';
+// import { FollowPositionOption } from '../entity/follow-path/follow-position.class';
 import { MovementServerEcs } from '../entity/MovementServer.ecs';
 import { PlayerServerBehavior } from '../player/playerServerBehavior.ecs';
 import { ServerDataEcs } from '../serverData.ecs';

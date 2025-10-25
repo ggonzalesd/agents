@@ -79,7 +79,7 @@ export class GameInput {
 		return document.pointerLockElement === document.body;
 	}
 
-	private onContextMenu(event: PointerEvent) {
+	private onContextMenu(event: MouseEvent) {
 		if (this.disabled || this.contextMenu) return;
 
 		event.preventDefault();

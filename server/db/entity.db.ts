@@ -1,32 +1,26 @@
 import { Option } from '#/utils/Option';
-import { sqlBuilder, type InferSqlBuilder } from '$/config/db.config';
 import type { EntityDB } from '$/models/Entity.model';
-import { selectOneByPropery } from './common.db';
+
+import * as SQL from '$/utils/sql.utils';
 
 const ENTITY_TABLE_NAME = 'Entity';
 
 // * Get entity by ID
-type GetEntityById = InferSqlBuilder<{ id: string }, Option<EntityDB>>;
+type GetEntityById = SQL.InferSqlBuilder<{ id: string }, Option<EntityDB>>;
 
-export const getEntityById: GetEntityById = sqlBuilder(async ({ id }, sql) => {
-	const entity = await selectOneByPropery<EntityDB, string>(
+export const getEntityById: GetEntityById = SQL.sqlBuilder(({ id }, sql) =>
+	SQL.selectByProperty<EntityDB, string>(
 		{
 			table: ENTITY_TABLE_NAME,
 			property: 'id',
 			value: id,
 		},
 		sql,
-	);
-
-	if (!entity) {
-		return Option.none();
-	}
-
-	return Option.some(entity);
-});
+	).then(Option.of),
+);
 
 // * Create entity
-type CreateEntityType = InferSqlBuilder<
+type CreateEntityType = SQL.InferSqlBuilder<
 	{
 		id: string;
 		life: number;
@@ -37,7 +31,7 @@ type CreateEntityType = InferSqlBuilder<
 	Option<EntityDB>
 >;
 
-export const createEntity: CreateEntityType = sqlBuilder(
+export const createEntity: CreateEntityType = SQL.sqlBuilder(
 	async ({ id, life, maxLife, saturation, maxSaturation }, sql) => {
 		const result = await sql<
 			EntityDB[]

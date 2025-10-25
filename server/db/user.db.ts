@@ -3,36 +3,33 @@ import * as bcrypt from 'bcrypt';
 
 import { Option } from '#/utils/Option';
 
-import { sqlBuilder, type InferSqlBuilder } from '$/config/db.config';
-
 import type { UserDB } from '$/models/user.model';
+
+import * as SQL from '$/utils/sql.utils';
 
 const USER_TABLE_NAME = 'User';
 
 // * Get user by username
-type GetUserByUsernameType = InferSqlBuilder<
+type GetUserByUsernameType = SQL.InferSqlBuilder<
 	{ username: string },
 	Option<UserDB>
 >;
 
-export const getUserByUsername: GetUserByUsernameType = sqlBuilder(
+export const getUserByUsername: GetUserByUsernameType = SQL.sqlBuilder(
 	async ({ username }, sql) => {
-		const _user = await sql<
-			UserDB[]
-		>`SELECT * FROM ${sql(USER_TABLE_NAME)} WHERE "username" = ${username} LIMIT 1`;
-
-		const user = _user[0];
-
-		if (!user) {
-			return Option.none();
-		}
-
-		return Option.some(user);
+		return SQL.selectByProperty<UserDB, string>(
+			{
+				table: USER_TABLE_NAME,
+				property: 'username',
+				value: username,
+			},
+			sql,
+		).then(Option.of);
 	},
 );
 
 // * Create user
-type CreateUserType = InferSqlBuilder<
+type CreateUserType = SQL.InferSqlBuilder<
 	{
 		username: string;
 		password: string;
@@ -42,7 +39,7 @@ type CreateUserType = InferSqlBuilder<
 	Option<UserDB>
 >;
 
-export const createUser: CreateUserType = sqlBuilder(
+export const createUser: CreateUserType = SQL.sqlBuilder(
 	async ({ username, password, display, role }, sql) => {
 		const hashedPassword = bcrypt.hashSync(password, 10);
 
@@ -55,7 +52,7 @@ export const createUser: CreateUserType = sqlBuilder(
 );
 
 // * Revoke user hash (and optionally password)
-type RevokeUserHashType = InferSqlBuilder<
+type RevokeUserHashType = SQL.InferSqlBuilder<
 	{
 		id: string;
 		withPassword?: string | undefined;
@@ -63,7 +60,7 @@ type RevokeUserHashType = InferSqlBuilder<
 	Option<boolean>
 >;
 
-export const revokeUserHash: RevokeUserHashType = sqlBuilder(
+export const revokeUserHash: RevokeUserHashType = SQL.sqlBuilder(
 	async ({ id, withPassword }, sql) => {
 		const _user = await sql`SELECT * FROM "User" WHERE "id" = ${id} LIMIT 1`;
 
