@@ -2,6 +2,7 @@ import { Option } from '#/utils/Option';
 import type { EntityDB } from '$/models/Entity.model';
 
 import * as SQL from '$/utils/sql.utils';
+import { AGENT_TABLE_NAME } from './agent.db';
 
 const ENTITY_TABLE_NAME = 'Entity';
 
@@ -36,6 +37,31 @@ export const createEntity: CreateEntityType = SQL.sqlBuilder(
 		const result = await sql<
 			EntityDB[]
 		>`INSERT INTO ${sql(ENTITY_TABLE_NAME)} ("id", "life", "maxLife", "saturation", "maxSaturation") VALUES (${id}, ${life}, ${maxLife}, ${saturation}, ${maxSaturation}) RETURNING *`;
+
+		return Option.of(result[0]);
+	},
+);
+
+// * Save entity
+type SaveEntityType = SQL.InferSqlBuilder<
+	{
+		identifier: string;
+		data: Pick<EntityDB, 'life' | 'saturation'>;
+	},
+	Option<EntityDB>
+>;
+
+export const saveEntity: SaveEntityType = SQL.sqlBuilder(
+	async ({ identifier, data }, sql) => {
+		const setObject = sql(data, 'life', 'saturation');
+
+		const result = await sql<EntityDB[]>`
+		UPDATE ${sql(ENTITY_TABLE_NAME)}
+		SET ${setObject}
+		WHERE "id" in (
+			SELECT "id" FROM ${sql(AGENT_TABLE_NAME)} WHERE "identifier" = ${identifier} LIMIT 1
+		)
+		RETURNING *`;
 
 		return Option.of(result[0]);
 	},

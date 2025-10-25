@@ -5,9 +5,22 @@ const actionTalkSchema = z.object({
 	content: z.string(),
 });
 
-const actionMoveSchema = z.object({
+const actionMoveFollowEntitySchema = z.object({
 	type: z.literal('follow-entity'),
 	entityId: z.string(),
 });
 
-export const actionsSchema = z.union([actionTalkSchema, actionMoveSchema]);
+const actionMoveStopSchema = z.object({
+	type: z.literal('move-stop'),
+});
+
+const actionJumpSchema = z.object({
+	type: z.literal('jump'),
+});
+
+export const actionsSchema = z.union([
+	actionTalkSchema,
+	actionMoveFollowEntitySchema,
+	actionMoveStopSchema,
+	actionJumpSchema,
+]);

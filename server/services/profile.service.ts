@@ -4,6 +4,52 @@ import * as UserRepository from '$/db/user.db';
 import * as ProfileRepository from '$/db/profile.db';
 import * as EntityRepository from '$/db/entity.db';
 import * as AgentRepository from '$/db/agent.db';
+import sql from '$/config/db.config';
+import type { AgentDB } from '$/models/Agent.model';
+import type { EntityDB } from '$/models/Entity.model';
+import { Result } from '#/utils/Result';
+
+export const saveUserInfo = async ({
+	identifier,
+	agentData,
+	entityData,
+}: {
+	identifier: string;
+	agentData: Pick<
+		AgentDB,
+		'metadata' | 'positionX' | 'positionY' | 'positionZ'
+	>;
+	entityData: Pick<EntityDB, 'life' | 'saturation'>;
+}) =>
+	sql
+		.begin(async (tx) => {
+			const savedAgent = (
+				await AgentRepository.saveAgent(
+					{
+						identifier,
+						data: agentData,
+					},
+					tx,
+				)
+			).orElseThrow(() => HttpError.server('Failed to save agent'));
+
+			const savedEntity = (
+				await EntityRepository.saveEntity(
+					{
+						identifier,
+						data: entityData,
+					},
+					tx,
+				)
+			).orElseThrow(() => HttpError.server('Failed to save entity'));
+
+			return {
+				agent: savedAgent,
+				entity: savedEntity,
+			};
+		})
+		.then(Result.success)
+		.catch(Result.failure);
 
 export const getUserInfo = async (username: string) => {
 	const user = (

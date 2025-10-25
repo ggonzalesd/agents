@@ -4,7 +4,7 @@ import { ComponentEcs } from '#/ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { actionsSchema } from '#/schema/actions.schema';
 
-import * as OpenAIService from '$/services/openai.service';
+import * as LLMService from '$/services/llm.service';
 
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 
@@ -70,6 +70,8 @@ export class NPCContextEcs extends ComponentEcs {
 			// `{"type": "pick-item", "itemId": string, "slot": i32(0...9)}`,
 			// `{"type": "drop-item", "slot": i32(0...9)}`,
 			`{"type": "follow-entity", "entityId": string}`,
+			`{"type": "move-stop"}`,
+			`{"type": "jump"}`,
 			// `{"type": "follow-position", "x": number, "z": number}`,
 		];
 
@@ -131,7 +133,12 @@ export class NPCContextEcs extends ComponentEcs {
 			.slice(0, 5)
 			.map(
 				({ entity, distance, position }, index) =>
-					`Entity ${index + 1}: ID=${entity.name}, Distance=${distance}, Position=${JSON.stringify(position)}`,
+					`(${index + 1}) ${entity
+						.get(RecordEcs)
+						.map((r) => r.getUnsafeRecord<{ name: string }>('stats')?.name)
+						.orElse(
+							entity.name,
+						)}: ID=${entity.name}, Distance=${distance}, Position=${JSON.stringify(position)}`,
 			);
 		const entitiesContext = ['## Nearby Entities', ...closeEntities].join('\n');
 
@@ -188,7 +195,7 @@ export class NPCContextEcs extends ComponentEcs {
 
 		const context = this.buildContext();
 		console.log('NPCContextEcs asking OpenAI with context:\n', context);
-		OpenAIService.ask(context)
+		LLMService.ask(context)
 			.then((response) => {
 				this.processActions(response);
 			})

@@ -91,3 +91,35 @@ export const createAgent: CreateAgentType = SQL.sqlBuilder(
 		).then((op) => op.map((agents) => agents[0]).ifSome(applyMetadataParsing));
 	},
 );
+
+// * Save agent
+type SaveAgentType = SQL.InferSqlBuilder<
+	{
+		identifier: string;
+		data: Pick<AgentDB, 'positionX' | 'positionY' | 'positionZ' | 'metadata'>;
+	},
+	Option<AgentDB>
+>;
+
+export const saveAgent: SaveAgentType = SQL.sqlBuilder(
+	async ({ identifier, data }, sql) => {
+		const updateObject = sql(
+			{
+				...data,
+				metadata: JSON.stringify(data.metadata),
+			},
+			'positionX',
+			'positionY',
+			'positionZ',
+			'metadata',
+		);
+
+		return Option.future(
+			sql<AgentDB[]>`
+		UPDATE ${sql(AGENT_TABLE_NAME)}
+		SET ${updateObject}
+		WHERE "identifier" = ${identifier}
+		RETURNING *`,
+		).then((op) => op.map((agents) => agents[0]).ifSome(applyMetadataParsing));
+	},
+);

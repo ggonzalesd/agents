@@ -110,10 +110,11 @@ export class PlayerServerBehavior extends ComponentEcs {
 						.getFromEntitiesWith(NPCEventQueueEcs)
 						.forEach(({ component }) =>
 							component.pushEvent(
+								message.message as string,
 								{
 									type: 'message',
 									from: this.parent,
-									message: message.message,
+									message: message.message as string,
 								},
 								10,
 							),

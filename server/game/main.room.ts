@@ -16,6 +16,7 @@ import * as ProfileService from '$/services/profile.service';
 
 import { playerServerFactoryGenerator } from './prefab/player.server';
 import { worldServerFactory } from './prefab/world.server';
+import { CharacterBodyServerEcs } from './scripts/entity/CharacterBodyServer.ecs';
 
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
@@ -84,9 +85,16 @@ export class MainRoom extends Room<GameState> {
 
 		const payload = payloadOp.unwrap();
 
+		const userInfo = await ProfileService.getUserInfo(payload.username);
+
 		_client.userData = {
 			payload,
+			userInfo,
 		};
+
+		if (userInfo.profile.banned) {
+			return false;
+		}
 
 		// Check if another client with the same user is connected
 		for (const c of this.clients) {
@@ -108,8 +116,9 @@ export class MainRoom extends Room<GameState> {
 		}
 
 		const payload = client.userData.payload as { username: string };
-
-		const userInfo = await ProfileService.getUserInfo(payload.username);
+		const userInfo = client.userData.userInfo as Awaited<
+			ReturnType<typeof ProfileService.getUserInfo>
+		>;
 
 		this.worldEcs.addEntity(
 			this.playerServerFactory({
@@ -117,16 +126,45 @@ export class MainRoom extends Room<GameState> {
 				name: userInfo.agent.identifier,
 				username: payload.username,
 				pos: {
-					x: (Math.random() - 0.5) * 10,
-					y: (Math.random() - 0.5) * 5 + 10,
-					z: (Math.random() - 0.5) * 10,
+					x: userInfo.agent.positionX,
+					y: userInfo.agent.positionY,
+					z: userInfo.agent.positionZ,
 				},
 			}),
 		);
 	}
 
 	async onLeave(client: Client<any, any>, _consented?: boolean): Promise<any> {
-		this.worldEcs.deleteEntityById(client.sessionId);
+		const userInfo = client.userData?.userInfo as Awaited<
+			ReturnType<typeof ProfileService.getUserInfo>
+		>;
+
+		const entity = this.worldEcs
+			.getEntity(userInfo.agent.identifier)
+			.unwrap('Entity not found on disconnect');
+
+		const body = entity
+			.get(CharacterBodyServerEcs)
+			.map((c) => c.body)
+			.unwrap('CharacterBodyServerEcs not found on disconnect');
+
+		const position = body.translation();
+
+		await ProfileService.saveUserInfo({
+			identifier: userInfo.agent.identifier,
+			agentData: {
+				positionX: position.x,
+				positionY: position.y,
+				positionZ: position.z,
+				metadata: {},
+			},
+			entityData: {
+				life: 100,
+				saturation: 100,
+			},
+		});
+
+		this.worldEcs.deleteEntityById(userInfo.agent.identifier);
 	}
 
 	onUncaughtException(error: RoomException<this>, methodName: string): void {

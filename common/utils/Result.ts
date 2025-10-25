@@ -1,10 +1,10 @@
 export const Result = {
-	success<T>(value: T): { success: true; value: T } {
-		return { success: true, value };
+	success<T>(value: T): { success: true; value: T; error: null } {
+		return { success: true, value, error: null };
 	},
 
-	failure<E>(error: E): { success: false; error: E } {
-		return { success: false, error };
+	failure<E = Error>(error: E): { success: false; error: E; value: null } {
+		return { success: false, error, value: null };
 	},
 
 	isSuccess<T, E>(
@@ -13,7 +13,7 @@ export const Result = {
 		return result.success;
 	},
 
-	wrapAsync<T, E>(
+	wrapAsync<T, E = Error>(
 		promise: Promise<T>,
 	): Promise<{ success: true; value: T } | { success: false; error: E }> {
 		return promise
@@ -21,7 +21,7 @@ export const Result = {
 			.catch((error) => Result.failure<E>(error));
 	},
 
-	wrap<T, E>(
+	wrap<T, E = Error>(
 		fn: () => T,
 	): { success: true; value: T } | { success: false; error: E } {
 		try {

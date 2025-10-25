@@ -2,6 +2,7 @@ import { ComponentEcs, type EntityEcs } from '#/ecs';
 import { Option } from '#/utils/Option';
 import { FollowEntityOption } from '../entity/follow-path/follow-entity.class';
 import { FollowPathEcs } from '../entity/follow-path/follow-path.ecs';
+import { MovementServerEcs } from '../entity/MovementServer.ecs';
 import { ServerDataEcs } from '../serverData.ecs';
 import { WorldPathfinderEcs } from '../world/world-grid.ecs';
 import { NPCContextEcs } from './npc-context.ecs';
@@ -55,6 +56,27 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						entity: this.entityParent,
 					});
 				});
+			}
+
+			if (action.type === 'move-stop') {
+				this.world
+					.getEntity(this.parent)
+					.map((entity) => entity.getUnsafe(FollowPathEcs))
+					.ifSome((f) => {
+						f.option = {
+							isDone: () => true,
+							loop: (_delta: number) => {},
+						};
+					});
+			}
+
+			if (action.type === 'jump') {
+				this.world
+					.getEntity(this.parent)
+					.map((entity) => entity.getUnsafe(MovementServerEcs))
+					.ifSome((movement) => {
+						movement.movementState.isJumping = true;
+					});
 			}
 		}
 		this.npcContextEcs.actions = [];
