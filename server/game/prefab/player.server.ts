@@ -1,4 +1,5 @@
 import { EntityEcs, type WorldEcs } from '#/ecs';
+import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { PlayerState } from '#/state/player.state';
 import type { IVec3 } from '#/utils/math.util';
 
@@ -8,6 +9,7 @@ import { MovementServerEcs } from '../scripts/entity/MovementServer.ecs';
 import { PlayerServerBehavior } from '../scripts/player/playerServerBehavior.ecs';
 
 interface PlayerServerFactoryParams {
+	sessionId: string;
 	name: string;
 	pos: IVec3;
 	username: string;
@@ -15,13 +17,18 @@ interface PlayerServerFactoryParams {
 
 export const playerServerFactoryGenerator =
 	(world: WorldEcs) =>
-	({ name, pos, username }: PlayerServerFactoryParams) => {
-		const state = new PlayerState({ pos, skin: username });
+	({ sessionId, name, pos, username }: PlayerServerFactoryParams) => {
+		const state = new PlayerState({ pos, skin: username, sessionId });
 
 		return new EntityEcs({
 			name,
 			world,
 			components: {
+				[RecordEcs.name]: new RecordEcs({
+					session: {
+						id: sessionId,
+					},
+				}),
 				[CharacterBodyServerEcs.name]: new CharacterBodyServerEcs(
 					state.character,
 				),

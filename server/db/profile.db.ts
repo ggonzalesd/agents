@@ -5,6 +5,22 @@ import * as SQL from '$/utils/sql.utils';
 
 export const PROFILE_TABLE_NAME = 'Profile';
 
+// * Get profile by username
+type GetProfileByUsernameType = SQL.InferSqlBuilder<
+	{ username: string },
+	ProfileDB[]
+>;
+
+export const getProfileByUsername: GetProfileByUsernameType = SQL.sqlBuilder(
+	async ({ username }, sql) => {
+		const profiles = await sql<
+			ProfileDB[]
+		>`SELECT p.* FROM ${sql(PROFILE_TABLE_NAME)} as p JOIN "User" as u ON p."userId" = u."id" WHERE u."username" = ${username}`;
+
+		return profiles;
+	},
+);
+
 // * Get profiles by userId
 type GetProfilesByUserIdType = SQL.InferSqlBuilder<
 	{ userId: string },

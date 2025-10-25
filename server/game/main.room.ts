@@ -10,10 +10,11 @@ import * as RAPIER from '@dimforge/rapier3d-compat';
 
 import { GameState } from '#/state/game.state';
 import type { WorldEcs } from '#/ecs/World.ecs';
+
 import * as JwtService from '$/services/jwt.service';
+import * as ProfileService from '$/services/profile.service';
 
 import { playerServerFactoryGenerator } from './prefab/player.server';
-import { npcServerFactoryGenerator } from './prefab/npc.server';
 import { worldServerFactory } from './prefab/world.server';
 
 export class MainRoom extends Room<GameState> {
@@ -47,22 +48,6 @@ export class MainRoom extends Room<GameState> {
 		this.onMessage('client:state', this.onClientState.bind(this));
 		this.onMessage('client:action', this.onClientAction.bind(this));
 		this.onMessage('*', () => {});
-
-		const npcServerFactory = npcServerFactoryGenerator(this.worldEcs);
-
-		// Add some NPCs
-		for (let i = 0; i < 1; i++) {
-			this.worldEcs.addEntity(
-				npcServerFactory({
-					name: `npc_${i}_${Math.random().toString(36).substring(7)}`,
-					pos: {
-						x: (Math.random() - 0.5) * 20,
-						y: 5,
-						z: (Math.random() - 0.5) * 20,
-					},
-				}),
-			);
-		}
 	}
 
 	onClientAction(client: Client, message: any) {
@@ -86,7 +71,11 @@ export class MainRoom extends Room<GameState> {
 		this.worldPhy.step();
 	}
 
-	onAuth(_client: Client<any, any>, _options: any, _context: AuthContext) {
+	async onAuth(
+		_client: Client<any, any>,
+		_options: any,
+		_context: AuthContext,
+	) {
 		const payloadOp = JwtService.verifyToken(_context.token);
 
 		if (payloadOp.isNone()) {
@@ -120,9 +109,12 @@ export class MainRoom extends Room<GameState> {
 
 		const payload = client.userData.payload as { username: string };
 
+		const userInfo = await ProfileService.getUserInfo(payload.username);
+
 		this.worldEcs.addEntity(
 			this.playerServerFactory({
-				name: client.sessionId,
+				sessionId: client.sessionId,
+				name: userInfo.agent.identifier,
 				username: payload.username,
 				pos: {
 					x: (Math.random() - 0.5) * 10,

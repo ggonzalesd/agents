@@ -3,6 +3,7 @@ import * as RAPIER from '@dimforge/rapier3d-compat';
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { ServerDataEcs } from './serverData.ecs';
 import { itemServerFactory } from '../prefab/item.server';
+import { npcServerFactoryGenerator } from '../prefab/npc.server';
 
 export class ServerManagerEcs extends ComponentEcs {
 	onStart(): void {
@@ -27,6 +28,22 @@ export class ServerManagerEcs extends ComponentEcs {
 				pos: { x: 0, y: 5, z: Math.random() * 10 - 5 },
 			});
 			this.world.addEntity(item);
+		}
+
+		const npcServerFactory = npcServerFactoryGenerator(this.world);
+
+		// Add some NPCs
+		for (let i = 0; i < 1; i++) {
+			this.world.addEntity(
+				npcServerFactory({
+					name: `npc_${i}_${Math.random().toString(36).substring(7)}`,
+					pos: {
+						x: (Math.random() - 0.5) * 20,
+						y: 5,
+						z: (Math.random() - 0.5) * 20,
+					},
+				}),
+			);
 		}
 
 		this.callOnDelete(() => {

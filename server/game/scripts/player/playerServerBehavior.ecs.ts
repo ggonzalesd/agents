@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import { ComponentEcs } from '#/ecs';
 import type { IVec2 } from '#/utils/math.util';
 import type { PlayerState } from '#/state/player.state';
@@ -6,6 +8,13 @@ import { ServerDataEcs } from '../serverData.ecs';
 import { MovementServerEcs } from '../entity/MovementServer.ecs';
 import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
 import { NPCEventQueueEcs } from '../ai/npc-event-queue.ecs';
+import { RecordEcs } from '#/ecs/lib/Record.ecs';
+
+const sessionSchema = z
+	.object({
+		id: z.string(),
+	})
+	.loose();
 
 export class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
@@ -13,6 +22,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 	public movement: MovementServerEcs = null!;
 	public serverData: ServerDataEcs = null!;
 	public inventory: InventoryServerEcs = null!;
+	public record: RecordEcs = null!;
 
 	constructor({ state }: { state: PlayerState }) {
 		super();
@@ -32,6 +42,13 @@ export class PlayerServerBehavior extends ComponentEcs {
 
 		const parent = this.world.getEntity(this.parent).unwrap('Parent not found');
 
+		this.record = parent.get(RecordEcs).unwrap('RecordEcs not found');
+
+		this.record
+			.getRecord('session')
+			.ifSome(sessionSchema.parse)
+			.unwrap('Session record not found');
+
 		this.inventory = parent
 			.get(InventoryServerEcs)
 			.unwrap('InventoryServerEcs not found');
@@ -50,12 +67,15 @@ export class PlayerServerBehavior extends ComponentEcs {
 	}
 
 	onLoop(_delta: number): void {
+		const session =
+			this.record.getUnsafeRecord<z.infer<typeof sessionSchema>>('session');
+
 		this.world.stacker
-			.one(`client:${this.parent}:action`)
+			.one(`client:${session.id}:action`)
 			.ifSome(this.onClientActions);
 
 		this.world.stacker
-			.one(`client:${this.parent}:state`)
+			.one(`client:${session.id}:state`)
 			.ifSome(this.onClientState);
 	}
 

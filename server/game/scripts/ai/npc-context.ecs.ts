@@ -42,9 +42,7 @@ export class NPCContextEcs extends ComponentEcs {
 
 		this.record
 			.getRecord('stats')
-			.ifSome((stats) => {
-				statsSchema.parse(stats);
-			})
+			.ifSome(statsSchema.parse)
 			.unwrap('Stats record not found on NPC RecordEcs');
 	}
 
