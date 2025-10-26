@@ -1,10 +1,10 @@
 import { metadataSchema } from '#/schema/utils.schema';
 import { Option } from '#/utils/Option';
 
-import { sqlBuilder, type InferSqlBuilder } from '$/config/db.config';
 import type { AgentDB } from '$/models/Agent.model';
+
 import { safeJSONParse } from '$/utils/transform.utils';
-import { selectOneByPropery } from './common.db';
+import * as SQL from '$/utils/sql.utils';
 
 function applyMetadataParsing(agent: {
 	metadata: string | { [key: string]: any };
@@ -25,91 +25,101 @@ function applyMetadataParsing(agent: {
 export const AGENT_TABLE_NAME = 'Agent';
 
 // * Get agent by Identifier
-type GetAgentByIdentifierType = InferSqlBuilder<
+type GetAgentByIdentifierType = SQL.InferSqlBuilder<
 	{ identifier: string },
 	Option<AgentDB>
 >;
 
-export const getAgentByIdentifier: GetAgentByIdentifierType = sqlBuilder(
-	async ({ identifier }, sql) => {
-		const agent = await selectOneByPropery<AgentDB, string>(
-			{
-				table: AGENT_TABLE_NAME,
-				property: 'identifier',
-				value: identifier,
-			},
-			sql,
-		);
-
-		if (!agent) {
-			return Option.none();
-		}
-
-		applyMetadataParsing(agent);
-
-		return Option.some(agent);
-	},
+export const getAgentByIdentifier: GetAgentByIdentifierType = SQL.sqlBuilder(
+	({ identifier }, sql) =>
+		Option.future(
+			SQL.selectByProperty<AgentDB, string>(
+				{
+					table: AGENT_TABLE_NAME,
+					property: 'identifier',
+					value: identifier,
+					many: false,
+				},
+				sql,
+			),
+		).then((op) => op.ifSome(applyMetadataParsing)),
 );
 
 // * Get agent by ID
-type GetAgentByIdType = InferSqlBuilder<{ id: string }, Option<AgentDB>>;
+type GetAgentByIdType = SQL.InferSqlBuilder<{ id: string }, Option<AgentDB>>;
 
-export const getAgentById: GetAgentByIdType = sqlBuilder(
-	async ({ id }, sql) => {
-		const agent = await selectOneByPropery<AgentDB, string>(
+export const getAgentById: GetAgentByIdType = SQL.sqlBuilder(({ id }, sql) =>
+	Option.future(
+		SQL.selectByProperty<AgentDB, string>(
 			{
 				table: AGENT_TABLE_NAME,
 				property: 'id',
 				value: id,
+				many: false,
 			},
 			sql,
-		);
-
-		if (!agent) {
-			return Option.none();
-		}
-
-		applyMetadataParsing(agent);
-
-		return Option.some(agent);
-	},
+		),
+	).then((op) => op.ifSome(applyMetadataParsing)),
 );
 
 // * Create agent
-type CreateAgentType = InferSqlBuilder<
+type CreateAgentType = SQL.InferSqlBuilder<
+	Omit<AgentDB, 'id' | 'createdAt'>,
+	Option<AgentDB>
+>;
+
+export const createAgent: CreateAgentType = SQL.sqlBuilder(
+	async (props, sql) => {
+		const insertObject = sql(
+			{
+				...props,
+				metadata: JSON.stringify(props.metadata),
+			},
+			'display',
+			'identifier',
+			'positionX',
+			'positionY',
+			'positionZ',
+			'rotation',
+			'metadata',
+		);
+
+		return Option.future(
+			sql<AgentDB[]>`
+		INSERT INTO ${sql(AGENT_TABLE_NAME)} ${insertObject}
+		RETURNING *`,
+		).then((op) => op.map((agents) => agents[0]).ifSome(applyMetadataParsing));
+	},
+);
+
+// * Save agent
+type SaveAgentType = SQL.InferSqlBuilder<
 	{
 		identifier: string;
-		display: string;
-		positionX: number;
-		positionY: number;
-		positionZ: number;
-		rotation: number;
-		metadata: { [key: string]: any };
+		data: Pick<AgentDB, 'positionX' | 'positionY' | 'positionZ' | 'metadata'>;
 	},
 	Option<AgentDB>
 >;
 
-export const createAgent: CreateAgentType = sqlBuilder(async (props, sql) => {
-	const insertObject = sql(
-		{
-			...props,
-			metadata: JSON.stringify(props.metadata),
-		},
-		'display',
-		'identifier',
-		'positionX',
-		'positionY',
-		'positionZ',
-		'rotation',
-		'metadata',
-	);
+export const saveAgent: SaveAgentType = SQL.sqlBuilder(
+	async ({ identifier, data }, sql) => {
+		const updateObject = sql(
+			{
+				...data,
+				metadata: JSON.stringify(data.metadata),
+			},
+			'positionX',
+			'positionY',
+			'positionZ',
+			'metadata',
+		);
 
-	const result = await sql<AgentDB[]>`
-		INSERT INTO ${sql(AGENT_TABLE_NAME)} ${insertObject}
-		RETURNING *
-	`;
-
-	applyMetadataParsing(result[0]);
-
-	return Option.of(result[0]);
-});
+		return Option.future(
+			sql<AgentDB[]>`
+		UPDATE ${sql(AGENT_TABLE_NAME)}
+		SET ${updateObject}
+		WHERE "identifier" = ${identifier}
+		RETURNING *`,
+		).then((op) => op.map((agents) => agents[0]).ifSome(applyMetadataParsing));
+	},
+);

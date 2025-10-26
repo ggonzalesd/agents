@@ -25,8 +25,11 @@ export const npcServerFactoryGenerator =
 					stats: {
 						id: name,
 						name: 'Goblin',
-						description: `${name} description`,
+						description: `A small, green humanoid creature that likes to scam travelers. Your are particularly intelligent for a goblin. You enjoy setting up elaborate traps and ambushes to catch unsuspecting victims.`,
 						life: 100,
+					},
+					mood: {
+						happiness: 50,
 					},
 				}),
 				// Events for NPC AI

@@ -31,6 +31,13 @@ export class FollowEntityOption implements IFollowOption {
 				const pos = c.body.translation();
 				return { x: pos.x, z: pos.z };
 			};
+
+			c.callOnDelete(() => {
+				this.followPath.option = {
+					isDone: () => true,
+					loop: () => {},
+				};
+			});
 		});
 
 		this.character = props.entity

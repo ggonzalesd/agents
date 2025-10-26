@@ -8,6 +8,7 @@ export class WorldEcs extends BaseEcs {
 	private entities: Map<string, EntityEcs> = new Map();
 	public stacker: Stacker<string, any> = new Stacker();
 
+	private __deferBeforeLoop: Set<() => void> = new Set();
 	private __deferDelete: Set<EntityEcs> = new Set();
 	private __deferAdd: Set<EntityEcs> = new Set();
 
@@ -20,6 +21,10 @@ export class WorldEcs extends BaseEcs {
 			component.onStart();
 			component.isSetup = true;
 		});
+	}
+
+	callBeforeLoop(fn: () => void) {
+		this.__deferBeforeLoop.add(fn);
 	}
 
 	getEntitiesWith(
@@ -98,6 +103,13 @@ export class WorldEcs extends BaseEcs {
 	}
 
 	onUpdate(delta: number) {
+		for (const fn of this.__deferBeforeLoop) {
+			fn();
+		}
+		if (this.__deferBeforeLoop.size > 0) {
+			this.__deferBeforeLoop.clear();
+		}
+
 		for (const entity of this.__deferAdd) {
 			this.entities.set(entity.name, entity);
 			entity.onStart();

@@ -27,4 +27,22 @@ export class RecordEcs extends ComponentEcs {
 	getUnsafeRecord<T>(key: string): T {
 		return this.data[key] as T;
 	}
+
+	/**
+	 * Unsafe method to get a record by key. Use with caution.
+	 * @deprecated Use getRecord instead.
+	 */
+	getUnsafeRecordOrDefault<T extends { [key: string]: unknown }>(
+		key: string,
+		defaultValue: Partial<T> = {},
+	): Partial<T> {
+		const v = this.data[key];
+
+		if (v == null || typeof v !== 'object' || Array.isArray(v)) {
+			this.data[key] = defaultValue;
+			return defaultValue;
+		}
+
+		return v as Partial<T>;
+	}
 }
