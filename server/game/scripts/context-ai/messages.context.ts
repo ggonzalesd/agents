@@ -1,4 +1,4 @@
-import type { WorldEcs } from '#/ecs';
+import type { EntityEcs, WorldEcs } from '#/ecs';
 import * as DateUtil from '#/utils/time.utils';
 
 import type { IContextAI } from './context.interface';
@@ -20,7 +20,7 @@ export class MessagesContextAI implements IContextAI {
 		}
 	}
 
-	onStart(_world: WorldEcs, _parentId?: string | null): void {}
+	onStart(_world: WorldEcs, _parent: EntityEcs): void {}
 
 	toStringContext(): string {
 		const messages = this.messages

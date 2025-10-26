@@ -29,6 +29,17 @@ const actionRemoveShortMemorySchema = z.object({
 	key: z.string(),
 });
 
+const actionSetMoodSchema = z.object({
+	type: z.literal('set-mood'),
+	mood: z.string(),
+	value: z.number().min(0).max(100),
+});
+
+const actionRemoveMoodSchema = z.object({
+	type: z.literal('remove-mood'),
+	mood: z.string(),
+});
+
 export const actionsSchema = z.union([
 	actionTalkSchema,
 	actionMoveFollowEntitySchema,
@@ -36,4 +47,6 @@ export const actionsSchema = z.union([
 	actionJumpSchema,
 	actionSetShortMemorySchema,
 	actionRemoveShortMemorySchema,
+	actionSetMoodSchema,
+	actionRemoveMoodSchema,
 ]);

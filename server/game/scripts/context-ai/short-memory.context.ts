@@ -1,4 +1,4 @@
-import type { WorldEcs } from '#/ecs';
+import type { EntityEcs, WorldEcs } from '#/ecs';
 import type { IContextAI } from './context.interface';
 
 export class ShortMemoryContextAI implements IContextAI {
@@ -6,7 +6,7 @@ export class ShortMemoryContextAI implements IContextAI {
 
 	constructor(private maxMemoryItems: number = 10) {}
 
-	onStart(_world: WorldEcs, _parentId?: string | null): void {}
+	onStart(_world: WorldEcs, _parent: EntityEcs): void {}
 
 	addMemory(value: string) {
 		if (this.memory.size >= this.maxMemoryItems) {
@@ -19,7 +19,7 @@ export class ShortMemoryContextAI implements IContextAI {
 			key = Math.random().toString(36).substring(2, 6).toUpperCase();
 		} while (this.memory.has(key));
 
-		this.memory.set(key, value.replace(/[^\p{L}\p{N}, ]+/gu, '').trim());
+		this.memory.set(key, value.replace(/[^\p{L}\p{N}, _-]+/gu, '').trim());
 	}
 
 	deleteMemory(key: string) {

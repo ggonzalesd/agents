@@ -1,4 +1,5 @@
 import { ComponentEcs, type EntityEcs } from '#/ecs';
+import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { Option } from '#/utils/Option';
 import { FollowEntityOption } from '../entity/follow-path/follow-entity.class';
 import { FollowPathEcs } from '../entity/follow-path/follow-path.ecs';
@@ -6,6 +7,7 @@ import { MovementServerEcs } from '../entity/MovementServer.ecs';
 import { ServerDataEcs } from '../serverData.ecs';
 import { WorldPathfinderEcs } from '../world/world-grid.ecs';
 import { NPCContextEcs } from './npc-context.ecs';
+import { NPCEventQueueEcs } from './npc-event-queue.ecs';
 
 export class NPCActionProcessEcs extends ComponentEcs {
 	serverData: ServerDataEcs = null!;
@@ -35,6 +37,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			return;
 		}
 
+		console.log(JSON.stringify(this.npcContextEcs.actions, null, 2));
 		for (const action of this.npcContextEcs.actions) {
 			// console.log('Processing NPC action:', { action });
 
@@ -44,11 +47,23 @@ export class NPCActionProcessEcs extends ComponentEcs {
 					message: action.content,
 				});
 
-				this.npcContextEcs.lastMessages.addMessage(
-					action.content,
-					this.entityParent.name,
-					action.targets,
-				);
+				this.world
+					.getEntityLike({ context: NPCContextEcs, event: NPCEventQueueEcs })
+					.forEach(({ entity, components: { context, event } }) => {
+						context.lastMessages.addMessage(
+							action.content,
+							this.parent ?? 'Unknown',
+						);
+
+						event.pushEvent(
+							`${this.parent ?? 'Unknown'} says something.`,
+							{
+								from: this.parent,
+								message: action.content,
+							},
+							this.parent === entity.name ? 0 : 10,
+						);
+					});
 			}
 
 			if (action.type === 'set-short-memory') {
@@ -91,6 +106,24 @@ export class NPCActionProcessEcs extends ComponentEcs {
 					.ifSome((movement) => {
 						movement.movementState.isJumping = true;
 					});
+			}
+
+			if (action.type === 'set-mood') {
+				this.entityParent.get(RecordEcs).ifSome((r) => {
+					const moodRecord = r.getUnsafeRecordOrDefault<{
+						[key: string]: number;
+					}>('mood');
+					moodRecord[action.mood] = action.value;
+				});
+			}
+
+			if (action.type === 'remove-mood') {
+				this.entityParent.get(RecordEcs).ifSome((r) => {
+					const moodRecord = r.getUnsafeRecordOrDefault<{
+						[key: string]: number;
+					}>('mood');
+					delete moodRecord[action.mood];
+				});
 			}
 		}
 		this.npcContextEcs.actions = [];

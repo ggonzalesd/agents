@@ -4,6 +4,8 @@ import { ComponentEcs } from '#/ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { actionsSchema } from '#/schema/actions.schema';
 
+import * as TimeUtils from '#/utils/time.utils';
+
 import * as LLMService from '$/services/llm.service';
 
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
@@ -11,6 +13,7 @@ import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { NPCEventQueueEcs } from './npc-event-queue.ecs';
 import { MessagesContextAI } from '../context-ai/messages.context';
 import { ShortMemoryContextAI } from '../context-ai/short-memory.context';
+import { StatsContextAI } from '../context-ai/stats.context';
 
 export const statsSchema = z
 	.object({
@@ -27,6 +30,7 @@ export class NPCContextEcs extends ComponentEcs {
 
 	lastMessages = new MessagesContextAI();
 	shortMemory = new ShortMemoryContextAI(20);
+	statsContext = new StatsContextAI();
 
 	onStart(): void {
 		const parent = this.world
@@ -50,8 +54,9 @@ export class NPCContextEcs extends ComponentEcs {
 			.ifSome(statsSchema.parse)
 			.unwrap('Stats record not found on NPC RecordEcs');
 
-		this.lastMessages.onStart(this.world, this.parent);
-		this.shortMemory.onStart(this.world, this.parent);
+		this.lastMessages.onStart(this.world, parent);
+		this.shortMemory.onStart(this.world, parent);
+		this.statsContext.onStart(this.world, parent);
 	}
 
 	private systemContext(): string {
@@ -68,16 +73,23 @@ export class NPCContextEcs extends ComponentEcs {
 
 	private actionContext(): string {
 		const actionsDescription = [
-			`{"type": "talk", "content": string, "targets": string[]} // empty targets means everyone`,
+			`{"type": "talk", "content": string, "targets": string[]} // empty targets means everyone and avoid talking your thoughts out loud`,
+
 			// `{"type": "long-term-store", "value": string}`,
 			// `{"type": "get-long-term-store", "value": string}`,
 			// `{"type": "clear-long-term-store", "key": string}`,
+
 			`{"type": "set-short-memory", "value": string} // save ideas, thoughts, goals or concepts in your short-term memory`,
 			`{"type": "remove-short-memory", "key": string}`,
 			// `{"type": "clear-short-term-store", "key": string}`,
+
+			`{"type": "set-mood", "mood": string, "value": i32(0...100)}`,
+			`{"type": "remove-mood", "mood": string}`,
 			// `{"type": "emote", "value": "HAPPY" | "SAD" | "ANGRY" | "CONFUSED" | "SURPRISED" | "NEUTRAL"} // 3d emote to express your mood`,
+
 			// `{"type": "pick-item", "itemId": string, "slot": i32(0...9)}`,
 			// `{"type": "drop-item", "slot": i32(0...9)}`,
+
 			`{"type": "follow-entity", "entityId": string}`,
 			`{"type": "move-stop"}`,
 			`{"type": "jump"}`,
@@ -93,21 +105,14 @@ export class NPCContextEcs extends ComponentEcs {
 	}
 
 	buildContext(): string {
-		const stats =
-			this.record.getUnsafeRecord<z.infer<typeof statsSchema>>('stats');
+		this.eventQueue.popEvents();
 
-		const statsContext = [
-			'## NPC Stats',
-			`- ID: ${stats.id}`,
-			`- Name: ${stats.name}`,
-			`- Description: ${stats.description ?? 'N/A'}`,
-			`- Life: ${stats.life}`,
-		].join('\n');
-
-		const events = this.eventQueue.popEvents();
+		const events = this.eventQueue
+			.getHistory()
+			.map((e) => `- [${TimeUtils.timeAgo(e.date)}] ${e.message}`);
 		const eventsContext = [
-			'## NPC Events',
-			...events.map((event, index) => `Event ${index + 1}: ${event.message}`),
+			`## Recent Events (Last ${events.length})`,
+			events.length > 0 ? events.join('\n') : '- No recent events.',
 		].join('\n');
 
 		// Close entities
@@ -149,7 +154,7 @@ export class NPCContextEcs extends ComponentEcs {
 		return [
 			this.systemContext(),
 			this.actionContext(),
-			statsContext,
+			this.statsContext.toStringContext(),
 			eventsContext,
 			entitiesContext,
 			this.shortMemory.toStringContext(),

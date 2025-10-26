@@ -1,6 +1,6 @@
-import type { WorldEcs } from '#/ecs';
+import type { EntityEcs, WorldEcs } from '#/ecs';
 
 export interface IContextAI {
-	onStart(world: WorldEcs, parentId?: string | null): void;
+	onStart(world: WorldEcs, parent: EntityEcs): void;
 	toStringContext(): string;
 }
