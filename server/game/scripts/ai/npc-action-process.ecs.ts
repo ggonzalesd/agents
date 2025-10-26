@@ -43,6 +43,20 @@ export class NPCActionProcessEcs extends ComponentEcs {
 					id: this.parent,
 					message: action.content,
 				});
+
+				this.npcContextEcs.lastMessages.addMessage(
+					action.content,
+					this.entityParent.name,
+					action.targets,
+				);
+			}
+
+			if (action.type === 'set-short-memory') {
+				this.npcContextEcs.shortMemory.addMemory(action.value);
+			}
+
+			if (action.type === 'remove-short-memory') {
+				this.npcContextEcs.shortMemory.deleteMemory(action.key);
 			}
 
 			if (action.type === 'follow-entity') {

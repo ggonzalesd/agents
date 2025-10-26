@@ -8,10 +8,17 @@ export class NPCEventQueueEcs extends ComponentEcs {
 		message: string;
 		data: any;
 		weight: number;
+		date: Date;
 	}[] = [];
 
 	pushEvent(message: string, data: any, weight = 1) {
-		this.eventQueue.push({ id: crypto.randomUUID(), message, data, weight });
+		this.eventQueue.push({
+			id: crypto.randomUUID(),
+			message,
+			data,
+			weight,
+			date: new Date(),
+		});
 	}
 
 	getWeight() {

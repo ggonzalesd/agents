@@ -9,6 +9,7 @@ import { MovementServerEcs } from '../entity/MovementServer.ecs';
 import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
 import { NPCEventQueueEcs } from '../ai/npc-event-queue.ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
+import { NPCContextEcs } from '../ai/npc-context.ecs';
 
 const sessionSchema = z
 	.object({
@@ -107,18 +108,22 @@ export class PlayerServerBehavior extends ComponentEcs {
 					});
 
 					this.world
-						.getFromEntitiesWith(NPCEventQueueEcs)
-						.forEach(({ component }) =>
-							component.pushEvent(
+						.getEntityLike({ context: NPCContextEcs, event: NPCEventQueueEcs })
+						.forEach(({ entity: _, components: { context, event } }) => {
+							context.lastMessages.addMessage(
 								message.message as string,
+								this.parent ?? 'Unknown',
+							);
+
+							event.pushEvent(
+								`${this.parent} says something.`,
 								{
-									type: 'message',
 									from: this.parent,
-									message: message.message as string,
+									message: message.message,
 								},
 								10,
-							),
-						);
+							);
+						});
 				}
 				break;
 		}

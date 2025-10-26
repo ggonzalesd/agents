@@ -9,6 +9,8 @@ import * as LLMService from '$/services/llm.service';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 
 import { NPCEventQueueEcs } from './npc-event-queue.ecs';
+import { MessagesContextAI } from '../context-ai/messages.context';
+import { ShortMemoryContextAI } from '../context-ai/short-memory.context';
 
 export const statsSchema = z
 	.object({
@@ -22,6 +24,9 @@ export class NPCContextEcs extends ComponentEcs {
 	character: CharacterBodyServerEcs = null!;
 	record: RecordEcs = null!;
 	eventQueue: NPCEventQueueEcs = null!;
+
+	lastMessages = new MessagesContextAI();
+	shortMemory = new ShortMemoryContextAI(20);
 
 	onStart(): void {
 		const parent = this.world
@@ -44,6 +49,9 @@ export class NPCContextEcs extends ComponentEcs {
 			.getRecord('stats')
 			.ifSome(statsSchema.parse)
 			.unwrap('Stats record not found on NPC RecordEcs');
+
+		this.lastMessages.onStart(this.world, this.parent);
+		this.shortMemory.onStart(this.world, this.parent);
 	}
 
 	private systemContext(): string {
@@ -60,11 +68,12 @@ export class NPCContextEcs extends ComponentEcs {
 
 	private actionContext(): string {
 		const actionsDescription = [
-			`{"type": "talk", "content": string}`,
+			`{"type": "talk", "content": string, "targets": string[]} // empty targets means everyone`,
 			// `{"type": "long-term-store", "value": string}`,
 			// `{"type": "get-long-term-store", "value": string}`,
 			// `{"type": "clear-long-term-store", "key": string}`,
-			// `{"type": "short-term-store", "value": string}`,
+			`{"type": "set-short-memory", "value": string} // save ideas, thoughts, goals or concepts in your short-term memory`,
+			`{"type": "remove-short-memory", "key": string}`,
 			// `{"type": "clear-short-term-store", "key": string}`,
 			// `{"type": "emote", "value": "HAPPY" | "SAD" | "ANGRY" | "CONFUSED" | "SURPRISED" | "NEUTRAL"} // 3d emote to express your mood`,
 			// `{"type": "pick-item", "itemId": string, "slot": i32(0...9)}`,
@@ -77,7 +86,7 @@ export class NPCContextEcs extends ComponentEcs {
 
 		return [
 			'## Actions',
-			'You are only allowed to response with valid JSON format called "Actions". One line per action. You can use all the actions as you want. Actions do not have and order and are excuted in parallel. Actions are described in a JSON format with type supporting, Respect the types of each action.',
+			'You are only allowed to response with valid JSON format called "Actions". "ONE LINE PER ACTION". You can use all the actions as you want. Actions do not have and order and are excuted in parallel. Actions are described in a JSON format with type supporting, Respect the types of each action. JUST LIST EACH ACTION, DO NOT CREATE A [] OR COMMA SEPARATED LIST.',
 			'Actions you can take:',
 			...actionsDescription,
 		].join('\n');
@@ -98,12 +107,7 @@ export class NPCContextEcs extends ComponentEcs {
 		const events = this.eventQueue.popEvents();
 		const eventsContext = [
 			'## NPC Events',
-			...events.map(
-				(event, index) =>
-					`Event ${index + 1}: ID=${event.id}, Data=${JSON.stringify(
-						event.data,
-					)}`,
-			),
+			...events.map((event, index) => `Event ${index + 1}: ${event.message}`),
 		].join('\n');
 
 		// Close entities
@@ -148,6 +152,8 @@ export class NPCContextEcs extends ComponentEcs {
 			statsContext,
 			eventsContext,
 			entitiesContext,
+			this.shortMemory.toStringContext(),
+			this.lastMessages.toStringContext(),
 		].join('\n\n');
 	}
 
