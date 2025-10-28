@@ -96,6 +96,19 @@ export class PlayerClientBehavior extends ComponentEcs {
 			}).bind(this),
 		);
 
+		// Handle entity interaction (NPCs/Players) opening the Entity Details modal
+		this.world.stacker.dispatch(
+			'entity-interact',
+			((entityId: string) => {
+				// Avoid opening details for self
+				if (entityId === state.sessionId) return;
+
+				this.uiClient.game.setSelectedEntity(entityId);
+				this.uiClient.game.setPause(true, 'ENTITYDETAILS');
+				this.input.disabled = true;
+			}).bind(this),
+		);
+
 		this.clientAuthoritative.update({
 			isMoving,
 			...(isMoving ? { direction: angle } : {}),

@@ -8,6 +8,7 @@
 	import OnLeaveModal from './modals/OnLeaveModal.svelte';
 	import { getContext, onMount } from 'svelte';
 	import { GameInput } from '@/utils/input.utils';
+	import EntityDetailsModal from './modals/EntityDetailsModal.svelte';
 
 	let gameState = getGameStateContext();
 	let inputs = getContext<GameInput>(GameInput.name);
@@ -23,6 +24,7 @@
 		if (e.target !== e.currentTarget) return;
 
 		gameState.continueGame();
+		gameState.setSelectedEntity(null);
 		inputs.disabled = false;
 	};
 
@@ -47,6 +49,8 @@
 			<InventoryModal />
 		{:else if $gameState.view === 'ONLEAVE'}
 			<OnLeaveModal />
+		{:else if $gameState.view === 'ENTITYDETAILS'}
+			<EntityDetailsModal />
 		{/if}
 	</div>
 {/if}
