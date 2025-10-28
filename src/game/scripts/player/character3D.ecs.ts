@@ -37,6 +37,13 @@ export class Character3DEcs extends ComponentEcs {
 		);
 
 		this.object3D.add(mesh);
+
+		// Mark meshes as interactable entity by default; specific type can be inferred elsewhere
+		mesh.userData = {
+			canInteract: true,
+			isEntity: true,
+			parent: this.parent,
+		};
 		// this.object3D.add(sphere);
 
 		// Skinning /3d/gordon.png with transparency
@@ -84,6 +91,17 @@ export class Character3DEcs extends ComponentEcs {
 			.unwrap('No Connection found');
 
 		// Render Config
+		// Propagate userData to all mesh children so raycaster hits carry the flags
+		this.object3D.traverse((child) => {
+			if (child instanceof THREE.Mesh) {
+				child.userData = {
+					canInteract: true,
+					isEntity: true,
+					parent: this.parent,
+				};
+			}
+		});
+
 		this.renderClient.scene.add(this.object3D);
 		this.callOnDelete(() => this.renderClient.scene.remove(this.object3D));
 

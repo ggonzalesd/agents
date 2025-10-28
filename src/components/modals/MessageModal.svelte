@@ -7,6 +7,7 @@
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
 	import { GameInput } from '@/utils/input.utils';
 	import { getContext, onMount } from 'svelte';
+	import InputText from '../InputText.svelte';
 
 	let gameInputContext = getContext<GameInput>(GameInput.name);
 	let gameStateContext = getGameStateContext();
@@ -45,14 +46,46 @@
 	});
 </script>
 
-<div class="pointer-events-auto bg-zinc-900">
-	<p>Send a Message</p>
-	<form onsubmit={onSubmit} class="mt-4 flex gap-2">
-		<input bind:this={inputRef} type="text" name="message" id="message" />
-		<input
-			class="pointer-events-auto flex h-5 items-center rounded-md bg-blue-600 px-4 transition-transform active:scale-95"
-			type="submit"
-			value="Send"
+{#snippet renderMessage(username: string, message: string)}
+	<div class="text-gris-50 font-space-mono flex flex-col gap-1 bg-gris-600 rounded-lg px-4 py-2.5">
+		<p class="text-[12px] font-bold">{username}</p>
+		<p class="text-[14px]">{message}</p>
+	</div>
+{/snippet}
+
+{#snippet renderRecommendedMessage(message: string)}
+	<button class="text-gris-100 font-space-mono text-[14px] border border-gris-100 rounded-lg px-4 py-2.5 cursor-pointer hover:bg-gris-700" onclick={() => {
+		inputRef.value = message;
+	}}>
+		<p>{message}</p>
+	</button>
+{/snippet}
+
+<div class="w-[350px] h-full bg-[url(/background-log-messages.png)] flex flex-col gap-5 bg-cover bg-center bg-no-repeat pointer-events-auto p-4">
+	<p class="text-gris-50 font-bold text-lg">Log messages</p>
+
+	<div class="h-full overflow-y-auto flex flex-col gap-3">
+		{#each [{"username": "User1", "message": "Hello!"}, {"username": "User2", "message": "Good game!"}] as msg}
+			{@render renderMessage(msg.username, msg.message)}
+		{/each}
+	</div>
+
+	<div class="flex flex-col gap-3">
+		<p class="text-gris-50 font-bold text-lg">Recommended messages</p>
+
+		{#each ['Hello!', 'Good game!', 'Well played!', 'Thanks!'] as msg}
+			{@render renderRecommendedMessage(msg)}
+		{/each}
+	</div>
+
+	<div class="h-[1px] border border-gris-500"></div>
+
+	<form onsubmit={onSubmit} class="flex w-full">
+		<InputText
+			name="message"
+			placeholder="Type your message..."
+			id="message"
+			type="text"
 		/>
 	</form>
 </div>

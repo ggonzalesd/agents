@@ -82,6 +82,12 @@ export class RenderClientEcs extends ComponentEcs {
 					this.world.stacker.stackLoss('item-interact', userData.parent);
 					break;
 				}
+
+				// Open entity details when clicking on NPCs or Players
+				if (userData.isEntity) {
+					this.world.stacker.stackLoss('entity-interact', userData.parent);
+					break;
+				}
 			}
 		};
 
