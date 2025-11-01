@@ -111,13 +111,15 @@
 
 <svelte:document on:mousemove={onMouseMove} />
 
-<div class="flex flex-col gap-5 p-5 [direction:reverse] bg-[url(/background-inventory.svg)] bg-cover bg-center bg-no-repeat rounded-lg">
+<div
+	class="flex flex-col gap-5 rounded-lg bg-[url(/background-inventory.svg)] bg-cover bg-center bg-no-repeat p-5 [direction:reverse]"
+>
 	<h1 class="font-zen-dots text-center text-2xl">INVENTORY</h1>
 	<div class="grid grid-cols-9 [direction:reverse]">
 		{#each new Array(27) as _, i}
 			{@const item = itemState.get(i.toString())}
 			<div
-				class="flex aspect-square size-19 items-center justify-center border-4 border-gris-300 hover:border-[#8965F2] cursor-pointer"
+				class="border-gris-300 flex aspect-square size-19 cursor-pointer items-center justify-center border-4 hover:border-[#8965F2]"
 			>
 				{#if item}
 					<div class="Item" {@attach itemDropHandler(i.toString())}>
@@ -134,7 +136,7 @@
 		{#each new Array(9) as _, i}
 			{@const item = itemState.get(i.toString())}
 			<div
-				class="flex aspect-square size-19 items-center justify-center border-4 border-gris-300 hover:border-[#8965F2] cursor-pointer"
+				class="border-gris-300 flex aspect-square size-19 cursor-pointer items-center justify-center border-4 hover:border-[#8965F2]"
 			>
 				{#if item}
 					<div class="Item" {@attach itemDropHandler(i.toString())}>

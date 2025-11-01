@@ -4,6 +4,7 @@ import type { WorldPathfinderEcs } from '../../world/world-grid.ecs';
 import { CharacterBodyServerEcs } from '../CharacterBodyServer.ecs';
 import type { IFollowOption } from './follow-option.interface';
 import type { FollowPathEcs } from './follow-path.ecs';
+import { StopMovementOption } from './stop-movement.class';
 
 export class FollowEntityOption implements IFollowOption {
 	private pathfinder: WorldPathfinderEcs;
@@ -33,10 +34,7 @@ export class FollowEntityOption implements IFollowOption {
 			};
 
 			c.callOnDelete(() => {
-				this.followPath.option = {
-					isDone: () => true,
-					loop: () => {},
-				};
+				this.followPath.option = new StopMovementOption();
 			});
 		});
 
@@ -53,10 +51,7 @@ export class FollowEntityOption implements IFollowOption {
 				.raw();
 
 			if (getter == null) {
-				this.followPath.option = {
-					isDone: () => true,
-					loop: () => {},
-				};
+				this.followPath.option = new StopMovementOption();
 				return;
 			}
 
@@ -103,5 +98,12 @@ export class FollowEntityOption implements IFollowOption {
 
 	isDone(): boolean {
 		return false;
+	}
+
+	toContextString(): string {
+		return [
+			'# Movement: Following Entity',
+			`- Target Entity ID: ${this.target.name}`,
+		].join('\n');
 	}
 }

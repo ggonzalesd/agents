@@ -13,7 +13,17 @@ import { NpcServerBehavior } from '../scripts/npc/npcServerBehavior.ecs';
 
 export const npcServerFactoryGenerator =
 	(world: WorldEcs) =>
-	({ name, pos }: { name: string; pos: IVec3 }) => {
+	({
+		name,
+		display,
+		pos,
+		description,
+	}: {
+		name: string;
+		display: string;
+		pos: IVec3;
+		description: string;
+	}) => {
 		const state = new NPCState(pos, name);
 
 		return new EntityEcs({
@@ -24,8 +34,8 @@ export const npcServerFactoryGenerator =
 				[RecordEcs.name]: new RecordEcs({
 					stats: {
 						id: name,
-						name: 'Goblin',
-						description: `A small, green humanoid creature that likes to scam travelers. Your are particularly intelligent for a goblin. You enjoy setting up elaborate traps and ambushes to catch unsuspecting victims.`,
+						name: display,
+						description,
 						life: 100,
 					},
 					mood: {

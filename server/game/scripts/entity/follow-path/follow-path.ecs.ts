@@ -4,6 +4,7 @@ import { WorldPathfinderEcs } from '../../world/world-grid.ecs';
 import { CharacterBodyServerEcs } from '../CharacterBodyServer.ecs';
 import { MovementServerEcs } from '../MovementServer.ecs';
 import type { IFollowOption } from './follow-option.interface';
+import { StopMovementOption } from './stop-movement.class';
 
 export class FollowPathEcs extends ComponentEcs {
 	private pathfinder: WorldPathfinderEcs = null!;
@@ -16,10 +17,7 @@ export class FollowPathEcs extends ComponentEcs {
 
 	constructor() {
 		super();
-		this.option = {
-			isDone: () => true,
-			loop: (_delta: number) => {},
-		};
+		this.option = new StopMovementOption();
 	}
 
 	onStart(): void {

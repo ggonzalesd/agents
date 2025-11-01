@@ -5,6 +5,8 @@ import { ServerDataEcs } from './serverData.ecs';
 import { itemServerFactory } from '../prefab/item.server';
 import { npcServerFactoryGenerator } from '../prefab/npc.server';
 
+import * as NPCRepository from '$/db/npc.db';
+
 export class ServerManagerEcs extends ComponentEcs {
 	onStart(): void {
 		const physics = this.world
@@ -32,19 +34,24 @@ export class ServerManagerEcs extends ComponentEcs {
 
 		const npcServerFactory = npcServerFactoryGenerator(this.world);
 
-		// Add some NPCs
-		for (let i = 0; i < 1; i++) {
-			this.world.addEntity(
-				npcServerFactory({
-					name: `npc_${i}_${Math.random().toString(36).substring(7)}`,
+		NPCRepository.getAllNPCs({}).then((npcs) =>
+			npcs.forEach((one) => {
+				console.log('Spawning NPC:', one.agent.identifier);
+
+				const npc = npcServerFactory({
+					name: one.agent.identifier,
+					description: one.npc.description,
+					display: one.agent.display,
 					pos: {
-						x: (Math.random() - 0.5) * 20,
-						y: 5,
-						z: (Math.random() - 0.5) * 20,
+						x: one.agent.positionX,
+						y: one.agent.positionY,
+						z: one.agent.positionZ,
 					},
-				}),
-			);
-		}
+				});
+
+				this.world.addEntity(npc);
+			}),
+		);
 
 		this.callOnDelete(() => {
 			physics.removeCollider(collider, true);

@@ -33,7 +33,11 @@
 		// Scene setup
 		const scene = new THREE.Scene();
 		const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-		const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+		const renderer = new THREE.WebGLRenderer({
+			canvas,
+			alpha: true,
+			antialias: true,
+		});
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, 2));
 
 		// Sizing
@@ -60,8 +64,14 @@
 
 		// Model
 		const texture = loadTexture(skinUrl(skin), false);
-		const material = new THREE.MeshStandardMaterial({ map: texture, transparent: true });
-		const { mesh, mixer } = cloneMesh(loadGLB('/3d/SkinModel.glb'), material, ['IDLE', 'WALK']);
+		const material = new THREE.MeshStandardMaterial({
+			map: texture,
+			transparent: true,
+		});
+		const { mesh, mixer } = cloneMesh(loadGLB('/3d/SkinModel.glb'), material, [
+			'IDLE',
+			'WALK',
+		]);
 		const spot = new THREE.Object3D();
 		spot.add(mesh);
 		scene.add(spot);
@@ -133,22 +143,22 @@
 	});
 </script>
 
-<div class="flex flex-col md:w-[550px] w-[400px] bg-[url(/background-entity-information.svg)] bg-cover bg-center bg-no-repeat p-6 gap-6 rounded-lg text-gris-50">
-	<h1 class="font-bold text-center text-2xl">{title}</h1>
+<div
+	class="text-gris-50 flex w-[400px] flex-col gap-6 rounded-lg bg-[url(/background-entity-information.svg)] bg-cover bg-center bg-no-repeat p-6 md:w-[550px]"
+>
+	<h1 class="text-center text-2xl font-bold">{title}</h1>
 
-	<div class="flex md:flex-row justify-between flex-col gap-6 min-h-[320px] items-center">
-		<div class="flex md:w-2/5 w-full min-h-[300px]">
-			<canvas class="w-full h-full" {@attach modelAttach}></canvas>
+	<div
+		class="flex min-h-[320px] flex-col items-center justify-between gap-6 md:flex-row"
+	>
+		<div class="flex min-h-[300px] w-full md:w-2/5">
+			<canvas class="h-full w-full" {@attach modelAttach}></canvas>
 		</div>
 
-		<div class="flex flex-col md:w-3/5 w-full p-4 gap-1.5 border border-gris-50 text-gris-50 rounded-lg">
-			{#each [
-				['Health (HP)', '100 / 100'],
-				['Hunger (Food)', '75 / 100'],
-				['Stade', 'Happy'],
-				['Nº Missions', '12'],
-				['Nº Achievements', '14'],
-			] as stat, index}
+		<div
+			class="border-gris-50 text-gris-50 flex w-full flex-col gap-1.5 rounded-lg border p-4 md:w-3/5"
+		>
+			{#each [['Health (HP)', '100 / 100'], ['Hunger (Food)', '75 / 100'], ['Stade', 'Happy'], ['Nº Missions', '12'], ['Nº Achievements', '14']] as stat, index}
 				<div class="flex justify-between">
 					<p class="text-md font-bold">{stat[0]}</p>
 					<p class="text-sm">{stat[1]}</p>
@@ -160,5 +170,7 @@
 		</div>
 	</div>
 
-	<p class="text-sm text-center">Detalles de la entidad seleccionada. (Contenido de ejemplo)</p>
+	<p class="text-center text-sm">
+		Detalles de la entidad seleccionada. (Contenido de ejemplo)
+	</p>
 </div>

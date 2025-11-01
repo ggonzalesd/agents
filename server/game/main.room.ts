@@ -14,15 +14,18 @@ import type { WorldEcs } from '#/ecs/World.ecs';
 import * as JwtService from '$/services/jwt.service';
 import * as ProfileService from '$/services/profile.service';
 
-import { playerServerFactoryGenerator } from './prefab/player.server';
-import { worldServerFactory } from './prefab/world.server';
+import * as PlayerPrefab from './prefab/player.server';
+import * as WorldPrefab from './prefab/world.server';
+
 import { CharacterBodyServerEcs } from './scripts/entity/CharacterBodyServer.ecs';
 
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
 	worldPhy: RAPIER.World = null!;
 
-	playerServerFactory: ReturnType<typeof playerServerFactoryGenerator> = null!;
+	playerServerFactory: ReturnType<
+		typeof PlayerPrefab.playerServerFactoryGenerator
+	> = null!;
 
 	onCreate(options: any): void | Promise<void> {
 		if (!['1', '2', 'main-room'].includes(options.id)) {
@@ -32,13 +35,15 @@ export class MainRoom extends Room<GameState> {
 		this.state = new GameState();
 		this.worldPhy = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
 
-		this.worldEcs = worldServerFactory({
+		this.worldEcs = WorldPrefab.worldServerFactory({
 			state: this.state,
 			worldPhysics: this.worldPhy,
 			room: this,
 		});
 
-		this.playerServerFactory = playerServerFactoryGenerator(this.worldEcs);
+		this.playerServerFactory = PlayerPrefab.playerServerFactoryGenerator(
+			this.worldEcs,
+		);
 
 		this.roomId = options.id;
 

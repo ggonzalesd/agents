@@ -9,6 +9,10 @@ import { WorldPathfinderEcs } from '../world/world-grid.ecs';
 import { NPCContextEcs } from './npc-context.ecs';
 import { NPCEventQueueEcs } from './npc-event-queue.ecs';
 
+import * as LLMService from '$/services/llm.service';
+import * as LTMRepository from '$/db/ltm.db';
+import { StopMovementOption } from '../entity/follow-path/stop-movement.class';
+
 export class NPCActionProcessEcs extends ComponentEcs {
 	serverData: ServerDataEcs = null!;
 
@@ -37,6 +41,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			return;
 		}
 
+		console.log('NPC Actions: ', this.npcContextEcs.actions);
 		console.log(JSON.stringify(this.npcContextEcs.actions, null, 2));
 		for (const action of this.npcContextEcs.actions) {
 			// console.log('Processing NPC action:', { action });
@@ -74,7 +79,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				this.npcContextEcs.shortMemory.deleteMemory(action.key);
 			}
 
-			if (action.type === 'follow-entity') {
+			if (action.type === 'move-follow-entity') {
 				Option.zip({
 					target: this.world.getEntity(action.entityId),
 					followPath: this.entityParent.get(FollowPathEcs),
@@ -92,10 +97,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 					.getEntity(this.parent)
 					.map((entity) => entity.getUnsafe(FollowPathEcs))
 					.ifSome((f) => {
-						f.option = {
-							isDone: () => true,
-							loop: (_delta: number) => {},
-						};
+						f.option = new StopMovementOption();
 					});
 			}
 
@@ -123,6 +125,34 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						[key: string]: number;
 					}>('mood');
 					delete moodRecord[action.mood];
+				});
+			}
+
+			if (action.type === 'save-long-term-memory') {
+				LLMService.embed([action.value]).then((embeddings) => {
+					LTMRepository.saveLongTermMemory({
+						embedding: embeddings[0],
+						metadata: {},
+						npcIdentifier: this.entityParent.name,
+						text: action.value,
+					}).then(({ embedding, ...ltm }) => {
+						console.log('Saved LongTermMemory:', {
+							...ltm,
+							embeddingLength: embedding.length,
+						});
+					});
+				});
+			}
+
+			if (action.type === 'retrieve-long-term-memory') {
+				LLMService.embed([action.value]).then((embeddings) => {
+					LTMRepository.retrieveLongTermMemory({
+						npcIdentifier: this.entityParent.name,
+						queryEmbedding: embeddings[0],
+						limit: action.limit,
+					}).then((ltms) => {
+						this.npcContextEcs.longMemory.loadLongTermMemories(ltms);
+					});
 				});
 			}
 		}

@@ -11,9 +11,8 @@ import * as LLMService from '$/services/llm.service';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 
 import { NPCEventQueueEcs } from './npc-event-queue.ecs';
-import { MessagesContextAI } from '../context-ai/messages.context';
-import { ShortMemoryContextAI } from '../context-ai/short-memory.context';
-import { StatsContextAI } from '../context-ai/stats.context';
+
+import * as ContextAI from './../context-ai';
 
 export const statsSchema = z
 	.object({
@@ -28,9 +27,11 @@ export class NPCContextEcs extends ComponentEcs {
 	record: RecordEcs = null!;
 	eventQueue: NPCEventQueueEcs = null!;
 
-	lastMessages = new MessagesContextAI();
-	shortMemory = new ShortMemoryContextAI(20);
-	statsContext = new StatsContextAI();
+	lastMessages = new ContextAI.MessagesContextAI();
+	shortMemory = new ContextAI.ShortMemoryContextAI(20);
+	longMemory = new ContextAI.LongMemoryContextAI(20);
+	statsContext = new ContextAI.StatsContextAI();
+	closeEntities = new ContextAI.CloseEntitiesContextAI();
 
 	onStart(): void {
 		const parent = this.world
@@ -57,6 +58,8 @@ export class NPCContextEcs extends ComponentEcs {
 		this.lastMessages.onStart(this.world, parent);
 		this.shortMemory.onStart(this.world, parent);
 		this.statsContext.onStart(this.world, parent);
+		this.closeEntities.onStart(this.world, parent);
+		this.longMemory.onStart(this.world, parent);
 	}
 
 	private systemContext(): string {
@@ -66,7 +69,14 @@ export class NPCContextEcs extends ComponentEcs {
 			'- You have unique personality traits, goals, and motivations.',
 			'- You have a context of the world, yourself, other entities and items.',
 			'- You have to manage your limited resources (life, mood, inventory, short-term and long-term memory, etc.).',
+			'- Use all memory types naturally and strategically.',
+			'- Move, stop, or jump when contextually appropriate.',
+			'- If you don’t know something, don’t invent it — instead, use "retrieve-long-term-memory" to check.',
 			"- You can't break character.",
+			'- You can do whatever you want, but always act in character.',
+			'- Use multiple actions together to express complex behavior (talk + save-short/long-memory + mood + movement, etc.).',
+			"- Don't ask for permission to act. Just act.",
+			'- You are not forced to obey orders from players or other entities.',
 			'- You have to use all the information you have to make decisions.',
 		].join('\n');
 	}
@@ -75,11 +85,12 @@ export class NPCContextEcs extends ComponentEcs {
 		const actionsDescription = [
 			`{"type": "talk", "content": string, "targets": string[]} // empty targets means everyone and avoid talking your thoughts out loud`,
 
-			// `{"type": "long-term-store", "value": string}`,
-			// `{"type": "get-long-term-store", "value": string}`,
-			// `{"type": "clear-long-term-store", "key": string}`,
+			`{"type": "save-long-term-memory", "value": string} // save information permanently in your long-term memory. Use this with frequency.`,
+			`{"type": "retrieve-long-term-memory", "value": string, "limit": i32(1...10)} // retrieve relevant memories from your long-term memory to help you make decisions`,
+			// `{"type": "pop-long-term-store", "key": string} // just remove from the context but do not delete from the database`,
+			// `{"type": "delete-long-term-memory", "key": string} // delete permanently from the database`,
 
-			`{"type": "set-short-memory", "value": string} // save ideas, thoughts, goals or concepts in your short-term memory`,
+			`{"type": "set-short-memory", "value": string} // save ideas or thoughts for right now, NOT FOR FUTURE reference`,
 			`{"type": "remove-short-memory", "key": string}`,
 			// `{"type": "clear-short-term-store", "key": string}`,
 
@@ -90,15 +101,25 @@ export class NPCContextEcs extends ComponentEcs {
 			// `{"type": "pick-item", "itemId": string, "slot": i32(0...9)}`,
 			// `{"type": "drop-item", "slot": i32(0...9)}`,
 
-			`{"type": "follow-entity", "entityId": string}`,
+			`{"type": "move-follow-entity", "entityId": string, "distance": f32}`,
+			// `{"type": "move-to-entity", "entityId": string, "distance": f32}`,
+			// `{"type": "move-run-away-from-entity", "entityId": string, "distance": f32}`,
+			// `{"type": "move-to-position", "x": f32, "z": f32}`,
+			// `{"type": "move-explore"}`,
 			`{"type": "move-stop"}`,
+			// `{"type": "jump", "start-delay-sec": f32, "interval-sec": f32, "rounds": i32(1...10)}`,
 			`{"type": "jump"}`,
-			// `{"type": "follow-position", "x": number, "z": number}`,
+
+			// `{"type": "@request-acting-again", "time": f32} // request the system to call you to act again in X seconds`,
+			// `{"type": "@stop-acting", "time": f32} // request the system to stop calling you to act for X seconds`,
 		];
 
 		return [
 			'## Actions',
-			'You are only allowed to response with valid JSON format called "Actions". "ONE LINE PER ACTION". You can use all the actions as you want. Actions do not have and order and are excuted in parallel. Actions are described in a JSON format with type supporting, Respect the types of each action. JUST LIST EACH ACTION, DO NOT CREATE A [] OR COMMA SEPARATED LIST.',
+			'You must reply ONLY with one or more JSON objects, one per line.',
+			'DO NOT wrap them inside arrays or objects.',
+			'DO NOT include comments, explanations, or extra keys.',
+			'Each line must be a valid standalone JSON object.',
 			'Actions you can take:',
 			...actionsDescription,
 		].join('\n');
@@ -115,48 +136,13 @@ export class NPCContextEcs extends ComponentEcs {
 			events.length > 0 ? events.join('\n') : '- No recent events.',
 		].join('\n');
 
-		// Close entities
-		const closeEntities = this.world
-			.getFromEntitiesWith(CharacterBodyServerEcs)
-			.filter(({ entity }) => entity.name !== this.parent)
-			.map((other) => {
-				const myPosition = this.character.body.translation();
-				const otherPosition = other.component.body.translation();
-
-				const distance = Math.hypot(
-					myPosition.x - otherPosition.x,
-					myPosition.z - otherPosition.z,
-				);
-
-				return {
-					...other,
-					distance: Math.round(distance * 100) / 100,
-					position: {
-						x: Math.round(otherPosition.x * 100) / 100,
-						z: Math.round(otherPosition.z * 100) / 100,
-					},
-				};
-			})
-			.filter(({ distance }) => distance < 10)
-			.toSorted((a, b) => a.distance - b.distance)
-			.slice(0, 5)
-			.map(
-				({ entity, distance, position }, index) =>
-					`(${index + 1}) ${entity
-						.get(RecordEcs)
-						.map((r) => r.getUnsafeRecord<{ name: string }>('stats')?.name)
-						.orElse(
-							entity.name,
-						)}: ID=${entity.name}, Distance=${distance}, Position=${JSON.stringify(position)}`,
-			);
-		const entitiesContext = ['## Nearby Entities', ...closeEntities].join('\n');
-
 		return [
 			this.systemContext(),
 			this.actionContext(),
 			this.statsContext.toStringContext(),
 			eventsContext,
-			entitiesContext,
+			this.closeEntities.toStringContext(),
+			this.longMemory.toStringContext(),
 			this.shortMemory.toStringContext(),
 			this.lastMessages.toStringContext(),
 		].join('\n\n');

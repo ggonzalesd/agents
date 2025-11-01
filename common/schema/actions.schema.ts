@@ -1,13 +1,17 @@
 import z from 'zod';
 
+// (🗣️) Talk action schema
+
 const actionTalkSchema = z.object({
 	type: z.literal('talk'),
 	content: z.string(),
 	targets: z.array(z.string()),
 });
 
+// (🚶) Movement action schemas
+
 const actionMoveFollowEntitySchema = z.object({
-	type: z.literal('follow-entity'),
+	type: z.literal('move-follow-entity'),
 	entityId: z.string(),
 });
 
@@ -19,15 +23,7 @@ const actionJumpSchema = z.object({
 	type: z.literal('jump'),
 });
 
-const actionSetShortMemorySchema = z.object({
-	type: z.literal('set-short-memory'),
-	value: z.string().max(256),
-});
-
-const actionRemoveShortMemorySchema = z.object({
-	type: z.literal('remove-short-memory'),
-	key: z.string(),
-});
+// (😄) Mood action schemas
 
 const actionSetMoodSchema = z.object({
 	type: z.literal('set-mood'),
@@ -40,13 +36,44 @@ const actionRemoveMoodSchema = z.object({
 	mood: z.string(),
 });
 
+// (🏎️) Short-term memory action schemas
+
+const actionSetShortMemorySchema = z.object({
+	type: z.literal('set-short-memory'),
+	value: z.string().max(256),
+});
+
+const actionRemoveShortMemorySchema = z.object({
+	type: z.literal('remove-short-memory'),
+	key: z.string(),
+});
+
+// (💽) Long-term memory action schema
+
+const actionSaveLongTermMemorySchema = z.object({
+	type: z.literal('save-long-term-memory'),
+	value: z.string(),
+});
+
+const actionRetrieveLongTermMemorySchema = z.object({
+	type: z.literal('retrieve-long-term-memory'),
+	value: z.string(),
+	limit: z.number().min(1).max(10),
+});
+
 export const actionsSchema = z.union([
 	actionTalkSchema,
+
 	actionMoveFollowEntitySchema,
 	actionMoveStopSchema,
 	actionJumpSchema,
+
 	actionSetShortMemorySchema,
 	actionRemoveShortMemorySchema,
+
 	actionSetMoodSchema,
 	actionRemoveMoodSchema,
+
+	actionSaveLongTermMemorySchema,
+	actionRetrieveLongTermMemorySchema,
 ]);

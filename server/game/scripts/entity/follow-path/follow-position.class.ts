@@ -100,4 +100,11 @@ export class FollowPositionOption implements IFollowOption {
 	isDone(): boolean {
 		return this.done;
 	}
+
+	toContextString(): string {
+		return [
+			'# Movement: Following Position',
+			`- Target Position: ${this.position.x}, ${this.position.z}`,
+		].join('\n');
+	}
 }

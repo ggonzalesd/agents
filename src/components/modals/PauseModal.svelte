@@ -24,14 +24,19 @@
 	};
 </script>
 
-<div class="flex flex-col gap-10 bg-[url(/background-pause.svg)] bg-cover bg-center bg-no-repeat px-20 py-6 rounded-lg">
+<div
+	class="flex flex-col gap-10 rounded-lg bg-[url(/background-pause.svg)] bg-cover bg-center bg-no-repeat px-20 py-6"
+>
 	<h1 class="font-zen-dots text-center text-2xl">MENU</h1>
 	<div class="flex flex-col gap-6">
 		<Button type="submit" onclick={onContinue}>Continuar</Button>
 		<Button type="submit" onclick={onExit}>Abandonar</Button>
 	</div>
-	<div class="flex justify-center items-start">
-		<button class="flex justify-center items-center text-gris-50 hover:text-gris-100 hover:border-gris-100 border-2 border-gris-50 rounded-full px-3 aspect-square cursor-pointer" onclick={onContinue}>
+	<div class="flex items-start justify-center">
+		<button
+			class="text-gris-50 hover:text-gris-100 hover:border-gris-100 border-gris-50 flex aspect-square cursor-pointer items-center justify-center rounded-full border-2 px-3"
+			onclick={onContinue}
+		>
 			{@html closeSvgContent}
 		</button>
 	</div>

@@ -47,38 +47,45 @@
 </script>
 
 {#snippet renderMessage(username: string, message: string)}
-	<div class="text-gris-50 font-space-mono flex flex-col gap-1 bg-gris-600 rounded-lg px-4 py-2.5">
+	<div
+		class="text-gris-50 font-space-mono bg-gris-600 flex flex-col gap-1 rounded-lg px-4 py-2.5"
+	>
 		<p class="text-[12px] font-bold">{username}</p>
 		<p class="text-[14px]">{message}</p>
 	</div>
 {/snippet}
 
 {#snippet renderRecommendedMessage(message: string)}
-	<button class="text-gris-100 font-space-mono text-[14px] border border-gris-100 rounded-lg px-4 py-2.5 cursor-pointer hover:bg-gris-700" onclick={() => {
-		inputRef.value = message;
-	}}>
+	<button
+		class="text-gris-100 font-space-mono border-gris-100 hover:bg-gris-700 cursor-pointer rounded-lg border px-4 py-2.5 text-[14px]"
+		onclick={() => {
+			inputRef.value = message;
+		}}
+	>
 		<p>{message}</p>
 	</button>
 {/snippet}
 
-<div class="w-[350px] h-full bg-[url(/background-log-messages.png)] flex flex-col gap-5 bg-cover bg-center bg-no-repeat pointer-events-auto p-4">
-	<p class="text-gris-50 font-bold text-lg">Log messages</p>
+<div
+	class="pointer-events-auto flex h-full w-[350px] flex-col gap-5 bg-[url(/background-log-messages.png)] bg-cover bg-center bg-no-repeat p-4"
+>
+	<p class="text-gris-50 text-lg font-bold">Log messages</p>
 
-	<div class="h-full overflow-y-auto flex flex-col gap-3">
-		{#each [{"username": "User1", "message": "Hello!"}, {"username": "User2", "message": "Good game!"}] as msg}
+	<div class="flex h-full flex-col gap-3 overflow-y-auto">
+		{#each [{ username: 'User1', message: 'Hello!' }, { username: 'User2', message: 'Good game!' }] as msg}
 			{@render renderMessage(msg.username, msg.message)}
 		{/each}
 	</div>
 
 	<div class="flex flex-col gap-3">
-		<p class="text-gris-50 font-bold text-lg">Recommended messages</p>
+		<p class="text-gris-50 text-lg font-bold">Recommended messages</p>
 
 		{#each ['Hello!', 'Good game!', 'Well played!', 'Thanks!'] as msg}
 			{@render renderRecommendedMessage(msg)}
 		{/each}
 	</div>
 
-	<div class="h-[1px] border border-gris-500"></div>
+	<div class="border-gris-500 h-[1px] border"></div>
 
 	<form onsubmit={onSubmit} class="flex w-full">
 		<InputText

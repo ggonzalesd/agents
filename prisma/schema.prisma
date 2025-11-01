@@ -83,7 +83,7 @@ model LongTermMemory {
   text       String                      @db.Text
   metadata   Json                        @db.JsonB
   embedding  Unsupported("vector(3072)")
-  createdAt  DateTime                    @default(now()) @db.Timestamp(6)
+  createdAt  DateTime                    @default(now()) @db.Timestamptz(6)
 
   NPC NPC @relation(fields: [npcId], references: [id])
 }
