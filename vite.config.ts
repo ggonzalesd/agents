@@ -10,6 +10,7 @@ export default defineConfig({
 		alias: {
 			'@': '/src',
 			'#': '/common',
+			'@lib': '/src/lib',
 		},
 	},
 	build: {
