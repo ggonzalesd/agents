@@ -1,4 +1,4 @@
-import { AStar } from '#/pathfinding/a-star';
+import { AStar } from './../../common/pathfinding/a-star';
 
 interface AStarWorkerInput {
 	grid: number[][];
