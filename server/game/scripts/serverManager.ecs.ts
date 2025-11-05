@@ -56,6 +56,8 @@ export class ServerManagerEcs extends ComponentEcs {
 		this.callOnDelete(() => {
 			physics.removeCollider(collider, true);
 			physics.removeRigidBody(body);
+
+			console.log('ServerManagerEcs cleaned up');
 		});
 	}
 }

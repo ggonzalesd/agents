@@ -13,6 +13,7 @@ import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { NPCEventQueueEcs } from './npc-event-queue.ecs';
 
 import * as ContextAI from './../context-ai';
+import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
 
 export const statsSchema = z
 	.object({
@@ -32,6 +33,7 @@ export class NPCContextEcs extends ComponentEcs {
 	longMemory = new ContextAI.LongMemoryContextAI(20);
 	statsContext = new ContextAI.StatsContextAI();
 	closeEntities = new ContextAI.CloseEntitiesContextAI();
+	inventory: InventoryServerEcs | null = null;
 
 	onStart(): void {
 		const parent = this.world
@@ -54,6 +56,8 @@ export class NPCContextEcs extends ComponentEcs {
 			.getRecord('stats')
 			.ifSome(statsSchema.parse)
 			.unwrap('Stats record not found on NPC RecordEcs');
+
+		this.inventory = parent.get(InventoryServerEcs).raw();
 
 		this.lastMessages.onStart(this.world, parent);
 		this.shortMemory.onStart(this.world, parent);
@@ -98,7 +102,7 @@ export class NPCContextEcs extends ComponentEcs {
 			`{"type": "remove-mood", "mood": string}`,
 			// `{"type": "emote", "value": "HAPPY" | "SAD" | "ANGRY" | "CONFUSED" | "SURPRISED" | "NEUTRAL"} // 3d emote to express your mood`,
 
-			// `{"type": "pick-item", "itemId": string, "slot": i32(0...9)}`,
+			`{"type": "pick-item", "itemId": string, "slot": i32(0...35)}`,
 			// `{"type": "drop-item", "slot": i32(0...9)}`,
 
 			`{"type": "move-follow-entity", "entityId": string, "distance": f32}`,
@@ -110,7 +114,7 @@ export class NPCContextEcs extends ComponentEcs {
 			// `{"type": "jump", "start-delay-sec": f32, "interval-sec": f32, "rounds": i32(1...10)}`,
 			`{"type": "jump"}`,
 
-			// `{"type": "@request-acting-again", "time": f32} // request the system to call you to act again in X seconds`,
+			`{"type": "@request-acting-again", "time": f32} // request the system to call you to act again in X seconds`,
 			// `{"type": "@stop-acting", "time": f32} // request the system to stop calling you to act for X seconds`,
 		];
 
@@ -140,6 +144,7 @@ export class NPCContextEcs extends ComponentEcs {
 			this.systemContext(),
 			this.actionContext(),
 			this.statsContext.toStringContext(),
+			this.inventory ? this.inventory.toStringContext() : '- Inventory: None',
 			eventsContext,
 			this.closeEntities.toStringContext(),
 			this.longMemory.toStringContext(),

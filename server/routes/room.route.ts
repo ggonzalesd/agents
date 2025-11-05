@@ -47,8 +47,13 @@ router.post(
 			throw HttpError.notFound(`Room with ID ${id} not found`);
 		}
 
-		const r = await matchMaker.getRoomById(room.roomId);
-		r.remove();
+		const r = await matchMaker.getLocalRoomById(room.roomId);
+		r.disconnect();
+
+		const roomcache = await matchMaker.getRoomById(room.roomId);
+		if (roomcache) {
+			roomcache.dispose();
+		}
 
 		res.json({ message: 'Room stopped', data: id });
 	},

@@ -61,6 +61,19 @@ const actionRetrieveLongTermMemorySchema = z.object({
 	limit: z.number().min(1).max(10),
 });
 
+// (🎁) Inventory action schemas
+const actionPickItemSchema = z.object({
+	type: z.literal('pick-item'),
+	itemId: z.string(),
+	slot: z.number().int(),
+});
+
+// (🎬) MetaActions for npc control
+const actionRequestActingAgainSchema = z.object({
+	type: z.literal('@request-acting-again'),
+	time: z.number().min(0),
+});
+
 export const actionsSchema = z.union([
 	actionTalkSchema,
 
@@ -76,4 +89,8 @@ export const actionsSchema = z.union([
 
 	actionSaveLongTermMemorySchema,
 	actionRetrieveLongTermMemorySchema,
+
+	actionPickItemSchema,
+
+	actionRequestActingAgainSchema,
 ]);

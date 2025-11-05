@@ -77,6 +77,11 @@ export class MainRoom extends Room<GameState> {
 		this.worldPhy.step();
 	}
 
+	onDispose(): void {
+		this.worldEcs.onDelete();
+		console.log('MainRoom disposed');
+	}
+
 	async onAuth(
 		_client: Client<any, any>,
 		_options: any,

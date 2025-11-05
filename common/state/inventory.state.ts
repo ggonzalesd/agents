@@ -55,7 +55,7 @@ export class InventoryState extends Schema {
 	@type({ map: ItemState })
 	public items: MapSchema<ItemState> = new MapSchema<ItemState>();
 
-	constructor(isOpen: boolean = false, capacity: number = 20) {
+	constructor(isOpen: boolean = false, capacity: number = 9 * 4) {
 		super();
 		this.isOpen = isOpen;
 		this.capacity = capacity;

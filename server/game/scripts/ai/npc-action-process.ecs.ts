@@ -12,6 +12,7 @@ import { NPCEventQueueEcs } from './npc-event-queue.ecs';
 import * as LLMService from '$/services/llm.service';
 import * as LTMRepository from '$/db/ltm.db';
 import { StopMovementOption } from '../entity/follow-path/stop-movement.class';
+import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
 
 export class NPCActionProcessEcs extends ComponentEcs {
 	serverData: ServerDataEcs = null!;
@@ -154,6 +155,28 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						this.npcContextEcs.longMemory.loadLongTermMemories(ltms);
 					});
 				});
+			}
+
+			if (action.type === 'pick-item') {
+				this.entityParent.get(InventoryServerEcs).ifSome((inventory) => {
+					const slot = inventory.getAvailableSlot();
+
+					if (slot == null) {
+						return;
+					}
+
+					inventory.pickItemEntity(action.itemId, slot);
+				});
+			}
+
+			if (action.type === '@request-acting-again') {
+				setTimeout(() => {
+					this.npcContextEcs.eventQueue.pushEvent(
+						'Requesting to act again.',
+						{},
+						10,
+					);
+				}, action.time * 1000);
 			}
 		}
 		this.npcContextEcs.actions = [];

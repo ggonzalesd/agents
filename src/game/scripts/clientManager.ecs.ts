@@ -31,6 +31,12 @@ export class ClientManagerEcs extends ComponentEcs {
 			const player = this.playerClientFactory(index, state);
 			this.world.addEntity(player);
 
+			if (room.sessionId === state.sessionId) {
+				this.colyseusClient.ifSome((client) => {
+					client.entityId = index;
+				});
+			}
+
 			this.uiClient.ifSome((uiClient) => {
 				uiClient.debug.add(`Player ${index}`, {
 					isCode: false,
@@ -46,8 +52,6 @@ export class ClientManagerEcs extends ComponentEcs {
 		proxy(room.state).items.onAdd((state, index) => {
 			const item = this.itemClientFactory(index, state);
 			this.world.addEntity(item);
-
-			console.log('Item added', state);
 		});
 
 		proxy(room.state).items.onRemove((_state, index) => {

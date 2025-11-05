@@ -14,6 +14,8 @@ export class ColyseusClientEcs extends ComponentEcs {
 	private client: Client;
 	private roomId: string;
 
+	public entityId: string = '';
+
 	public connection: Option<{
 		room: Room<GameState>;
 		proxy: SchemaCallbackProxy<GameState>;

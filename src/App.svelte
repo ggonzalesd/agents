@@ -18,6 +18,7 @@
 	import Loading from './views/Loading.svelte';
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
+	import AdminView from './views/AdminView.svelte';
 
 	setContext(useDebugHook.name, useDebugHook());
 	setContext(useActions.name, useActions());
@@ -74,5 +75,9 @@
 		{:catch error}
 			<p class="text-red-500">Error loading models: {error.message}</p>
 		{/await}
+	</Router>
+
+	<Router route="/admin">
+		<AdminView />
 	</Router>
 </main>

@@ -89,10 +89,14 @@ export class PlayerServerBehavior extends ComponentEcs {
 				this.movement.movementState.isJumping = true;
 				break;
 			case 'pick': {
+				console.log('PICK ACTION', message);
+
 				const itemId =
 					((message as any)?.itemParent as string | undefined) ?? '';
 
 				const newId = this.inventory.getAvailableSlot();
+
+				console.log('PICK ACTION', { itemId, newId });
 
 				if (itemId && newId != null) {
 					this.inventory.pickItemEntity(itemId, newId);
