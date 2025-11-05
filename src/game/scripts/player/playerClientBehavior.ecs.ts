@@ -11,6 +11,8 @@ import { UIClientEcs } from '../uiClient.ecs';
 import { ColyseusClientEcs } from '../colyseus-client.ecs';
 
 import { ClientAuthoritative } from './clientAuthoritative.ecs';
+import { RecordEcs } from '#/ecs/lib/Record.ecs';
+import type { PlayerState } from '#/state/player.state';
 
 export class PlayerClientBehavior extends ComponentEcs {
 	public camera: THREE.Camera = null!;
@@ -19,13 +21,14 @@ export class PlayerClientBehavior extends ComponentEcs {
 	public uiClient: UIClientEcs = null!;
 
 	public clientAuthoritative: ClientAuthoritative = null!;
-
-	constructor() {
-		super();
-	}
+	public recordEcs: RecordEcs = null!;
 
 	onStart(): void {
 		const player = this.world.getEntity(this.parent).unwrap('No Player found');
+
+		this.recordEcs = player.get(RecordEcs).unwrap('No RecordEcs found');
+
+		this.recordEcs.getRecord('state').unwrap('No state record found');
 
 		this.clientAuthoritative = player
 			.get(ClientAuthoritative)
@@ -58,7 +61,8 @@ export class PlayerClientBehavior extends ComponentEcs {
 	}
 
 	onLoop(_delta: number): void {
-		if (this.room.sessionId !== this.parent) return;
+		const state = this.recordEcs.getUnsafeRecord<PlayerState>('state');
+		if (this.room.sessionId !== state.sessionId) return;
 
 		if (this.input.down('KeyT')) {
 			this.uiClient.game.setPause(true, 'MESSAGE');
@@ -89,6 +93,19 @@ export class PlayerClientBehavior extends ComponentEcs {
 			'item-interact',
 			((itemParent: string) => {
 				this.room.send('client:action', { type: 'pick', itemParent });
+			}).bind(this),
+		);
+
+		// Handle entity interaction (NPCs/Players) opening the Entity Details modal
+		this.world.stacker.dispatch(
+			'entity-interact',
+			((entityId: string) => {
+				// Avoid opening details for self
+				if (entityId === state.sessionId) return;
+
+				this.uiClient.game.setSelectedEntity(entityId);
+				this.uiClient.game.setPause(true, 'ENTITYDETAILS');
+				this.input.disabled = true;
 			}).bind(this),
 		);
 

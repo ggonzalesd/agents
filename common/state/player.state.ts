@@ -8,6 +8,9 @@ import { InventoryState } from './inventory.state';
 
 export class PlayerState extends Schema {
 	@type('string')
+	public sessionId: string;
+
+	@type('string')
 	public skin: string = 'default';
 
 	@type(CharacterBodyState)
@@ -19,9 +22,18 @@ export class PlayerState extends Schema {
 	@type(InventoryState)
 	public inventory: InventoryState = new InventoryState();
 
-	constructor({ pos, skin }: { pos: IVec3; skin?: string }) {
+	constructor({
+		pos,
+		skin,
+		sessionId,
+	}: {
+		pos: IVec3;
+		skin?: string;
+		sessionId: string;
+	}) {
 		super();
 		this.character = new CharacterBodyState(pos);
 		this.skin = skin ?? this.skin;
+		this.sessionId = sessionId;
 	}
 }

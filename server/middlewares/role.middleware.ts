@@ -2,7 +2,7 @@ import { HttpError } from '#/utils/HttpError';
 import { getAuth } from '$/utils/req.utils';
 import type { NextFunction, Request, Response } from 'express';
 
-export const roleMiddleware =
+export const withRoles =
 	(...roles: ('ADMIN' | 'USER' | 'MOD')[]) =>
 	(req: Request, _: Response, next: NextFunction) => {
 		const { payload } = getAuth(req);

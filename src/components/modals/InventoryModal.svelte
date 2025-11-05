@@ -30,22 +30,28 @@
 			return () => {};
 		}
 
-		const connection = world
+		console.log('Mounting InventoryModal');
+
+		const colyseusClient = world
 			.get(ColyseusClientEcs)
-			.pick('connection')
-			.collapse()
-			.raw();
+			.unwrap('No ColyseusClientEcs found');
+		const connection = colyseusClient.connection.collapse().raw();
+
 		if (!connection) {
 			return () => {};
 		}
 
+		console.log('Connection found in InventoryModal');
+
 		const { proxy, room } = connection;
 
 		const state = world
-			.getEntity(room.sessionId)
+			.getEntity(colyseusClient.entityId)
 			.map((e) => e.getUnsafe(RecordEcs)?.getRecord('state'))
 			.collapse()
 			.raw() as PlayerState | undefined;
+
+		console.log('Player state in InventoryModal:', { state });
 
 		if (!state) {
 			return () => {};
@@ -111,19 +117,41 @@
 
 <svelte:document on:mousemove={onMouseMove} />
 
-<div class="grid grid-cols-6 gap-2 bg-gray-800 p-4 [direction:reverse]">
-	{#each new Array(20) as _, i}
-		{@const item = itemState.get(i.toString())}
-		<div
-			class="flex aspect-square size-16 items-center justify-center rounded-md border border-gray-600 bg-gray-700"
-		>
-			{#if item}
-				<div class="Item" {@attach itemDropHandler(i.toString())}>
-					{item.type}
-				</div>
-			{:else}
-				<div class="Empty">Empty</div>
-			{/if}
-		</div>
-	{/each}
+<div
+	class="flex flex-col gap-5 rounded-lg bg-[url(/background-inventory.svg)] bg-cover bg-center bg-no-repeat p-5 [direction:reverse]"
+>
+	<h1 class="font-zen-dots text-center text-2xl">INVENTORY</h1>
+	<div class="grid grid-cols-9 [direction:reverse]">
+		{#each new Array(27) as _, i}
+			{@const item = itemState.get(i.toString())}
+			<div
+				class="border-gris-300 flex aspect-square size-19 cursor-pointer items-center justify-center border-4 hover:border-[#8965F2]"
+			>
+				{#if item}
+					<div class="Item" {@attach itemDropHandler(i.toString())}>
+						{item.type}
+					</div>
+				{:else}
+					<div class="Empty">Empty</div>
+				{/if}
+			</div>
+		{/each}
+	</div>
+
+	<div class="grid grid-cols-9 [direction:reverse]">
+		{#each new Array(9) as _, i}
+			{@const item = itemState.get((i + 27).toString())}
+			<div
+				class="border-gris-300 flex aspect-square size-19 cursor-pointer items-center justify-center border-4 hover:border-[#8965F2]"
+			>
+				{#if item}
+					<div class="Item" {@attach itemDropHandler((i + 27).toString())}>
+						{item.type}
+					</div>
+				{:else}
+					<div class="Empty">Empty</div>
+				{/if}
+			</div>
+		{/each}
+	</div>
 </div>

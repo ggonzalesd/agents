@@ -1,4 +1,4 @@
-import * as RAPIER from '@dimforge/rapier3d-compat';
+import type * as RAPIER from '@dimforge/rapier3d-compat';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import type { GameState } from '#/state/game.state';

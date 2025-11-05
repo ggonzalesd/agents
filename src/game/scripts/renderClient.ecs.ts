@@ -1,9 +1,8 @@
 import * as THREE from 'three';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
-import { Option } from '#/utils/Option';
-import { UIClientEcs } from './uiClient.ecs';
-import type { SkyboxEcs } from './skybox.ecs';
+
+import { defaultMap } from '#/maps/default.map';
 
 export class RenderClientEcs extends ComponentEcs {
 	public scene: THREE.Scene;
@@ -12,8 +11,6 @@ export class RenderClientEcs extends ComponentEcs {
 
 	private raycaster = new THREE.Raycaster();
 	private mouse = new THREE.Vector2();
-
-	private uiClientOp: Option<UIClientEcs> = Option.none();
 
 	constructor(public canvas: HTMLCanvasElement) {
 		super();
@@ -65,33 +62,63 @@ export class RenderClientEcs extends ComponentEcs {
 	}
 
 	onStart(): void {
-		this.uiClientOp = this.world.get(UIClientEcs);
+		const clickEventListener = (event: MouseEvent) => {
+			this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+			this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-		window.addEventListener(
-			'click',
-			((event: PointerEvent) => {
-				this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-				this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+			this.raycaster.setFromCamera(this.mouse, this.camera);
 
-				this.raycaster.setFromCamera(this.mouse, this.camera);
+			const intersects = this.raycaster.intersectObjects(
+				this.scene.children,
+				true,
+			);
 
-				const intersects = this.raycaster.intersectObjects(
-					this.scene.children,
-					true,
-				);
+			for (const intersect of intersects) {
+				const userData = intersect?.object?.userData;
+				if (userData == null) continue;
+				if (!userData.canInteract) continue;
 
-				for (const intersect of intersects) {
-					const userData = intersect?.object?.userData;
-					if (userData == null) continue;
-					if (!userData.canInteract) continue;
-
-					if (userData.isItem) {
-						this.world.stacker.stackLoss('item-interact', userData.parent);
-						break;
-					}
+				if (userData.isItem) {
+					this.world.stacker.stackLoss('item-interact', userData.parent);
+					break;
 				}
-			}).bind(this),
-		);
+
+				// Open entity details when clicking on NPCs or Players
+				if (userData.isEntity) {
+					this.world.stacker.stackLoss('entity-interact', userData.parent);
+					break;
+				}
+			}
+		};
+
+		const bindedClickListener = clickEventListener.bind(this);
+
+		window.addEventListener('click', bindedClickListener);
+
+		this.callOnDelete(() => {
+			window.removeEventListener('click', bindedClickListener);
+		});
+
+		for (let i = 0; i < defaultMap.grid.length; i++) {
+			for (let j = 0; j < defaultMap.grid[i].length; j++) {
+				const cell = defaultMap.grid[i][j];
+				if (cell === 1) {
+					const geometry = new THREE.BoxGeometry(1, 1, 1, 4, 4, 4);
+					const material = new THREE.MeshBasicMaterial({
+						color: 0x22af22,
+						wireframe: true,
+					});
+					const plane = new THREE.Mesh(geometry, material);
+					plane.rotation.x = -Math.PI / 2;
+					plane.position.set(
+						0.5 + j - defaultMap.grid[i].length / 2,
+						0.5,
+						0.5 + i - defaultMap.grid.length / 2,
+					);
+					this.scene.add(plane);
+				}
+			}
+		}
 	}
 
 	onLoop(_delta: number): void {

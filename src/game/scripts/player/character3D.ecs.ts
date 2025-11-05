@@ -3,7 +3,6 @@ import * as THREE from 'three';
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { vec3Set } from '#/utils/math.util';
 
-import type { PlayerState } from '#/state/player.state';
 import { RenderClientEcs } from '../renderClient.ecs';
 import { ColyseusClientEcs } from '../colyseus-client.ecs';
 import { cloneMesh, loadGLB, loadTexture } from '@/utils/assets.utils';
@@ -38,12 +37,19 @@ export class Character3DEcs extends ComponentEcs {
 		);
 
 		this.object3D.add(mesh);
+
+		// Mark meshes as interactable entity by default; specific type can be inferred elsewhere
+		mesh.userData = {
+			canInteract: true,
+			isEntity: true,
+			parent: this.parent,
+		};
 		// this.object3D.add(sphere);
 
 		// Skinning /3d/gordon.png with transparency
 		const material = new THREE.MeshStandardMaterial({
 			map: loadTexture(
-				import.meta.env.VITE_API_URL + '/api/v1/skin/' + this.skin + '.png',
+				`${import.meta.env.VITE_API_URL}/api/v1/skin/${this.skin}.png`,
 			),
 		});
 		material.transparent = true;
@@ -78,13 +84,24 @@ export class Character3DEcs extends ComponentEcs {
 			.unwrap('No RenderClientEcs found');
 
 		// Colyseus Components
-		const { proxy } = this.world
+		this.world
 			.get(ColyseusClientEcs)
 			.pick('connection')
 			.collapse()
 			.unwrap('No Connection found');
 
 		// Render Config
+		// Propagate userData to all mesh children so raycaster hits carry the flags
+		this.object3D.traverse((child) => {
+			if (child instanceof THREE.Mesh) {
+				child.userData = {
+					canInteract: true,
+					isEntity: true,
+					parent: this.parent,
+				};
+			}
+		});
+
 		this.renderClient.scene.add(this.object3D);
 		this.callOnDelete(() => this.renderClient.scene.remove(this.object3D));
 

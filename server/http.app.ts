@@ -11,7 +11,6 @@ import { errorHandlerFactory } from '$/middlewares/errorHandler.middleware';
 import roomRoute from '$/routes/room.route';
 import authRoute from '$/routes/auth.route';
 import skinRoute from '$/routes/skin.route';
-import experimentalRoute from '$/routes/experimental.route';
 
 import envConfig from '$/config/env.config';
 
@@ -39,22 +38,23 @@ export const applyHttpApplication = (
 	app.get('/health', (_, res) => {
 		res.json({
 			ok: true,
-			message: 'Healthy',
-			data: null,
+			message: 'Server is healthy',
+			data: {
+				timestamp: Date.now(),
+				environment: envConfig.NODE_ENV,
+			},
 		});
 	});
 
 	app.use(express.static(join(process.cwd(), 'dist')));
 
 	const group = express.Router();
-	{
-		app.use('/api/v1', group);
 
-		group.use('/room', roomRoute);
-		group.use('/auth', authRoute);
-		group.use('/skin', skinRoute);
-		group.use('/experimental', experimentalRoute);
-	}
+	app.use('/api/v1', group);
+
+	group.use('/room', roomRoute);
+	group.use('/auth', authRoute);
+	group.use('/skin', skinRoute);
 
 	app.use((_, res) => {
 		res.status(404).json({

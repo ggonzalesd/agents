@@ -5,6 +5,8 @@ import type { GameState } from '#/state/game.state';
 import { ComponentEcs } from '#/ecs/Component.ecs';
 
 import { ColyseusClientEcs } from '../colyseus-client.ecs';
+import type { PlayerState } from '#/state/player.state';
+import { RecordEcs } from '#/ecs/lib/Record.ecs';
 
 type ClientAuthoritativeSharedState = {
 	isMoving: boolean;
@@ -16,6 +18,7 @@ export class ClientAuthoritative extends ComponentEcs {
 	private needsSend = false;
 
 	private colyseusClient: ColyseusClientEcs = null!;
+	private record: RecordEcs = null!;
 
 	constructor() {
 		super();
@@ -42,11 +45,19 @@ export class ClientAuthoritative extends ComponentEcs {
 		this.colyseusClient = this.world
 			.get(ColyseusClientEcs)
 			.unwrap('ColyseusClientEcs not found');
+
+		this.record = this.world
+			.getEntity(this.parent)
+			.map((e) => e.get(RecordEcs))
+			.collapse()
+			.unwrap('RecordEcs not found');
 	}
 
 	onLoop(_delta: number): void {
+		const state = this.record.getUnsafeRecord<PlayerState>('state');
+
 		if (!this.needsSend) return;
-		if (!this.colyseusClient.isClient(this.parent ?? '')) return;
+		if (!this.colyseusClient.isClient(state.sessionId ?? '')) return;
 
 		this.colyseusClient.connection.ifSome(this.sendState.bind(this));
 	}

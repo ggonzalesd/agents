@@ -44,7 +44,7 @@
 	data-input-color={color}
 	aria-disabled={disabled}
 	class={[
-		'bg-gris-700 pointer-events-none inline-flex h-14 justify-between overflow-hidden rounded-sm border shadow-lg transition-all aria-disabled:opacity-50 aria-disabled:saturate-0',
+		'bg-gris-700 pointer-events-none inline-flex h-14 w-full justify-between overflow-hidden rounded-sm border-2 shadow-lg transition-all aria-disabled:opacity-50 aria-disabled:saturate-0',
 		{
 			default: 'text-gris-300 border-transparent',
 			error: 'border-red-500 text-red-300',

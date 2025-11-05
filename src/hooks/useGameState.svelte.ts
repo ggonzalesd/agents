@@ -5,15 +5,17 @@ import { Publisher } from '#/utils/Publisher';
 
 type GameType = {
 	paused: boolean;
-	view: 'MENU' | 'MESSAGE' | 'INFO' | 'INVENTORY' | 'ONLEAVE';
+	view: 'MENU' | 'MESSAGE' | 'INFO' | 'INVENTORY' | 'ONLEAVE' | 'ENTITYDETAILS';
 	username: string;
+	selectedEntityId: string | null;
 };
 
 export const useGameState = () => {
-	let { subscribe, update } = writable<GameType>({
+	const { subscribe, update } = writable<GameType>({
 		paused: false,
 		view: 'MENU',
 		username: '',
+		selectedEntityId: null,
 	});
 
 	const publisher = new Publisher<GameType>();
@@ -41,11 +43,20 @@ export const useGameState = () => {
 		});
 	};
 
+	const setSelectedEntity = (id: string | null) => {
+		update((state) => {
+			const newValue = { ...state, selectedEntityId: id };
+			publisher.publish('game:selected-entity', newValue);
+			return newValue;
+		});
+	};
+
 	return {
 		subscribe,
 		setPause,
 		continueGame,
 		setUsername,
+		setSelectedEntity,
 		publisher: { subscribe: publisher.subscribe },
 	};
 };

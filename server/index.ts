@@ -5,8 +5,11 @@ import { applyHttpApplication } from '$/http.app';
 import { applyColyseusApplication } from '$/colyseus.app';
 
 import envConfig from '$/config/env.config';
+
 import { checkDbConnection } from './config/db.config';
 import { superAdminSeed } from './scripts/super-admin.seed';
+
+import { checkServerListen } from './utils/server.utils';
 
 async function main() {
 	await checkDbConnection();
@@ -19,9 +22,7 @@ async function main() {
 	applyHttpApplication(server);
 	applyColyseusApplication(server);
 
-	server.listen(envConfig.PORT, () => {
-		console.log('Server is listening on port ' + envConfig.PORT);
-	});
+	await checkServerListen(server, envConfig.PORT);
 }
 
 main();

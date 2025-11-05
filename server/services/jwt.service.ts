@@ -1,9 +1,10 @@
 import jsonwebtoken from 'jsonwebtoken';
 
+import { Option } from '#/utils/Option';
+import { authPayloadSchema } from '#/schema/auth.schema';
+
 import envConfig from '$/config/env.config';
 import type { AuthPayload } from '$/models/Payload.model';
-import { authPayloadSchema } from '#/schema/auth.schema';
-import { Option } from '#/utils/Option';
 
 export const signToken = (payload: AuthPayload) => {
 	return jsonwebtoken.sign(payload, envConfig.JWT_SECRET, {
@@ -21,7 +22,7 @@ export const verifyToken = (token?: string | null): Option<AuthPayload> => {
 		const parsed = authPayloadSchema.parse(decoded);
 
 		return Option.some(parsed);
-	} catch (error) {
+	} catch (_error) {
 		return Option.none();
 	}
 };

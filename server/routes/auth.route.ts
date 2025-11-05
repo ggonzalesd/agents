@@ -1,15 +1,10 @@
 import { Router } from 'express';
 
-import {
-	authLoginController,
-	authRegisterController,
-	profileAuthController,
-	revokeTokensController,
-} from '$/controllers/auth.controller';
+import * as AuthController from '$/controllers/auth.controller';
 
-import { parseMiddleware } from '$/middlewares/parse.middleware';
-import { authMiddleware } from '$/middlewares/auth.middleware';
-import { roleMiddleware } from '$/middlewares/role.middleware';
+import * as ParseMiddleware from '$/middlewares/parse.middleware';
+import * as AuthMiddleware from '$/middlewares/auth.middleware';
+import * as RoleMiddleware from '$/middlewares/role.middleware';
 
 import {
 	loginRequestSchema,
@@ -25,27 +20,31 @@ router.get('/', async (_, res) => {
 
 router.post(
 	'/login',
-	parseMiddleware(loginRequestSchema, 'body'),
-	authLoginController,
+	ParseMiddleware.parseWithSchema(loginRequestSchema, 'body'),
+	AuthController.authLoginController,
 );
 
 router.post(
 	'/register',
-	authMiddleware(),
-	roleMiddleware('ADMIN'),
-	parseMiddleware(registerRequestSchema, 'body'),
-	authRegisterController,
+	AuthMiddleware.validateJwtToken(),
+	RoleMiddleware.withRoles('ADMIN'),
+	ParseMiddleware.parseWithSchema(registerRequestSchema, 'body'),
+	AuthController.authRegisterController,
 );
 
 router.post(
 	'/revoke',
-	authMiddleware(),
-	roleMiddleware('ADMIN'),
-	parseMiddleware(revokeRequestSchema, 'body'),
-	revokeTokensController,
+	AuthMiddleware.validateJwtToken(),
+	RoleMiddleware.withRoles('ADMIN'),
+	ParseMiddleware.parseWithSchema(revokeRequestSchema, 'body'),
+	AuthController.revokeTokensController,
 );
 
-router.get('/profile', authMiddleware(), profileAuthController);
+router.get(
+	'/profile',
+	AuthMiddleware.validateJwtToken(),
+	AuthController.profileAuthController,
+);
 
 router.post('/logout', (_, res) => {
 	res.clearCookie('token');

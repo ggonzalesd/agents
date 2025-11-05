@@ -11,13 +11,14 @@
 	import { GameInput } from './utils/input.utils';
 	import Modals from './components/Modals.svelte';
 	import { useGameState } from './hooks/useGameState.svelte';
-	import { preloadGLB, waitFor } from './utils/assets.utils';
+	import { preloadGLB, preloadTextures, waitFor } from './utils/assets.utils';
 	import { useRouter } from './hooks/useRouter.svelte';
 	import Router from './components/lib/Router.svelte';
 	import ProfileView from './views/ProfileView.svelte';
 	import Loading from './views/Loading.svelte';
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
+	import AdminView from './views/AdminView.svelte';
 
 	setContext(useDebugHook.name, useDebugHook());
 	setContext(useActions.name, useActions());
@@ -30,6 +31,16 @@
 		const debugContext = getDebugContext();
 		debugContext.add('App mounted', { type: 'info', isCode: false });
 	});
+
+	function preloadResources() {
+		return Promise.all([
+			preloadGLB('/3d/SkinModel.glb'),
+			preloadTextures('/3d/textures/seasons/autumn_ground.jpg'),
+			preloadTextures('/3d/textures/seasons/summer_ground.jpg'),
+			preloadTextures('/3d/textures/seasons/winter_ground.jpg'),
+			preloadTextures('/3d/textures/seasons/spring_ground.jpg'),
+		]);
+	}
 </script>
 
 <Router route="/game">
@@ -38,7 +49,7 @@
 </Router>
 
 <main
-	class="flex size-full min-h-screen flex-col items-center justify-center bg-gradient-to-br from-rose-500/10 to-blue-500/20"
+	class="flex size-full min-h-screen flex-col items-center justify-center bg-linear-to-br from-rose-500/10 to-blue-500/20"
 >
 	<Router route="/login">
 		<LoginView />
@@ -57,12 +68,16 @@
 	</Router>
 
 	<Router route="/game">
-		{#await preloadGLB('/3d/SkinModel.glb')}
+		{#await preloadResources()}
 			<Loading />
 		{:then _}
 			<GameView />
 		{:catch error}
 			<p class="text-red-500">Error loading models: {error.message}</p>
 		{/await}
+	</Router>
+
+	<Router route="/admin">
+		<AdminView />
 	</Router>
 </main>

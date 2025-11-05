@@ -1,5 +1,5 @@
 import { ComponentEcs } from '#/ecs';
-import { ItemEntityState } from '#/state/inventory.state';
+import type { ItemEntityState } from '#/state/inventory.state';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { ServerDataEcs } from '../serverData.ecs';
 

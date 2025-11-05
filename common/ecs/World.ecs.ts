@@ -8,6 +8,7 @@ export class WorldEcs extends BaseEcs {
 	private entities: Map<string, EntityEcs> = new Map();
 	public stacker: Stacker<string, any> = new Stacker();
 
+	private __deferBeforeLoop: Set<() => void> = new Set();
 	private __deferDelete: Set<EntityEcs> = new Set();
 	private __deferAdd: Set<EntityEcs> = new Set();
 
@@ -20,6 +21,47 @@ export class WorldEcs extends BaseEcs {
 			component.onStart();
 			component.isSetup = true;
 		});
+	}
+
+	callBeforeLoop(fn: () => void) {
+		this.__deferBeforeLoop.add(fn);
+	}
+
+	getEntitiesWith(
+		component: new (...args: any[]) => ComponentEcs,
+	): EntityEcs[] {
+		return Array.from(this.entities.values()).filter(
+			(entity) => !!entity.getUnsafe(component),
+		);
+	}
+
+	getFromEntitiesWith<T extends ComponentEcs>(
+		component: new (...args: any[]) => T,
+	): { entity: EntityEcs; component: T }[] {
+		return Array.from(this.entities.values())
+			.map((e) => ({ entity: e, component: e.getUnsafe(component) }))
+			.filter((x) => x.component != null);
+	}
+
+	getEntityLike<T extends { [key: string]: ComponentEcs }>(components: {
+		[K in keyof T]: new (...args: any[]) => T[K];
+	}): Array<{ entity: EntityEcs; components: T }> {
+		const keys = Object.keys(components) as Array<keyof T>;
+
+		return Array.from(this.entities.values())
+			.map((e) => {
+				const comps: Partial<T> = {};
+				for (const key of keys) {
+					const comp = e.getUnsafe(components[key]);
+					if (comp) {
+						comps[key] = comp;
+					} else {
+						return null;
+					}
+				}
+				return { entity: e, components: comps as T };
+			})
+			.filter((x): x is { entity: EntityEcs; components: T } => x != null);
 	}
 
 	getAll() {
@@ -61,6 +103,13 @@ export class WorldEcs extends BaseEcs {
 	}
 
 	onUpdate(delta: number) {
+		for (const fn of this.__deferBeforeLoop) {
+			fn();
+		}
+		if (this.__deferBeforeLoop.size > 0) {
+			this.__deferBeforeLoop.clear();
+		}
+
 		for (const entity of this.__deferAdd) {
 			this.entities.set(entity.name, entity);
 			entity.onStart();

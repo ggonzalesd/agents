@@ -10,6 +10,15 @@
 
 	onMount(() => {
 		gameInputContext.disabled = true;
+
+		const timeout = setTimeout(() => {
+			if (import.meta.env.VITE_AUTO_JOIN === 'true')
+				router.changeRoute('/game');
+		}, 1000);
+
+		return () => {
+			clearTimeout(timeout);
+		};
 	});
 
 	function logoutHandler() {
@@ -96,6 +105,8 @@
 				>
 
 				<Button type="button" onclick={logoutHandler}>Logout</Button>
+
+				<Button type="button" onclick={() => router.changeRoute('/admin')}>Go To Admin</Button>
 			</div>
 		</div>
 	</div>

@@ -9,20 +9,25 @@ import {
 import * as RAPIER from '@dimforge/rapier3d-compat';
 
 import { GameState } from '#/state/game.state';
-import { WorldEcs } from '#/ecs/World.ecs';
-import { playerServerFactoryGenerator } from './prefab/player.server';
-import { ServerDataEcs } from './scripts/serverData.ecs';
-import { ServerManagerEcs } from './scripts/serverManager.ecs';
-import { verifyToken } from '$/services/jwt.service';
-import { npcServerFactoryGenerator } from './prefab/npc.server';
+import type { WorldEcs } from '#/ecs/World.ecs';
+
+import * as JwtService from '$/services/jwt.service';
+import * as ProfileService from '$/services/profile.service';
+
+import * as PlayerPrefab from './prefab/player.server';
+import * as WorldPrefab from './prefab/world.server';
+
+import { CharacterBodyServerEcs } from './scripts/entity/CharacterBodyServer.ecs';
 
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
 	worldPhy: RAPIER.World = null!;
 
-	playerServerFactory: ReturnType<typeof playerServerFactoryGenerator> = null!;
+	playerServerFactory: ReturnType<
+		typeof PlayerPrefab.playerServerFactoryGenerator
+	> = null!;
 
-	onCreate(options: any): void | Promise<any> {
+	onCreate(options: any): void | Promise<void> {
 		if (!['1', '2', 'main-room'].includes(options.id)) {
 			throw new ServerError(401, 'Invalid room ID');
 		}
@@ -30,12 +35,15 @@ export class MainRoom extends Room<GameState> {
 		this.state = new GameState();
 		this.worldPhy = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
 
-		this.worldEcs = new WorldEcs({
-			[ServerDataEcs.name]: new ServerDataEcs(this.state, this.worldPhy, this),
-			[ServerManagerEcs.name]: new ServerManagerEcs(),
+		this.worldEcs = WorldPrefab.worldServerFactory({
+			state: this.state,
+			worldPhysics: this.worldPhy,
+			room: this,
 		});
 
-		this.playerServerFactory = playerServerFactoryGenerator(this.worldEcs);
+		this.playerServerFactory = PlayerPrefab.playerServerFactoryGenerator(
+			this.worldEcs,
+		);
 
 		this.roomId = options.id;
 
@@ -46,23 +54,6 @@ export class MainRoom extends Room<GameState> {
 		this.onMessage('client:state', this.onClientState.bind(this));
 		this.onMessage('client:action', this.onClientAction.bind(this));
 		this.onMessage('*', () => {});
-
-		const npcServerFactory = npcServerFactoryGenerator(this.worldEcs);
-
-		// Add some NPCs
-		for (let i = 0; i < 10; i++) {
-			console.log('Adding NPC', i);
-			this.worldEcs.addEntity(
-				npcServerFactory({
-					name: `npc_${i}_` + Math.random().toString(36).substring(7),
-					pos: {
-						x: (Math.random() - 0.5) * 20,
-						y: 5,
-						z: (Math.random() - 0.5) * 20,
-					},
-				}),
-			);
-		}
 	}
 
 	onClientAction(client: Client, message: any) {
@@ -86,8 +77,17 @@ export class MainRoom extends Room<GameState> {
 		this.worldPhy.step();
 	}
 
-	onAuth(_client: Client<any, any>, _options: any, _context: AuthContext) {
-		const payloadOp = verifyToken(_context.token);
+	onDispose(): void {
+		this.worldEcs.onDelete();
+		console.log('MainRoom disposed');
+	}
+
+	async onAuth(
+		_client: Client<any, any>,
+		_options: any,
+		_context: AuthContext,
+	) {
+		const payloadOp = JwtService.verifyToken(_context.token);
 
 		if (payloadOp.isNone()) {
 			return false;
@@ -95,9 +95,16 @@ export class MainRoom extends Room<GameState> {
 
 		const payload = payloadOp.unwrap();
 
+		const userInfo = await ProfileService.getUserInfo(payload.username);
+
 		_client.userData = {
 			payload,
+			userInfo,
 		};
+
+		if (userInfo.profile.banned) {
+			return false;
+		}
 
 		// Check if another client with the same user is connected
 		for (const c of this.clients) {
@@ -119,25 +126,58 @@ export class MainRoom extends Room<GameState> {
 		}
 
 		const payload = client.userData.payload as { username: string };
+		const userInfo = client.userData.userInfo as Awaited<
+			ReturnType<typeof ProfileService.getUserInfo>
+		>;
 
 		this.worldEcs.addEntity(
 			this.playerServerFactory({
-				name: client.sessionId,
+				sessionId: client.sessionId,
+				name: userInfo.agent.identifier,
 				username: payload.username,
 				pos: {
-					x: (Math.random() - 0.5) * 10,
-					y: (Math.random() - 0.5) * 5 + 10,
-					z: (Math.random() - 0.5) * 10,
+					x: userInfo.agent.positionX,
+					y: userInfo.agent.positionY,
+					z: userInfo.agent.positionZ,
 				},
 			}),
 		);
 	}
 
 	async onLeave(client: Client<any, any>, _consented?: boolean): Promise<any> {
-		this.worldEcs.deleteEntityById(client.sessionId);
+		const userInfo = client.userData?.userInfo as Awaited<
+			ReturnType<typeof ProfileService.getUserInfo>
+		>;
+
+		const entity = this.worldEcs
+			.getEntity(userInfo.agent.identifier)
+			.unwrap('Entity not found on disconnect');
+
+		const body = entity
+			.get(CharacterBodyServerEcs)
+			.map((c) => c.body)
+			.unwrap('CharacterBodyServerEcs not found on disconnect');
+
+		const position = body.translation();
+
+		await ProfileService.saveUserInfo({
+			identifier: userInfo.agent.identifier,
+			agentData: {
+				positionX: position.x,
+				positionY: position.y,
+				positionZ: position.z,
+				metadata: {},
+			},
+			entityData: {
+				life: 100,
+				saturation: 100,
+			},
+		});
+
+		this.worldEcs.deleteEntityById(userInfo.agent.identifier);
 	}
 
 	onUncaughtException(error: RoomException<this>, methodName: string): void {
-		console.error(methodName + ' ' + error.name, error);
+		console.error(`${methodName} ${error.name}`, error);
 	}
 }

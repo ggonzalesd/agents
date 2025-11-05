@@ -4,10 +4,11 @@
 		"esbenp.prettier-vscode",
 		"bradlc.vscode-tailwindcss",
 		"Prisma.prisma",
-		"dbaeumer.vscode-eslint",
 		"humao.rest-client",
 		"EditorConfig.EditorConfig",
 		"aaron-bond.better-comments",
-		"oderwat.indent-rainbow"
-	]
+		"oderwat.indent-rainbow",
+		"biomejs.biome"
+	],
+	"unwantedRecommendations": ["dbaeumer.vscode-eslint"]
 }

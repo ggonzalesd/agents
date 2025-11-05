@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "LongTermMemory" ALTER COLUMN "createdAt" SET DATA TYPE TIMESTAMPTZ(6);

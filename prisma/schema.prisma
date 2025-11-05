@@ -27,55 +27,63 @@ model User {
   Profile   Profile[]
 }
 
-model World {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  display     String   @db.VarChar(255)
-  description String   @db.Text
-  imageUrl    String?  @db.Text
-  createdAt   DateTime @default(now()) @db.Timestamp(6)
-
-  Agent Agent[]
-}
-
 model Agent {
-  id        String @id @db.VarChar(255)
-  worldId   String @db.Uuid
-  name      String @db.VarChar(255)
-  positionX Float
-  positionY Float
-  positionZ Float
-  rotation  Float
-  metadata  Json   @db.JsonB
+  id         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String @unique @db.VarChar(255)
+  display    String @db.VarChar(255)
+  positionX  Float
+  positionY  Float
+  positionZ  Float
+  rotation   Float
+  metadata   Json   @db.JsonB
 
-  world World   @relation(fields: [worldId], references: [id])
-  Alive Alive[]
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+
+  entities Entity[]
 }
 
-model Alive {
-  id         String @id @db.VarChar(255)
-  life       Float
-  saturation Float
+model Entity {
+  id            String @id @db.Uuid
+  life          Float  @default(100)
+  maxLife       Float  @default(100)
+  saturation    Float  @default(100)
+  maxSaturation Float  @default(100)
 
-  agent   Agent     @relation(fields: [id], references: [id])
+  agent Agent @relation(fields: [id], references: [id])
+
   Profile Profile[]
+  NPC     NPC[]
 }
 
 model Profile {
-  aliveId String  @db.VarChar(255)
-  userId  String  @db.Uuid
-  banned  Boolean @default(false)
+  entityId String  @unique @db.Uuid
+  userId   String  @db.Uuid
+  banned   Boolean @default(false)
 
-  alive Alive @relation(fields: [aliveId], references: [id])
-  User  User? @relation(fields: [userId], references: [id])
+  User   User   @relation(fields: [userId], references: [id])
+  Entity Entity @relation(fields: [entityId], references: [id])
 
-  @@id([aliveId, userId])
+  @@id([entityId, userId])
+}
+
+model NPC {
+  id          String @id @db.Uuid
+  description String @db.Text
+  skinUrl     String @db.Text
+  model       String @db.VarChar(255)
+
+  entity         Entity           @relation(fields: [id], references: [id])
+  LongTermMemory LongTermMemory[]
 }
 
 model LongTermMemory {
-  id        String                     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  text      String                     @db.Text
-  model     String                     @db.VarChar(255)
-  metadata  Json                       @db.JsonB
-  embedding Unsupported("vector(256)")
-  createdAt DateTime                   @default(now()) @db.Timestamp(6)
+  id         String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  npcId      String                      @db.Uuid
+  identifier String                      @unique @db.VarChar(255)
+  text       String                      @db.Text
+  metadata   Json                        @db.JsonB
+  embedding  Unsupported("vector(3072)")
+  createdAt  DateTime                    @default(now()) @db.Timestamptz(6)
+
+  NPC NPC @relation(fields: [npcId], references: [id])
 }

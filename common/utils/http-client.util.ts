@@ -1,5 +1,5 @@
-import { flattenError, ZodError } from 'zod';
 import { AxiosError } from 'axios';
+import { flattenError, ZodError } from 'zod';
 
 export type ErrorResponse = { ok: false; message: string; error: any };
 export type OkResponse<T> = { ok: true; message: string; data: T };

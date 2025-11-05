@@ -13,6 +13,8 @@ import { UIClientEcs } from '../uiClient.ecs';
 import { RenderClientEcs } from '../renderClient.ecs';
 
 import { Character3DEcs } from './character3D.ecs';
+import { RecordEcs } from '#/ecs/lib/Record.ecs';
+import type { PlayerState } from '#/state/player.state';
 
 export class PlayerCameraFollowEcs extends ComponentEcs {
 	room: Room<GameState> = null!;
@@ -24,9 +26,7 @@ export class PlayerCameraFollowEcs extends ComponentEcs {
 	smoothCamera = new THREE.Vector3();
 	smoothCube = new THREE.Vector3();
 
-	constructor() {
-		super();
-	}
+	record: RecordEcs = null!;
 
 	onStart(): void {
 		this.room = this.world
@@ -48,6 +48,8 @@ export class PlayerCameraFollowEcs extends ComponentEcs {
 
 		const player = this.world.getEntity(this.parent).unwrap('No Player found');
 
+		this.record = player.get(RecordEcs).unwrap('No RecordEcs found');
+
 		this.object3D = player
 			.get(Character3DEcs)
 			.unwrap('No Character3DEcs found').object3D;
@@ -56,7 +58,8 @@ export class PlayerCameraFollowEcs extends ComponentEcs {
 	}
 
 	onLoop(_delta: number): void {
-		if (this.room.sessionId !== this.parent) return;
+		const state = this.record.getUnsafeRecord<PlayerState>('state');
+		if (this.room.sessionId !== state.sessionId) return;
 
 		const obj = this.object3D;
 

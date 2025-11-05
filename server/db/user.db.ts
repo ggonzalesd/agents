@@ -1,82 +1,87 @@
-import type { Sql } from 'postgres';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcrypt';
 
-import _sql from '$/config/db.config';
+import { Option } from '#/utils/Option';
 
 import type { UserDB } from '$/models/user.model';
 
-import { Option } from '#/utils/Option';
+import * as SQL from '$/utils/sql.utils';
 
-export const getUserByUsername = async (
-	username: string,
-	__sql?: Sql,
-): Promise<Option<UserDB>> => {
-	const sql = __sql ?? _sql;
+const USER_TABLE_NAME = 'User';
 
-	const _user = await sql<
-		UserDB[]
-	>`SELECT * FROM "User" WHERE "username" = ${username} LIMIT 1`;
+// * Get user by username
+type GetUserByUsernameType = SQL.InferSqlBuilder<
+	{ username: string },
+	Option<UserDB>
+>;
 
-	const user = _user[0];
-	if (!user) {
-		return Option.none();
-	}
+export const getUserByUsername: GetUserByUsernameType = SQL.sqlBuilder(
+	async ({ username }, sql) => {
+		return SQL.selectByProperty<UserDB, string>(
+			{
+				table: USER_TABLE_NAME,
+				property: 'username',
+				value: username,
+			},
+			sql,
+		).then(Option.of);
+	},
+);
 
-	return Option.some(user);
-};
-
-export const createUser = async (
+// * Create user
+type CreateUserType = SQL.InferSqlBuilder<
 	{
-		username,
-		password,
-		display,
-		role,
-	}: {
 		username: string;
 		password: string;
 		display?: string;
 		role?: 'USER' | 'ADMIN' | 'MODERATOR';
 	},
-	__sql?: Sql,
-) => {
-	const sql = __sql ?? _sql;
+	Option<UserDB>
+>;
 
-	const hashedPassword = bcrypt.hashSync(password, 10);
+export const createUser: CreateUserType = SQL.sqlBuilder(
+	async ({ username, password, display, role }, sql) => {
+		const hashedPassword = bcrypt.hashSync(password, 10);
 
-	const result = await sql<
-		UserDB[]
-	>`INSERT INTO "User" ("display", "password", "username", "role") VALUES (${display || null}, ${hashedPassword}, ${username}, ${role || 'USER'}) RETURNING *`;
+		const result = await sql<
+			UserDB[]
+		>`INSERT INTO "User" ("display", "password", "username", "role") VALUES (${display || null}, ${hashedPassword}, ${username}, ${role || 'USER'}) RETURNING *`;
 
-	return Option.of(result[0]);
-};
+		return Option.of(result[0]);
+	},
+);
 
-export const revokeUserHash = async (
-	id: string,
-	withPassword?: string | undefined,
-	__sql?: Sql,
-) => {
-	const sql = __sql ?? _sql;
+// * Revoke user hash (and optionally password)
+type RevokeUserHashType = SQL.InferSqlBuilder<
+	{
+		id: string;
+		withPassword?: string | undefined;
+	},
+	Option<boolean>
+>;
 
-	const _user = await sql`SELECT * FROM "User" WHERE "id" = ${id} LIMIT 1`;
+export const revokeUserHash: RevokeUserHashType = SQL.sqlBuilder(
+	async ({ id, withPassword }, sql) => {
+		const _user = await sql`SELECT * FROM "User" WHERE "id" = ${id} LIMIT 1`;
 
-	if (_user.length === 0) {
-		return Option.none();
-	}
+		if (_user.length === 0) {
+			return Option.none();
+		}
 
-	const columns = ['hash'];
-	const data: Record<string, string> = {
-		hash: uuidv4(),
-	};
+		const columns = ['hash'];
+		const data: Record<string, string> = {
+			hash: uuidv4(),
+		};
 
-	if (withPassword) {
-		data.password = bcrypt.hashSync(withPassword, 10);
-		columns.push('password');
-	}
+		if (withPassword) {
+			data.password = bcrypt.hashSync(withPassword, 10);
+			columns.push('password');
+		}
 
-	const result =
-		await sql`UPDATE "User" SET ${sql(data, columns)} WHERE "id" = ${id} RETURNING *`;
-	console.log({ result });
+		const result =
+			await sql`UPDATE "User" SET ${sql(data, columns)} WHERE "id" = ${id} RETURNING *`;
+		console.log({ result });
 
-	return Option.some(true);
-};
+		return Option.some(true);
+	},
+);

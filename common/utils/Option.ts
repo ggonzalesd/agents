@@ -1,5 +1,25 @@
 type UnwrapOption<T> = T extends Option<infer U> ? UnwrapOption<U> : T;
 
+type Fn<I, O> = (input: I) => O;
+
+type PipeValue<Value, Fns extends Fn<any, any>[]> = Fns extends [
+	Fn<infer I, infer O>,
+	...infer Rest,
+]
+	? Value extends I
+		? Rest extends [Fn<O, any>, ...any[]]
+			? PipeValue<O, Rest>
+			: O
+		: never
+	: Value;
+
+export function chain<Value, Fns extends Fn<any, any>[]>(
+	value: Value,
+	...fns: Fns
+): PipeValue<Value, Fns> {
+	return fns.reduce((acc, fn) => fn(acc), value) as any;
+}
+
 export class Option<T = unknown> {
 	private value: T | null;
 
@@ -15,6 +35,30 @@ export class Option<T = unknown> {
 		}
 
 		return current as Option<UnwrapOption<T>>;
+	}
+
+	/**
+	 * Pipes the value through a series of functions
+	 * @param fns - The functions to apply
+	 * @returns The final result wrapped in an Option
+	 */
+	pipe<Fns extends Fn<any, any>[]>(...fns: Fns): Option<PipeValue<T, Fns>> {
+		if (this.value == null) {
+			return Option.none() as any;
+		}
+
+		const result = fns.reduce((acc, fn) => fn(acc), this.value);
+
+		return Option.of(result) as any;
+	}
+
+	/**
+	 * Wraps a promise in an Option
+	 * @param promise - The promise to wrap
+	 * @returns A promise that resolves to an Option
+	 */
+	static future<U>(promise: Promise<U | null | undefined>) {
+		return promise.then((value) => Option.of(value));
 	}
 
 	/**
@@ -92,9 +136,10 @@ export class Option<T = unknown> {
 	 * @param fn - The function to execute
 	 * @returns The Option instance
 	 */
-	public ifNone(fn: () => void): Option<T> {
-		if (this.value == null) {
-			fn();
+	public ifNone(...fn: Array<() => void>): Option<T> {
+		const value = this.value;
+		if (value == null) {
+			fn.forEach((f) => f());
 		}
 		return this;
 	}
@@ -178,7 +223,7 @@ export class Option<T = unknown> {
 	 * @returns The Option instance
 	 */
 	public populate(value: T): Option<T> {
-		this.value = value;
+		this.value = value ?? null;
 		return this;
 	}
 
@@ -197,7 +242,7 @@ export class Option<T = unknown> {
 	 * @returns The Option instance
 	 */
 	public copy(op: Option<T>): Option<T> {
-		this.value = op.raw();
+		this.value = op.raw() ?? null;
 		return this;
 	}
 
@@ -224,10 +269,14 @@ export class Option<T = unknown> {
 	 * @param fn - The filter function to apply
 	 * @returns A new Option instance with the wrapped value if the filter function returns true, or an empty Option instance otherwise
 	 */
-	public filter(fn: (value: T) => boolean): Option<T> {
-		if (this.value != null && fn(this.value)) {
+	public filter(...fn: Array<(value: T) => boolean>): Option<T> {
+		if (this.value == null) return Option.none();
+
+		const value = this.value;
+		if (fn.every((f) => f(value))) {
 			return this;
 		}
+
 		return Option.none();
 	}
 
@@ -266,7 +315,7 @@ export class Option<T = unknown> {
 		return Option.some(opts.map((opt) => opt.value));
 	}
 
-	build(fn: (opt: Option<T>) => null | undefined | void): Option<unknown>;
+	build(fn: (opt: Option<T>) => null | undefined): Option<unknown>;
 	build<R extends readonly Option<any>[]>(
 		fn: (opt: Option<T>) => R,
 	): Option<{ [K in keyof R]: R[K] extends Option<infer U> ? U : never }>;
