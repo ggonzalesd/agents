@@ -5,12 +5,26 @@ import type { InventoryState } from '#/state/inventory.state';
 import type { IVec3 } from '#/utils/math.util';
 
 import { ItemServerBehavior } from '../item/itemServerBehavior.ecs';
+import type { IContextAI } from '../context-ai/context.interface';
 
 import { CharacterBodyServerEcs } from './CharacterBodyServer.ecs';
 
-export class InventoryServerEcs extends ComponentEcs {
+export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 	constructor(public inventoryState: InventoryState) {
 		super();
+	}
+
+	public toStringContext(): string {
+		const itemsList = Array.from(this.inventoryState.items.entries())
+			.map(([id, item]) => `Slot ${id}: ${item.type}`)
+			.join(', ');
+
+		// return `- Inventory (Capacity: ${this.inventoryState.capacity}, Items: { ${itemsList} })`;
+		return [
+			`- Inventory:`,
+			`   Capacity: ${this.inventoryState.capacity}`,
+			`   Items: { ${itemsList} }`,
+		].join('\n');
 	}
 
 	public isIdValid(id: number): boolean {

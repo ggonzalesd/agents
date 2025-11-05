@@ -84,11 +84,11 @@ export class FollowEntityOption implements IFollowOption {
 			// .set the new path
 			.then(({ result }) => {
 				this.followPath.path = result;
-				console.log('FollowEntityOption: New path calculated', {
+				/* console.log('FollowEntityOption: New path calculated', {
 					from: currentGridPos,
 					to: targetGridPos,
 					pathLength: result.length,
-				});
+				}); */
 			})
 			// on finally allow path recalculation again
 			.finally(() => {

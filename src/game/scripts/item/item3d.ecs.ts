@@ -17,7 +17,6 @@ export class Item3DEcs extends ComponentEcs {
 			new THREE.BoxGeometry(0.5, 0.5, 0.5),
 			new THREE.MeshBasicMaterial({
 				color: Math.random() * 0xffffff,
-				wireframe: true,
 			}),
 		);
 

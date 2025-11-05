@@ -41,7 +41,7 @@ POST {{host}}/auth/logout HTTP/1.1
 GET {{host}}/room HTTP/1.1
 
 ### Start ROOM
-POST {{host}}/room/1 HTTP/1.1
+POST {{host}}/room/main-room HTTP/1.1
 
 ### Stop ROOM
 POST {{host}}/room/stop/main-room HTTP/1.1

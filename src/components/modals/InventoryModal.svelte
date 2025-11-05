@@ -30,22 +30,28 @@
 			return () => {};
 		}
 
-		const connection = world
+		console.log('Mounting InventoryModal');
+
+		const colyseusClient = world
 			.get(ColyseusClientEcs)
-			.pick('connection')
-			.collapse()
-			.raw();
+			.unwrap('No ColyseusClientEcs found');
+		const connection = colyseusClient.connection.collapse().raw();
+
 		if (!connection) {
 			return () => {};
 		}
 
+		console.log('Connection found in InventoryModal');
+
 		const { proxy, room } = connection;
 
 		const state = world
-			.getEntity(room.sessionId)
+			.getEntity(colyseusClient.entityId)
 			.map((e) => e.getUnsafe(RecordEcs)?.getRecord('state'))
 			.collapse()
 			.raw() as PlayerState | undefined;
+
+		console.log('Player state in InventoryModal:', { state });
 
 		if (!state) {
 			return () => {};
@@ -134,12 +140,12 @@
 
 	<div class="grid grid-cols-9 [direction:reverse]">
 		{#each new Array(9) as _, i}
-			{@const item = itemState.get(i.toString())}
+			{@const item = itemState.get((i + 27).toString())}
 			<div
 				class="border-gris-300 flex aspect-square size-19 cursor-pointer items-center justify-center border-4 hover:border-[#8965F2]"
 			>
 				{#if item}
-					<div class="Item" {@attach itemDropHandler(i.toString())}>
+					<div class="Item" {@attach itemDropHandler((i + 27).toString())}>
 						{item.type}
 					</div>
 				{:else}

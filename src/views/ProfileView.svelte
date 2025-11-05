@@ -105,6 +105,8 @@
 				>
 
 				<Button type="button" onclick={logoutHandler}>Logout</Button>
+
+				<Button type="button" onclick={() => router.changeRoute('/admin')}>Go To Admin</Button>
 			</div>
 		</div>
 	</div>
