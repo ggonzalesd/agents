@@ -49,7 +49,7 @@
 </Router>
 
 <main
-	class="flex size-full min-h-screen flex-col items-center justify-center bg-gradient-to-br from-rose-500/10 to-blue-500/20"
+	class="flex size-full min-h-screen flex-col items-center justify-center bg-linear-to-br from-rose-500/10 to-blue-500/20"
 >
 	<Router route="/login">
 		<LoginView />

@@ -4,5 +4,12 @@
 		{ "path": "./tsconfig.app.json" },
 		{ "path": "./tsconfig.node.json" },
 		{ "path": "./tsconfig.share.json" }
-	]
+	],
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": {
+			"@lib": ["./src/lib"],
+			"@lib/*": ["./src/lib/*"]
+		}
+	}
 }
