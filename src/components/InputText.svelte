@@ -44,7 +44,7 @@
 	data-input-color={color}
 	aria-disabled={disabled}
 	class={[
-		'bg-gris-700 pointer-events-none inline-flex h-14 w-full justify-between overflow-hidden rounded-sm border-2 shadow-lg transition-all aria-disabled:opacity-50 aria-disabled:saturate-0',
+		'bg-gris-700 text-md pointer-events-none inline-flex h-10 w-full items-center justify-between overflow-hidden rounded-sm border-2 shadow-lg transition-all aria-disabled:opacity-50 aria-disabled:saturate-0',
 		{
 			default: 'text-gris-300 border-transparent',
 			error: 'border-red-500 text-red-300',
@@ -56,7 +56,7 @@
 	{#if iconSvgContent}
 		<div
 			data-input-icon
-			class="flex aspect-square h-full w-auto items-center justify-center"
+			class="flex aspect-square h-10 w-auto items-center justify-center"
 		>
 			{@html iconSvgContent}
 		</div>
@@ -69,7 +69,7 @@
 		{required}
 		{disabled}
 		bind:value
-		class="text-gris-300 pointer-events-auto flex flex-1 bg-transparent px-2 ring-0 outline-none disabled:pointer-events-none"
+		class="text-gris-200 pointer-events-auto flex h-10 w-full bg-transparent px-3 py-2 ring-0 outline-none disabled:pointer-events-none"
 		onchange={(e) => onchange?.((e.target as HTMLInputElement).value)}
 		bind:this={element}
 	/>
@@ -77,7 +77,7 @@
 		<button
 			data-input-icon
 			type="button"
-			class="pointer-events-auto flex aspect-square h-full w-auto items-center justify-center px-2 text-white transition-all hover:cursor-pointer active:scale-125"
+			class="text-gris-50 pointer-events-auto flex aspect-square h-full w-auto items-center justify-center px-3 transition-all hover:cursor-pointer active:scale-125"
 			onclick={() => (type = type === 'text' ? 'password' : 'text')}
 		>
 			{@html type === 'text' ? hideSvgContent : showSvgContent}

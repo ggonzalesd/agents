@@ -1,51 +1,39 @@
 <svelte:options runes />
 
 <script lang="ts">
+	import CreateEditNPC from '@/components/admin/npcs/CreateEditNPC.svelte';
+	import ListNPC from '@/components/admin/npcs/ListNPC.svelte';
 	import AppSidebar from '@/lib/components/app-sidebar.svelte';
-	import * as Breadcrumb from '@/lib/components/ui/breadcrumb/index.js';
-	import { Separator } from '@/lib/components/ui/separator/index.js';
 	import * as Sidebar from '@/lib/components/ui/sidebar/index.js';
+
+	// Estado activeTab
+	let actionTab = $state('Create-NPC');
+	let npcId = $state('');
 </script>
 
-<section class="size-full min-h-screen bg-green-900">
+<section class="size-full min-h-screen">
 	<Sidebar.Provider>
-		<AppSidebar />
-		<Sidebar.Inset>
+		<AppSidebar bind:activeTab={actionTab} />
+		<Sidebar.Inset class="bg-gris-900 overflow-hidden">
 			<header
-				class="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
+				class="bg-gris-800 border-b-gris-500 flex h-16 shrink-0 items-center gap-2 border-b-1 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
 			>
 				<div class="flex items-center gap-2 px-4">
-					<Sidebar.Trigger class="-ml-1" />
-					<Separator
-						orientation="vertical"
-						class="mr-2 data-[orientation=vertical]:h-4"
-					/>
-					<Breadcrumb.Root>
-						<Breadcrumb.List>
-							<Breadcrumb.Item class="hidden md:block">
-								<Breadcrumb.Link href="##"
-									>Building Your Application</Breadcrumb.Link
-								>
-							</Breadcrumb.Item>
-							<Breadcrumb.Separator class="hidden md:block" />
-							<Breadcrumb.Item>
-								<Breadcrumb.Page>Data Fetching</Breadcrumb.Page>
-							</Breadcrumb.Item>
-						</Breadcrumb.List>
-					</Breadcrumb.Root>
+					<Sidebar.Trigger />
 				</div>
 			</header>
-			<div class="flex flex-1 flex-col gap-4 p-4 pt-0">
-				<div class="grid auto-rows-min gap-4 md:grid-cols-3">
-					<div class="bg-muted/50 aspect-video rounded-xl"></div>
-					<div class="bg-muted/50 aspect-video rounded-xl"></div>
-					<div class="bg-muted/50 aspect-video rounded-xl"></div>
-					<h1 class="p-4 text-4xl text-white">Admin View</h1>
-				</div>
-				<div
-					class="bg-muted/50 min-h-[100vh] flex-1 rounded-xl md:min-h-min"
-				></div>
-			</div>
+
+			{#if actionTab === 'Create-NPC'}
+				<CreateEditNPC action="create" />
+			{/if}
+
+			{#if actionTab === 'Edit-NPC'}
+				<CreateEditNPC action="edit" {npcId} />
+			{/if}
+
+			{#if actionTab === 'List-NPC'}
+				<ListNPC bind:activeTab={actionTab} bind:npcId />
+			{/if}
 		</Sidebar.Inset>
 	</Sidebar.Provider>
 </section>
