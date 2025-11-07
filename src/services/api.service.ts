@@ -6,11 +6,13 @@ import {
 	profileResSchema,
 	uploadSkinResSchema,
 } from '#/schema/api.schema';
+import { type createNpcRequestSchema, getNpcResSchema, listNpcsResSchema, } from '#/schema/npc.schema';
 import {
 	dispatchError,
 	type ErrorResponse,
 	type OkResponse,
 } from '#/utils/http-client.util';
+
 
 axios.defaults.withCredentials = true;
 
@@ -78,6 +80,86 @@ export const uploadSkinService = async (
 		);
 
 		const body = uploadSkinResSchema.parse(response.data);
+
+		return {
+			ok: true,
+			message: body.message,
+			data: body.data,
+		};
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const getOneNPCService = async (
+	npcId: string
+): Promise<OkResponse<z.infer<typeof getNpcResSchema>['data']> | ErrorResponse> => {
+	try {
+		const response = await axios.get(
+			`${import.meta.env.VITE_API_URL}/api/v1/npc/${npcId}`,
+		);
+
+		const body = getNpcResSchema.parse(response.data);
+
+		return {
+			ok: true,
+			message: body.message,
+			data: body.data,
+		};
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const createNPCService = async (
+	payload: z.infer<typeof createNpcRequestSchema>,
+): Promise<OkResponse<z.infer<typeof getNpcResSchema>['data']> | ErrorResponse> => {
+	try {
+		const response = await axios.post(
+			`${import.meta.env.VITE_API_URL}/api/v1/npc`,
+			payload,
+		);
+
+		const body = getNpcResSchema.parse(response.data);
+
+		return {
+			ok: true,
+			message: body.message,
+			data: body.data,
+		};
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const updateNPCService = async (
+	npcId: string,
+	payload: z.infer<typeof createNpcRequestSchema>,
+): Promise<OkResponse<z.infer<typeof getNpcResSchema>['data']> | ErrorResponse> => {
+	try {
+		const response = await axios.put(
+			`${import.meta.env.VITE_API_URL}/api/v1/npc/${npcId}`,
+			payload,
+		);
+
+		const body = getNpcResSchema.parse(response.data);
+
+		return {
+			ok: true,
+			message: body.message,
+			data: body.data,
+		};
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const getAllNPCsService = async (): Promise<OkResponse<z.infer<typeof listNpcsResSchema>['data']> | ErrorResponse> => {
+	try {
+		const response = await axios.get(
+			`${import.meta.env.VITE_API_URL}/api/v1/npc`,
+		);
+		const body = listNpcsResSchema.parse(response.data);
 
 		return {
 			ok: true,

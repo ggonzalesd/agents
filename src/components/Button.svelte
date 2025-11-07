@@ -2,19 +2,21 @@
 
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import type { ClassValue } from 'svelte/elements';
 	import { v4 as uuidv4 } from 'uuid';
 
 	interface Props {
 		id?: string;
 		name?: string;
 		type?: 'button' | 'submit';
-		color?: 'error' | 'success' | 'warning' | 'default';
+		color?: 'error' | 'success' | 'warning' | 'default' | 'ghost';
 		iconSvgContent?: string;
 		element?: HTMLButtonElement;
 		disabled?: boolean;
 		onclick?: (e: MouseEvent) => void;
 		label?: string;
 		children?: Snippet;
+		class?: ClassValue;
 	}
 
 	let {
@@ -28,6 +30,7 @@
 		type = 'button',
 		label,
 		children,
+		class: className,
 	}: Props = $props();
 </script>
 
@@ -43,7 +46,10 @@
 			error: ' bg-red-900 text-red-300',
 			success: ' bg-lime-900 text-lime-300',
 			warning: ' bg-yellow-900 text-yellow-300',
+			ghost:
+				'hover:bg-gris-700 w-full justify-start rounded-md bg-transparent !px-2',
 		}[color],
+		className,
 	]}
 	{disabled}
 	bind:this={element}

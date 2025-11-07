@@ -172,7 +172,7 @@
 			</canvas>
 
 			<label
-				class="bg-magenta-700 font-space-mono pointer-events-auto absolute bottom-0 inline-flex h-14 rounded-md px-10 py-4 text-xl font-bold hover:cursor-pointer"
+				class="bg-magenta-700 hover:bg-magenta-600 font-space-mono text-md pointer-events-auto absolute bottom-0 inline-flex h-14 rounded-sm px-10 py-4 font-bold hover:cursor-pointer"
 			>
 				<span>Select Skin</span>
 				<input onchange={handleOnChange} type="file" class="sr-only" />
