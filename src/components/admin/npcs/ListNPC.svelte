@@ -19,9 +19,9 @@
 		description: string;
 		identifier: string;
 		display: string;
-		x: number;
-		y: number;
-		z: number;
+		x: string;
+		y: string;
+		z: string;
 		skin: string;
 	}
 
@@ -49,13 +49,44 @@
 		});
 	});
 
+	npcsList = [
+		{
+			id: '1',
+			name: 'Guardia',
+			description: 'NPC que protege la ciudad',
+			identifier: 'guard_001',
+			display: 'Guardia de la Ciudad',
+			x: '10',
+			y: '20',
+			z: '30',
+			skin: 'default',
+		},
+		{
+			id: '2',
+			name: 'Vendedor',
+			description: 'NPC que vende objetos',
+			identifier: 'shop_001',
+			display: 'Vendedor Ambulante',
+			x: '15',
+			y: '25',
+			z: '35',
+			skin: 'default',
+		},
+		{
+			id: '3',
+			name: 'Mago',
+			description: 'NPC que ofrece misiones mágicas',
+			identifier: 'mage_001',
+			display: 'Mago del Bosque',
+			x: '20',
+			y: '30',
+			z: '40',
+			skin: 'default',
+		},
+	];
+
 	const handleCreate = () => {
 		activeTab = 'Create-NPC';
-	};
-
-	const handleEdit = () => {
-		npcId = npcId;
-		activeTab = 'Edit-NPC';
 	};
 </script>
 
@@ -73,9 +104,82 @@
 			</h1>
 
 			<div class="flex w-full justify-end">
-				<Button class="!h-12" type="button" onclick={handleCreate}>
+				<Button class="!h-10" type="button" onclick={handleCreate}>
 					Create NPC
 				</Button>
+			</div>
+
+			<div class="w-full overflow-x-auto">
+				<!-- Contenedor principal: un solo grid -->
+				<div
+					class="grid w-full min-w-[1100px] text-sm"
+					style="grid-template-columns: 5% 15% 25% 15% 10% 20% 10%;"
+				>
+					<!-- Encabezados -->
+					<div class="border-gris-700 border-b p-2 text-left font-semibold">
+						ID
+					</div>
+					<div class="border-gris-700 border-b p-2 text-left font-semibold">
+						Name
+					</div>
+					<div class="border-gris-700 border-b p-2 text-left font-semibold">
+						Description
+					</div>
+					<div class="border-gris-700 border-b p-2 text-left font-semibold">
+						Identifier
+					</div>
+					<div class="border-gris-700 border-b p-2 text-left font-semibold">
+						Display
+					</div>
+					<div class="border-b border-gray-700 p-2 text-left font-semibold">
+						Position xyz
+					</div>
+					<div class="border-b border-gray-700 p-2 text-left font-semibold">
+						Actions
+					</div>
+
+					<!-- Filas -->
+					{#each npcsList as npc}
+						<div class="border-gris-700 border-b p-2">{npc.id}</div>
+						<div
+							class="border-gris-700 truncate overflow-hidden border-b p-2 whitespace-nowrap"
+						>
+							{npc.name}
+						</div>
+						<div
+							class="border-gris-700 truncate overflow-hidden border-b p-2 whitespace-nowrap"
+						>
+							{npc.description}
+						</div>
+						<div
+							class="border-gris-700 truncate overflow-hidden border-b p-2 whitespace-nowrap"
+						>
+							{npc.identifier}
+						</div>
+						<div
+							class="border-gris-700 truncate overflow-hidden border-b p-2 whitespace-nowrap"
+						>
+							{npc.display}
+						</div>
+						<div
+							class="border-gris-700 truncate overflow-hidden border-b p-2 whitespace-nowrap"
+						>
+							{npc.x}, {npc.y}, {npc.z}
+						</div>
+						<div class="border-gris-700 border-b p-2">
+							<Button
+								class="!h-8 !px-3"
+								type="button"
+								onclick={() => {
+									npcId = npc.id;
+									activeTab = 'Edit-NPC';
+								}}
+							>
+								Edit
+							</Button>
+						</div>
+					{/each}
+				</div>
 			</div>
 		</div>
 	</div>
