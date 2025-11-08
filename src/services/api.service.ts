@@ -6,11 +6,13 @@ import {
 	profileResSchema,
 	uploadSkinResSchema,
 } from '#/schema/api.schema';
+
 import {
 	type createNpcRequestSchema,
 	getNpcResSchema,
 	listNpcsResSchema,
 } from '#/schema/npc.schema';
+
 import {
 	dispatchError,
 	type ErrorResponse,
@@ -96,24 +98,14 @@ export const uploadSkinService = async (
 
 export const getOneNPCService = async (
 	npcId: string,
-): Promise<
-	OkResponse<z.infer<typeof getNpcResSchema>['data']> | ErrorResponse
-> => {
-	try {
-		const response = await axios.get(
-			`${import.meta.env.VITE_API_URL}/api/v1/npc/${npcId}`,
-		);
+): Promise<z.infer<typeof getNpcResSchema>['data']> => {
+	const response = await axios.get(
+		`${import.meta.env.VITE_API_URL}/api/v1/npc/${npcId}`,
+	);
 
-		const body = getNpcResSchema.parse(response.data);
+	const body = getNpcResSchema.parse(response.data);
 
-		return {
-			ok: true,
-			message: body.message,
-			data: body.data,
-		};
-	} catch (error) {
-		return dispatchError(error);
-	}
+	return body.data;
 };
 
 export const createNPCService = async (

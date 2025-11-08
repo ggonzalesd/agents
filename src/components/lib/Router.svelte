@@ -1,21 +1,22 @@
 <script lang="ts">
-	import { type Snippet } from 'svelte';
+	import { getContext, setContext, type Snippet } from 'svelte';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
 
 	interface Props {
-		route?: string;
+		route: string;
 		children?: Snippet;
 	}
 
+	const { route, children }: Props = $props();
+
+	const routerStack = getContext<string | null>('app-router-stack');
 	let routerContext = getRouterContext();
 
-	let { route, children }: Props = $props();
+	const currentRoute = (routerStack ?? '') + route;
 
-	if (route) {
-		routerContext.registerRoute(route);
-	}
+	setContext('app-router-stack', currentRoute);
 </script>
 
-{#if route == null || route === $routerContext.route}
+{#if $routerContext.route.startsWith(currentRoute)}
 	{@render children?.()}
 {/if}

@@ -6,14 +6,12 @@
 	import AppSidebar from '@/lib/components/app-sidebar.svelte';
 	import * as Sidebar from '@/lib/components/ui/sidebar/index.js';
 
-	// Estado activeTab
-	let actionTab = $state('Create-NPC');
-	let npcId = $state('');
+	import Router from '@/components/lib/Router.svelte';
 </script>
 
 <section class="size-full min-h-screen">
 	<Sidebar.Provider>
-		<AppSidebar bind:activeTab={actionTab} />
+		<AppSidebar />
 		<Sidebar.Inset class="bg-gris-900 overflow-hidden">
 			<header
 				class="bg-gris-800 border-b-gris-500 flex h-16 shrink-0 items-center gap-2 border-b-1 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12"
@@ -23,17 +21,28 @@
 				</div>
 			</header>
 
-			{#if actionTab === 'Create-NPC'}
-				<CreateEditNPC action="create" />
-			{/if}
+			<Router route="/npcs">
+				<Router route="/create">
+					<CreateEditNPC action="create" />
+				</Router>
 
-			{#if actionTab === 'Edit-NPC'}
-				<CreateEditNPC action="edit" {npcId} />
-			{/if}
+				<Router route="/edit">
+					<svelte:boundary>
+						{#snippet failed(error)}
+							<p class="p-4 text-red-500">
+								Error loading NPC data:
+								{error instanceof Error ? error.message : 'Unknown error'}
+							</p>
+						{/snippet}
 
-			{#if actionTab === 'List-NPC'}
-				<ListNPC bind:activeTab={actionTab} bind:npcId />
-			{/if}
+						<CreateEditNPC action="edit" />
+					</svelte:boundary>
+				</Router>
+
+				<Router route="/list">
+					<ListNPC />
+				</Router>
+			</Router>
 		</Sidebar.Inset>
 	</Sidebar.Provider>
 </section>

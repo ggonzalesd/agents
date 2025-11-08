@@ -5,15 +5,7 @@ export const useRouter = (initRoute: string = '/') => {
 	const { subscribe, update } = writable({
 		route: initRoute,
 		data: null! as any,
-		routes: new Set<string>([initRoute]),
 	});
-
-	const registerRoute = (route: string) => {
-		update((state) => {
-			state.routes.add(route);
-			return state;
-		});
-	};
 
 	const changeRoute = (route: string, data: any = null) => {
 		update((state) => {
@@ -23,7 +15,7 @@ export const useRouter = (initRoute: string = '/') => {
 		});
 	};
 
-	return { subscribe, registerRoute, changeRoute };
+	return { subscribe, changeRoute };
 };
 
 export const getRouterContext = () => {

@@ -3,6 +3,12 @@ import type { z } from 'zod';
 import * as NPCRepository from '$/db/npc.db';
 import type { createNpcRequestSchema } from '#/schema/npc.schema';
 
+export const getAllNPCs = async () => {
+	const npcs = await NPCRepository.getAllNPCs({});
+
+	return npcs;
+};
+
 export const createNPC = async ({
 	payload,
 }: {
