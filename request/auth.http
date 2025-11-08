@@ -1,4 +1,4 @@
-@host=http://localhost:3000/api/v1
+@host=https://game.quorilabs.com/api/v1
 
 ### HEALTH
 GET {{host}}/auth HTTP/1.1
@@ -9,7 +9,7 @@ Content-Type: application/json
 
 {
 	"username": "superadmin",
-	"password": "12345678"
+	"password": "aA12345678"
 }
 
 ### Register
@@ -19,7 +19,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijc2MGM0YzQ1L
 
 {
 	"username": "cristian",
-	"password": "12345678",
+	"password": "xd12345678",
 	"display": "Cristian"
 }
 

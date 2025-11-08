@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { apiResSchema } from '#/schema/api.schema';
+import { agentDBSchema, entityDBSchema, npcDBSchema } from './db.schema';
 
 export const createNpcRequestSchema = z.object({
 	name: z.string().min(2).max(255),
@@ -14,15 +15,9 @@ export const createNpcRequestSchema = z.object({
 
 export const getNpcResSchema = apiResSchema.extend({
 	data: z.object({
-		id: z.string(),
-		name: z.string(),
-		description: z.string(),
-		identifier: z.string(),
-		display: z.string(),
-		x: z.string(),
-		y: z.string(),
-		z: z.string(),
-		skin: z.string(),
+		agent: agentDBSchema,
+		entity: entityDBSchema,
+		npc: npcDBSchema,
 	}),
 });
 

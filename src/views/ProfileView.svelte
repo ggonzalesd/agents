@@ -100,13 +100,15 @@
 			])}
 
 			<div class="flex w-full flex-row items-center justify-center gap-8">
-				<Button type="button" onclick={() => router.changeRoute('/game')}
-					>Go to Game</Button
-				>
+				<Button type="button" onclick={() => router.changeRoute('/game')}>
+					Go to Game
+				</Button>
 
 				<Button type="button" onclick={logoutHandler}>Logout</Button>
 
-				<Button type="button" onclick={() => router.changeRoute('/admin')}>Go To Admin</Button>
+				<Button type="button" onclick={() => router.changeRoute('/admin')}>
+					Go To Admin
+				</Button>
 			</div>
 		</div>
 	</div>

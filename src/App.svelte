@@ -2,6 +2,8 @@
 
 <script lang="ts">
 	import { onMount, setContext } from 'svelte';
+	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+
 	import { getDebugContext, useDebugHook } from '@/hooks/useDebug.svelte';
 
 	import LoginView from './views/LoginView.svelte';
@@ -19,6 +21,8 @@
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
 	import AdminView from './views/AdminView.svelte';
+
+	const queryClient = new QueryClient();
 
 	setContext(useDebugHook.name, useDebugHook());
 	setContext(useActions.name, useActions());
@@ -43,41 +47,43 @@
 	}
 </script>
 
-<Router route="/game">
-	<UiHelpers />
-	<Modals />
-</Router>
-
-<main
-	class="flex size-full min-h-screen flex-col items-center justify-center bg-linear-to-br from-rose-500/10 to-blue-500/20"
->
-	<Router route="/login">
-		<LoginView />
-	</Router>
-
-	<Router route="/profile">
-		{#await Promise.all( [waitFor(Number(import.meta.env.VITE_WAIT_TIME) || 0), preloadGLB('/3d/SkinModel.glb')], )}
-			<Loading />
-		{:then _}
-			<ProfileView />
-		{:catch error}
-			<p class="text-red-500">
-				Error loading information profile: {error.message}
-			</p>
-		{/await}
-	</Router>
-
+<QueryClientProvider client={queryClient}>
 	<Router route="/game">
-		{#await preloadResources()}
-			<Loading />
-		{:then _}
-			<GameView />
-		{:catch error}
-			<p class="text-red-500">Error loading models: {error.message}</p>
-		{/await}
+		<UiHelpers />
+		<Modals />
 	</Router>
 
-	<Router route="/admin">
-		<AdminView />
-	</Router>
-</main>
+	<main
+		class="flex size-full min-h-screen flex-col items-center justify-center bg-linear-to-br from-rose-500/10 to-blue-500/20"
+	>
+		<Router route="/login">
+			<LoginView />
+		</Router>
+
+		<Router route="/profile">
+			{#await Promise.all( [waitFor(Number(import.meta.env.VITE_WAIT_TIME) || 0), preloadGLB('/3d/SkinModel.glb')], )}
+				<Loading />
+			{:then _}
+				<ProfileView />
+			{:catch error}
+				<p class="text-red-500">
+					Error loading information profile: {error.message}
+				</p>
+			{/await}
+		</Router>
+
+		<Router route="/game">
+			{#await preloadResources()}
+				<Loading />
+			{:then _}
+				<GameView />
+			{:catch error}
+				<p class="text-red-500">Error loading models: {error.message}</p>
+			{/await}
+		</Router>
+
+		<Router route="/admin">
+			<AdminView />
+		</Router>
+	</main>
+</QueryClientProvider>

@@ -1,3 +1,4 @@
+import { Option } from '#/utils/Option';
 import sql from '$/config/db.config';
 import type { Helper, PendingQuery, Row, Sql, TransactionSql } from 'postgres';
 
@@ -79,4 +80,24 @@ export function selectByProperty<T extends object, V>(
 			(rows) => rows[0] as T | undefined,
 		);
 	}
+}
+
+export function insertIntoTable<T extends object>(
+	table: string,
+	data: Partial<T>,
+	sql: TransactionSql | Sql,
+): Promise<Option<T>> {
+	const record: Record<string, unknown> = {};
+
+	for (const key in data) {
+		if (data[key] !== undefined) {
+			record[key] = data[key];
+		}
+	}
+
+	return Option.future(
+		sql<T[]>`
+		INSERT INTO ${sql(table)} ${sql(record)}
+		RETURNING *`.then((rows) => rows[0]),
+	);
 }

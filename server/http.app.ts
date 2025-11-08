@@ -11,6 +11,7 @@ import { errorHandlerFactory } from '$/middlewares/errorHandler.middleware';
 import roomRoute from '$/routes/room.route';
 import authRoute from '$/routes/auth.route';
 import skinRoute from '$/routes/skin.route';
+import npcRoute from '$/routes/npc.route';
 
 import envConfig from '$/config/env.config';
 
@@ -55,6 +56,7 @@ export const applyHttpApplication = (
 	group.use('/room', roomRoute);
 	group.use('/auth', authRoute);
 	group.use('/skin', skinRoute);
+	group.use('/npc', npcRoute);
 
 	app.use((_, res) => {
 		res.status(404).json({
