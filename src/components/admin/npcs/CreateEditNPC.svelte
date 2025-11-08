@@ -7,6 +7,7 @@
 		updateNPCService,
 	} from '@/services/api.service';
 	import Button from '@/components/ui/Button.svelte';
+	import axios from 'axios';
 
 	interface Props {
 		action: string;
@@ -31,14 +32,14 @@
 			getOneNPCService(npcId!).then((res) => {
 				if (res.ok) {
 					const npc = res.data;
-					data.name = npc.name;
-					data.description = npc.description;
-					data.identifier = npc.identifier;
-					data.display = npc.display;
-					data.x = npc.x.toString();
-					data.y = npc.y.toString();
-					data.z = npc.z.toString();
-					data.skin = npc.skin;
+					data.name = npc.agent.display;
+					data.description = npc.npc.description;
+					data.identifier = npc.agent.identifier;
+					data.display = npc.agent.display;
+					data.x = npc.agent.positionX.toString();
+					data.y = npc.agent.positionY.toString();
+					data.z = npc.agent.positionZ.toString();
+					data.skin = npc.npc.skinUrl;
 				} else {
 					console.error('Failed to fetch NPC data:', res.error);
 				}
@@ -67,6 +68,66 @@
 					console.error('Error al actualizar el NPC:', res.error);
 				}
 			});
+		}
+	};
+
+	let skinState = $state({
+		ok: false,
+		loading: false,
+		error: null as string | null,
+		url: '',
+	});
+
+	const handleUploadSkin = async (file: File) => {
+		skinState = {
+			ok: false,
+			loading: true,
+			error: null,
+			url: '',
+		};
+
+		try {
+			// Simulate upload process
+			const formData = new FormData();
+			formData.append('file', file);
+
+			const response = await axios.post(
+				`${import.meta.env.VITE_API_URL}/api/v1/skin/save`,
+				formData,
+				{
+					headers: {
+						'Content-Type': 'multipart/form-data',
+					},
+				},
+			);
+
+			if (response.status === 200) {
+				skinState = {
+					ok: true,
+					loading: false,
+					error: null,
+					url: response.data.data.url,
+				};
+				data.skin = skinState.url;
+			} else {
+				skinState = {
+					ok: false,
+					loading: false,
+					error: 'Failed to upload skin.',
+					url: '',
+				};
+			}
+		} catch (error) {
+			skinState = {
+				...skinState,
+				ok: false,
+				error: 'An error occurred during upload.',
+			};
+		} finally {
+			skinState = {
+				...skinState,
+				loading: false,
+			};
 		}
 	};
 </script>
@@ -146,10 +207,36 @@
 			<div class="flex flex-col gap-2.5 p-2.5">
 				<span class="font-space-mono text-gris-50 text-sm">Skin</span>
 				<label
-					class="bg-gris-700 text-gris-200 text-md font-space-mono h-10 rounded-sm px-3 py-2 hover:cursor-pointer"
+					class="bg-gris-700 text-gris-200 text-md font-space-mono inline-flex h-10 items-center gap-2 rounded-sm px-3 py-2 hover:cursor-pointer"
 				>
-					<span>Select Skin</span>
-					<input type="file" class="sr-only" />
+					{#if skinState.ok}
+						<img
+							src={skinState.url}
+							alt="NPC Skin"
+							class="mt-2 size-8 object-cover"
+						/>
+					{/if}
+
+					<span>
+						{#if skinState.loading}
+							Uploading...
+						{:else if skinState.ok}
+							Skin Uploaded
+						{:else}
+							Upload Skin
+						{/if}
+					</span>
+
+					<input
+						type="file"
+						class="sr-only"
+						onchange={(e) => {
+							const files = (e.target as HTMLInputElement).files;
+							if (files && files.length > 0) {
+								handleUploadSkin(files[0]);
+							}
+						}}
+					/>
 				</label>
 			</div>
 

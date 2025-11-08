@@ -8,6 +8,27 @@ import { getAuth } from '$/utils/req.utils';
 import { HttpError } from '#/utils/HttpError';
 import { jsonResponse } from '#/utils/HttpResponse';
 
+export const saveSkinController = async (req: Request, res: Response) => {
+	const file = req.file!;
+
+	const randomname = `${Date.now()}-${Math.floor(Math.random() * 1e6)}.png`;
+
+	await S3Service.uploadFile(`skins/${randomname}`, file.buffer, 'image/png', {
+		originalName: file.originalname,
+	});
+
+	const url = `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/${randomname}`;
+
+	res.json({
+		ok: true,
+		message: 'Skin saved successfully',
+		data: {
+			url,
+			filename: randomname,
+		},
+	});
+};
+
 export const uploadSkinController = async (req: Request, res: Response) => {
 	const file = req.file!;
 	const { user } = getAuth(req);
