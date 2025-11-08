@@ -24,11 +24,11 @@
 				items: [
 					{
 						title: 'Crear',
-						url: 'Create-NPC',
+						url: '/admin/npcs/create',
 					},
 					{
 						title: 'Listar',
-						url: 'List-NPC',
+						url: '/admin/npcs/list',
 					},
 				],
 			},
@@ -58,16 +58,11 @@
 	import * as Sidebar from '@lib/components/ui/sidebar/index.js';
 	import type { ComponentProps } from 'svelte';
 
-	interface Props extends ComponentProps<typeof Sidebar.Root> {
-		activeTab?: string;
-	}
-
 	let {
 		ref = $bindable(null),
 		collapsible = 'icon',
-		activeTab = $bindable(''),
 		...restProps
-	}: Props = $props();
+	}: ComponentProps<typeof Sidebar.Root> = $props();
 </script>
 
 <Sidebar.Root {collapsible} {...restProps}>
@@ -76,7 +71,7 @@
 	</Sidebar.Header>
 
 	<Sidebar.Content>
-		<NavMain items={data.navMain} bind:activeTab />
+		<NavMain items={data.navMain} />
 	</Sidebar.Content>
 
 	<Sidebar.Footer>

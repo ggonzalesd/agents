@@ -1,12 +1,12 @@
 <script lang="ts">
 	import Button from '@/components/Button.svelte';
+	import { getRouterContext } from '@/hooks/useRouter.svelte';
 	import * as Collapsible from '@lib/components/ui/collapsible/index.js';
 	import * as Sidebar from '@lib/components/ui/sidebar/index.js';
 	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 
 	let {
 		items,
-		activeTab = $bindable(''),
 	}: {
 		items: {
 			title: string;
@@ -20,8 +20,9 @@
 				url: string;
 			}[];
 		}[];
-		activeTab?: string;
 	} = $props();
+
+	const { changeRoute } = getRouterContext();
 </script>
 
 <Sidebar.Group>
@@ -51,7 +52,7 @@
 										<Sidebar.MenuSubButton>
 											{#snippet child({ props })}
 												<Button
-													onclick={() => (activeTab = subItem.url)}
+													onclick={() => changeRoute(subItem.url)}
 													color="ghost"
 													{...props}
 												>

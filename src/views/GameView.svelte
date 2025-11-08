@@ -2,6 +2,7 @@
 	import { getContext, onMount } from 'svelte';
 
 	import { Option } from '#/utils/Option';
+	import { WorldEcs } from '#/ecs/World.ecs';
 
 	import { getDebugContext } from '@/hooks/useDebug.svelte';
 	import { getActionsContext } from '@/hooks/useActions.svelte';
@@ -9,7 +10,6 @@
 
 	import { worldPrefab } from '@/game/prefab/world.client';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
-	import { WorldEcs } from '#/ecs/World.ecs';
 
 	let canvasRef = $state.raw<HTMLCanvasElement>(null!);
 

@@ -4,35 +4,35 @@
 	import { onMount, setContext } from 'svelte';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 
-	import { getDebugContext, useDebugHook } from '@/hooks/useDebug.svelte';
-
-	import LoginView from './views/LoginView.svelte';
-	import GameView from '@/views/GameView.svelte';
-	import UiHelpers from './components/UiHelpers.svelte';
-	import { useActions } from './hooks/useActions.svelte';
-	import { GameInput } from './utils/input.utils';
-	import Modals from './components/Modals.svelte';
-	import { useGameState } from './hooks/useGameState.svelte';
-	import { preloadGLB, preloadTextures, waitFor } from './utils/assets.utils';
-	import { useRouter } from './hooks/useRouter.svelte';
-	import Router from './components/lib/Router.svelte';
-	import ProfileView from './views/ProfileView.svelte';
-	import Loading from './views/Loading.svelte';
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
-	import AdminView from './views/AdminView.svelte';
+
+	import * as HOOKS from '@/hooks';
+
+	import { GameInput } from '@/utils/input.utils';
+	import { preloadGLB, preloadTextures, waitFor } from '@/utils/assets.utils';
+
+	import UiHelpers from '@/components/UiHelpers.svelte';
+	import Modals from '@/components/Modals.svelte';
+	import Router from '@/components/lib/Router.svelte';
+	import GameView from '@/views/GameView.svelte';
+	import LoginView from '@/views/LoginView.svelte';
+
+	import ProfileView from '@/views/ProfileView.svelte';
+	import Loading from '@/views/Loading.svelte';
+	import AdminView from '@/views/AdminView.svelte';
 
 	const queryClient = new QueryClient();
 
-	setContext(useDebugHook.name, useDebugHook());
-	setContext(useActions.name, useActions());
+	setContext(HOOKS.useDebugHook.name, HOOKS.useDebugHook());
+	setContext(HOOKS.useActions.name, HOOKS.useActions());
 	setContext(GameInput.name, new GameInput());
-	setContext(useGameState.name, useGameState());
-	setContext(useRouter.name, useRouter('/login'));
+	setContext(HOOKS.useGameState.name, HOOKS.useGameState());
+	setContext(HOOKS.useRouter.name, HOOKS.useRouter('/login'));
 	setContext(WorldEcs.name, Option.none<WorldEcs>());
 
 	onMount(() => {
-		const debugContext = getDebugContext();
+		const debugContext = HOOKS.getDebugContext();
 		debugContext.add('App mounted', { type: 'info', isCode: false });
 	});
 

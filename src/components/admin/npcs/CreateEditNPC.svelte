@@ -1,20 +1,26 @@
 <script lang="ts">
-	import InputText from '@/components/InputText.svelte';
 	import { onMount } from 'svelte';
-	import {
-		createNPCService,
-		getOneNPCService,
-		updateNPCService,
-	} from '@/services/api.service';
-	import Button from '@/components/ui/Button.svelte';
 	import axios from 'axios';
+
+	import { get } from 'svelte/store';
+
+	import InputText from '@/components/InputText.svelte';
+	import * as APIService from '@/services/api.service';
+	import Button from '@/components/ui/Button.svelte';
+	import { getRouterContext } from '@/hooks/useRouter.svelte';
 
 	interface Props {
 		action: string;
-		npcId?: string;
 	}
 
-	let { action, npcId }: Props = $props();
+	let { action }: Props = $props();
+
+	const routerContext = getRouterContext();
+	const npcId = get(routerContext).data?.npcId;
+
+	if (typeof npcId !== 'string' && action === 'edit') {
+		throw new Error('npcId must be a string');
+	}
 
 	const data = $state({
 		name: '',
@@ -29,27 +35,22 @@
 
 	onMount(() => {
 		if (action === 'edit') {
-			getOneNPCService(npcId!).then((res) => {
-				if (res.ok) {
-					const npc = res.data;
-					data.name = npc.agent.display;
-					data.description = npc.npc.description;
-					data.identifier = npc.agent.identifier;
-					data.display = npc.agent.display;
-					data.x = npc.agent.positionX.toString();
-					data.y = npc.agent.positionY.toString();
-					data.z = npc.agent.positionZ.toString();
-					data.skin = npc.npc.skinUrl;
-				} else {
-					console.error('Failed to fetch NPC data:', res.error);
-				}
+			APIService.getOneNPCService(npcId!).then(({ agent, entity, npc }) => {
+				data.name = agent.display;
+				data.description = npc.description;
+				data.identifier = agent.identifier;
+				data.display = agent.display;
+				data.x = agent.positionX.toString();
+				data.y = agent.positionY.toString();
+				data.z = agent.positionZ.toString();
+				data.skin = npc.skinUrl;
 			});
 		}
 	});
 
 	const handleCreate = () => {
 		if (action === 'create') {
-			createNPCService(data).then((res) => {
+			APIService.createNPCService(data).then((res) => {
 				if (res.ok) {
 					console.log('NPC creado con éxito:', res.data);
 				} else {
@@ -61,7 +62,7 @@
 
 	const handleEdit = () => {
 		if (action === 'edit') {
-			updateNPCService(npcId!, data).then((res) => {
+			APIService.updateNPCService(npcId!, data).then((res) => {
 				if (res.ok) {
 					console.log('NPC actualizado con éxito:', res.data);
 				} else {

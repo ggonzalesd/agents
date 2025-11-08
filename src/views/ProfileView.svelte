@@ -1,11 +1,14 @@
 <script lang="ts">
-	import Button from '@/components/ui/Button.svelte';
-	import SkinSelector from '@/components/profile/SkinSelector.svelte';
-	import { getRouterContext } from '@/hooks/useRouter.svelte';
-	import { GameInput } from '@/utils/input.utils';
 	import { getContext, onMount } from 'svelte';
 
-	let router = getRouterContext();
+	import { GameInput } from '@/utils/input.utils';
+
+	import * as HOOKS from '@/hooks';
+
+	import Button from '@/components/ui/Button.svelte';
+	import SkinSelector from '@/components/profile/SkinSelector.svelte';
+
+	let router = HOOKS.getRouterContext();
 	let gameInputContext = getContext<GameInput>(GameInput.name);
 
 	onMount(() => {
@@ -106,7 +109,10 @@
 
 				<Button type="button" onclick={logoutHandler}>Logout</Button>
 
-				<Button type="button" onclick={() => router.changeRoute('/admin')}>
+				<Button
+					type="button"
+					onclick={() => router.changeRoute('/admin/npcs/list')}
+				>
 					Go To Admin
 				</Button>
 			</div>

@@ -17,38 +17,26 @@ router.get(
 	AuthMiddleware.validateJwtToken(),
 	RoleMiddleware.withRoles('ADMIN', 'MOD', 'USER'),
 	async (_req, res) => {
-		await new Promise((resolve) => setTimeout(resolve, 500));
-
-		const npcs = [
-			{
-				id: '1',
-				name: 'Guardia',
-				description: 'NPC que protege la ciudad',
-				identifier: 'guard_001',
-				display: 'Guardia de la Ciudad',
-				x: '10',
-				y: '20',
-				z: '30',
-				skin: 'default',
-			},
-			{
-				id: '2',
-				name: 'Vendedor',
-				description: 'NPC que vende objetos',
-				identifier: 'vendor_001',
-				display: 'Vendedor Ambulante',
-				x: '15',
-				y: '25',
-				z: '35',
-				skin: 'default',
-			},
-		];
+		const npcs = await NPCService.getAllNPCs();
 
 		return res.status(200).json(
-			jsonResponse.ok(npcs, {
-				message: 'NPCs retrieved successfully',
-				status: 200,
-			}),
+			jsonResponse.ok(
+				npcs.map(({ agent, npc }) => ({
+					id: npc.id,
+					name: agent.display,
+					description: npc.description,
+					identifier: agent.identifier,
+					display: agent.display,
+					x: agent.positionX.toString(),
+					y: agent.positionY.toString(),
+					z: agent.positionZ.toString(),
+					skin: npc.skinUrl,
+				})),
+				{
+					message: 'All NPCs retrieved successfully',
+					status: 200,
+				},
+			),
 		);
 	},
 );

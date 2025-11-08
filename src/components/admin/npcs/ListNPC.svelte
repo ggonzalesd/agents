@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { standarError } from '#/error/standar-error';
+
 	import { getAllNPCsService } from '@/services/api.service';
 	import Button from '@/components/ui/Button.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
+	import { getRouterContext } from '@/hooks/useRouter.svelte';
 
 	interface Props {
-		activeTab?: string;
 		npcId?: string;
 	}
 
@@ -27,12 +29,24 @@
 		staleTime: 0,
 	}));
 
-	let { activeTab = $bindable(''), npcId = $bindable('') }: Props = $props();
+	let { npcId = $bindable('') }: Props = $props();
 
-	const handleCreate = () => {
-		activeTab = 'Create-NPC';
-	};
+	const { changeRoute } = getRouterContext();
 </script>
+
+{#snippet errorHandler(_error: unknown)}
+	{@const error = standarError(_error)}
+
+	<div class="border-b border-gray-700 p-2 text-left text-nowrap text-red-500">
+		<span>Error: {error.message}</span>
+
+		{#each Object.keys(error.errors) as key}
+			<div class="text-red-500">
+				{key}: {error.errors[key].join(', ')}
+			</div>
+		{/each}
+	</div>
+{/snippet}
 
 {#snippet tableHeader(name: string)}
 	<div class="border-gris-700 border-b p-2 text-left font-semibold">
@@ -54,7 +68,11 @@
 			</h1>
 
 			<div class="flex w-full justify-end">
-				<Button class="!h-10" type="button" onclick={handleCreate}>
+				<Button
+					class="!h-10"
+					type="button"
+					onclick={() => changeRoute('/admin/npcs/create')}
+				>
 					Create NPC
 				</Button>
 			</div>
@@ -74,9 +92,7 @@
 					{#if queryNpcs.isLoading}
 						<div class="border-b border-gray-700 p-2 text-left">Loading...</div>
 					{:else if queryNpcs.isError}
-						<div class="border-b border-gray-700 p-2 text-left">
-							Error loading NPCs
-						</div>
+						{@render errorHandler(queryNpcs.error)}
 					{:else if queryNpcs.isSuccess}
 						{#each queryNpcs.data.data as npc}
 							<div class="border-gris-700 border-b p-2">{npc.id}</div>
@@ -111,7 +127,7 @@
 									type="button"
 									onclick={() => {
 										npcId = npc.id;
-										activeTab = 'Edit-NPC';
+										changeRoute('/admin/npcs/edit', { npcId });
 									}}
 								>
 									Edit
