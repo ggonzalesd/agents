@@ -1,0 +1,7 @@
+import axios from 'axios';
+
+export const httpService = axios.create({
+	baseURL: `${import.meta.env.VITE_API_URL}/api/v1`,
+	timeout: 5000,
+	withCredentials: true,
+});

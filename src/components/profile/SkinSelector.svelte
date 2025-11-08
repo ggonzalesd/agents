@@ -7,8 +7,8 @@
 	import Loading from '@/views/Loading.svelte';
 	import { uploadSkinService } from '@/services/api.service';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
-	import { onMount } from 'svelte';
-	import axios from 'axios';
+
+	import { httpService } from '@/services/http.service';
 
 	let gameStateContext = getGameStateContext();
 
@@ -77,13 +77,11 @@
 			transparent: true,
 		});
 
-		axios
-			.get(import.meta.env.VITE_API_URL + '/api/v1/skin/exists/' + username)
-			.catch((error) => {
-				texture = loadTexture('/3d/gordon.png', false);
-				material.map = texture;
-				material.needsUpdate = true;
-			});
+		httpService.get('/skin/exists/' + username).catch((error) => {
+			texture = loadTexture('/3d/gordon.png', false);
+			material.map = texture;
+			material.needsUpdate = true;
+		});
 
 		let mixer: THREE.AnimationMixer | null = null;
 
