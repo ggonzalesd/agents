@@ -1,5 +1,6 @@
-import axios from 'axios';
 import type { z } from 'zod';
+
+import { httpService } from '@/services/http.service';
 
 import {
 	loginResSchema,
@@ -19,8 +20,6 @@ import {
 	type OkResponse,
 } from '#/utils/http-client.util';
 
-axios.defaults.withCredentials = true;
-
 export const loginService = async (payload: {
 	username: string;
 	password: string;
@@ -28,10 +27,7 @@ export const loginService = async (payload: {
 	OkResponse<z.infer<typeof loginResSchema>['data']> | ErrorResponse
 > => {
 	try {
-		const response = await axios.post(
-			`${import.meta.env.VITE_API_URL}/api/v1/auth/login`,
-			payload,
-		);
+		const response = await httpService.post('/auth/login', payload);
 
 		const body = loginResSchema.parse(response.data);
 
@@ -49,9 +45,7 @@ export const profileService = async (): Promise<
 	OkResponse<z.infer<typeof profileResSchema>['data']> | ErrorResponse
 > => {
 	try {
-		const response = await axios.get(
-			`${import.meta.env.VITE_API_URL}/api/v1/auth/profile`,
-		);
+		const response = await httpService.get('/auth/profile');
 
 		const body = profileResSchema.parse(response.data);
 
@@ -74,15 +68,11 @@ export const uploadSkinService = async (
 		const formData = new FormData();
 		formData.append('file', skin);
 
-		const response = await axios.put(
-			`${import.meta.env.VITE_API_URL}/api/v1/skin/upload`,
-			formData,
-			{
-				headers: {
-					'Content-Type': 'multipart/form-data',
-				},
+		const response = await httpService.put('/skin/upload', formData, {
+			headers: {
+				'Content-Type': 'multipart/form-data',
 			},
-		);
+		});
 
 		const body = uploadSkinResSchema.parse(response.data);
 
@@ -99,9 +89,7 @@ export const uploadSkinService = async (
 export const getOneNPCService = async (
 	npcId: string,
 ): Promise<z.infer<typeof getNpcResSchema>['data']> => {
-	const response = await axios.get(
-		`${import.meta.env.VITE_API_URL}/api/v1/npc/${npcId}`,
-	);
+	const response = await httpService.get(`/npc/${npcId}`);
 
 	const body = getNpcResSchema.parse(response.data);
 
@@ -114,10 +102,7 @@ export const createNPCService = async (
 	OkResponse<z.infer<typeof getNpcResSchema>['data']> | ErrorResponse
 > => {
 	try {
-		const response = await axios.post(
-			`${import.meta.env.VITE_API_URL}/api/v1/npc`,
-			payload,
-		);
+		const response = await httpService.post('/npc', payload);
 
 		const body = getNpcResSchema.parse(response.data);
 
@@ -138,10 +123,7 @@ export const updateNPCService = async (
 	OkResponse<z.infer<typeof getNpcResSchema>['data']> | ErrorResponse
 > => {
 	try {
-		const response = await axios.put(
-			`${import.meta.env.VITE_API_URL}/api/v1/npc/${npcId}`,
-			payload,
-		);
+		const response = await httpService.put(`/npc/${npcId}`, payload);
 
 		const body = getNpcResSchema.parse(response.data);
 
@@ -158,9 +140,7 @@ export const updateNPCService = async (
 export const getAllNPCsService = async (): Promise<
 	OkResponse<z.infer<typeof listNpcsResSchema>['data']>
 > => {
-	const response = await axios.get(
-		`${import.meta.env.VITE_API_URL}/api/v1/npc`,
-	);
+	const response = await httpService.get('/npc');
 	const body = listNpcsResSchema.parse(response.data);
 
 	return {

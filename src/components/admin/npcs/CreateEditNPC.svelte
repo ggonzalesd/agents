@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import axios from 'axios';
+	import { httpService } from '@/services/http.service';
 
 	import { get } from 'svelte/store';
 
@@ -92,15 +92,11 @@
 			const formData = new FormData();
 			formData.append('file', file);
 
-			const response = await axios.post(
-				`${import.meta.env.VITE_API_URL}/api/v1/skin/save`,
-				formData,
-				{
-					headers: {
-						'Content-Type': 'multipart/form-data',
-					},
+			const response = await httpService.post('/skin/save', formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
 				},
-			);
+			});
 
 			if (response.status === 200) {
 				skinState = {

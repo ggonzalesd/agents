@@ -6,30 +6,12 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
 
-	interface Props {
-		npcId?: string;
-	}
-
-	interface NPC {
-		id: string;
-		name: string;
-		description: string;
-		identifier: string;
-		display: string;
-		x: string;
-		y: string;
-		z: string;
-		skin: string;
-	}
-
 	let queryNpcs = createQuery(() => ({
 		queryKey: ['npcsList'],
 		queryFn: () => getAllNPCsService(),
 		gcTime: 0,
 		staleTime: 0,
 	}));
-
-	let { npcId = $bindable('') }: Props = $props();
 
 	const { changeRoute } = getRouterContext();
 </script>
@@ -126,8 +108,7 @@
 									class="!h-8 !px-3"
 									type="button"
 									onclick={() => {
-										npcId = npc.id;
-										changeRoute('/admin/npcs/edit', { npcId });
+										changeRoute('/admin/npcs/edit', { npcId: npc.id });
 									}}
 								>
 									Edit
