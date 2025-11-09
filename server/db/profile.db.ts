@@ -1,7 +1,7 @@
 import { Option } from '#/utils/Option';
 import type { ProfileDB } from '$/models/Profile.model';
 
-import * as SQL from '$/utils/sql.utils';
+import * as SQL from '$/utils/sql';
 
 export const PROFILE_TABLE_NAME = 'Profile';
 
@@ -29,12 +29,12 @@ type GetProfilesByUserIdType = SQL.InferSqlBuilder<
 
 export const getProfilesByUserId: GetProfilesByUserIdType = SQL.sqlBuilder(
 	({ userId }, sql) =>
-		SQL.selectByProperty<ProfileDB, string>(
+		SQL.findMany<ProfileDB>(
 			{
 				table: PROFILE_TABLE_NAME,
-				property: 'userId',
-				value: userId,
-				many: true,
+				data: {
+					userId,
+				},
 			},
 			sql,
 		),
@@ -48,11 +48,12 @@ type GetProfileByEntityIdType = SQL.InferSqlBuilder<
 
 export const getProfileByEntityId: GetProfileByEntityIdType = SQL.sqlBuilder(
 	async ({ entityId }, sql) =>
-		SQL.selectByProperty<ProfileDB, string>(
+		SQL.findOne<ProfileDB>(
 			{
 				table: PROFILE_TABLE_NAME,
-				property: 'entityId',
-				value: entityId,
+				data: {
+					entityId,
+				},
 			},
 			sql,
 		).then(Option.of),

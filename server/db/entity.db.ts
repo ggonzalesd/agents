@@ -1,20 +1,22 @@
 import { Option } from '#/utils/Option';
 import type { EntityDB } from '$/models/Entity.model';
 
-import * as SQL from '$/utils/sql.utils';
+import * as SQL from '$/utils/sql';
+
 import { AGENT_TABLE_NAME } from './agent.db';
 
-const ENTITY_TABLE_NAME = 'Entity';
+export const ENTITY_TABLE_NAME = 'Entity';
 
 // * Get entity by ID
 type GetEntityById = SQL.InferSqlBuilder<{ id: string }, Option<EntityDB>>;
 
 export const getEntityById: GetEntityById = SQL.sqlBuilder(({ id }, sql) =>
-	SQL.selectByProperty<EntityDB, string>(
+	SQL.findOne<EntityDB>(
 		{
 			table: ENTITY_TABLE_NAME,
-			property: 'id',
-			value: id,
+			data: {
+				id,
+			},
 		},
 		sql,
 	).then(Option.of),

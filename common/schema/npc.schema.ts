@@ -14,11 +14,7 @@ export const createNpcRequestSchema = z.object({
 });
 
 export const getNpcResSchema = apiResSchema.extend({
-	data: z.object({
-		agent: agentDBSchema,
-		entity: entityDBSchema,
-		npc: npcDBSchema,
-	}),
+	data: createNpcRequestSchema,
 });
 
 export const listNpcsResSchema = apiResSchema.extend({
