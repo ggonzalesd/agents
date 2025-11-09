@@ -96,7 +96,7 @@ export class MessageRenderEcs extends ComponentEcs {
 			),
 			textMaterial,
 		);
-		textPlane.position.y = 1.1;
+		textPlane.position.y = 1.3;
 
 		this.spot.add(textPlane);
 
@@ -109,7 +109,7 @@ export class MessageRenderEcs extends ComponentEcs {
 			texture: textTexture.texture,
 			material: textMaterial,
 			plane: textPlane,
-			time: 5000,
+			time: 10000,
 		});
 	}
 }

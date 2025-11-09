@@ -22,12 +22,17 @@ export class ServerManagerEcs extends ComponentEcs {
 		const collider = physics.createCollider(colliderDesc, body);
 
 		// Random Object
+		const types = ['sword', 'potion', 'cookie', 'seeds', 'coin'] as const;
 
 		for (let i = 0; i < 10; i++) {
 			const item = itemServerFactory({
 				world: this.world,
 				name: `item1_${Math.random().toString(36).substring(7)}`,
 				pos: { x: 0, y: 5, z: Math.random() * 10 - 5 },
+				stats: {
+					amount: 1,
+					type: types[Math.floor(Math.random() * types.length)],
+				},
 			});
 			this.world.addEntity(item);
 		}

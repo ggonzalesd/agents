@@ -108,6 +108,10 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 			world: this.world,
 			name: `item-${itemId}-${Date.now()}`,
 			pos: spawnPosition,
+			stats: {
+				amount: 1,
+				type: item.type,
+			},
 		});
 
 		this.world.addEntity(itemEntity);
@@ -124,7 +128,7 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 
 		this.inventoryState.items.set(
 			newId.toString(),
-			itemServerBehavior.state.item,
+			itemServerBehavior.state.item.clone(),
 		);
 
 		this.world.deleteEntity(itemEntity);

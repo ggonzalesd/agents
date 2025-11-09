@@ -68,6 +68,11 @@ const actionPickItemSchema = z.object({
 	slot: z.number().int(),
 });
 
+const actionDropItemSchema = z.object({
+	type: z.literal('drop-item'),
+	slot: z.number().int(),
+});
+
 // (🎬) MetaActions for npc control
 const actionRequestActingAgainSchema = z.object({
 	type: z.literal('@request-acting-again'),
@@ -91,6 +96,7 @@ export const actionsSchema = z.union([
 	actionRetrieveLongTermMemorySchema,
 
 	actionPickItemSchema,
+	actionDropItemSchema,
 
 	actionRequestActingAgainSchema,
 ]);
