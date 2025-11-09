@@ -57,12 +57,12 @@
 			return () => {};
 		}
 
-		for (const [key, item] of Object.entries(state.inventory.items)) {
-			itemState.set(key, item);
-		}
-
 		const detachAdd = proxy(state.inventory).items.onAdd((item, key) => {
-			itemState.set(key, item);
+			itemState.set(key, {
+				type: item.type,
+				quantity: item.quantity,
+				metadata: item.metadata,
+			});
 			console.log('Item added to inventory:', item, key);
 		}, true);
 

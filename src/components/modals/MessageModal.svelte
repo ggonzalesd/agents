@@ -66,35 +66,34 @@
 	</button>
 {/snippet}
 
-<div class="flex size-full justify-end">
-	<div
-		class="pointer-events-auto flex h-full w-[350px] flex-col gap-5 bg-[url(/background-log-messages.png)] bg-cover bg-center bg-no-repeat p-4"
-	>
-		<p class="text-gris-50 text-lg font-bold">Log messages</p>
+<div
+	class="pointer-events-auto absolute right-0 flex h-full w-[350px] flex-col gap-5 bg-[url(/background-log-messages.png)] bg-cover bg-center bg-no-repeat p-4"
+>
+	<p class="text-gris-50 text-lg font-bold">Log messages</p>
 
-		<div class="flex h-full flex-col gap-3 overflow-y-auto">
-			{#each [{ username: 'User1', message: 'Hello!' }, { username: 'User2', message: 'Good game!' }] as msg}
-				{@render renderMessage(msg.username, msg.message)}
-			{/each}
-		</div>
-
-		<div class="flex flex-col gap-3">
-			<p class="text-gris-50 text-lg font-bold">Recommended messages</p>
-
-			{#each ['Hello!', 'Good game!', 'Well played!', 'Thanks!'] as msg}
-				{@render renderRecommendedMessage(msg)}
-			{/each}
-		</div>
-
-		<div class="border-gris-500 h-[1px] border"></div>
-
-		<form onsubmit={onSubmit} class="flex w-full">
-			<InputText
-				name="message"
-				placeholder="Type your message..."
-				id="message"
-				type="text"
-			/>
-		</form>
+	<div class="flex h-full flex-col gap-3 overflow-y-auto">
+		{#each [{ username: 'User1', message: 'Hello!' }, { username: 'User2', message: 'Good game!' }] as msg}
+			{@render renderMessage(msg.username, msg.message)}
+		{/each}
 	</div>
+
+	<div class="flex flex-col gap-3">
+		<p class="text-gris-50 text-lg font-bold">Recommended messages</p>
+
+		{#each ['Hello!', 'Good game!', 'Well played!', 'Thanks!'] as msg}
+			{@render renderRecommendedMessage(msg)}
+		{/each}
+	</div>
+
+	<div class="border-gris-500 h-[1px] border"></div>
+
+	<form onsubmit={onSubmit} class="flex w-full">
+		<InputText
+			bind:element={inputRef}
+			name="message"
+			placeholder="Type your message..."
+			id="message"
+			type="text"
+		/>
+	</form>
 </div>

@@ -13,10 +13,21 @@ export class Item3DEcs extends ComponentEcs {
 	constructor(private state: ItemEntityState) {
 		super();
 
+		// const typesColor = ['sword', 'potion', 'cookie', 'seeds', 'coin'] as const;
+		const typesColor = {
+			sword: 0xff0000,
+			potion: 0x0000ff,
+			cookie: 0xffff00,
+			seeds: 0x00ff00,
+			coin: 0xffa500,
+		};
+
 		this.mesh = new THREE.Mesh(
 			new THREE.BoxGeometry(0.5, 0.5, 0.5),
 			new THREE.MeshBasicMaterial({
-				color: Math.random() * 0xffffff,
+				color:
+					typesColor[this.state.item.type as keyof typeof typesColor] ||
+					0xffffff,
 			}),
 		);
 
