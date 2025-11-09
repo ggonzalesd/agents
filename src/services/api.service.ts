@@ -119,22 +119,22 @@ export const createNPCService = async (
 export const updateNPCService = async (
 	npcId: string,
 	payload: z.infer<typeof createNpcRequestSchema>,
-): Promise<
-	OkResponse<z.infer<typeof getNpcResSchema>['data']> | ErrorResponse
-> => {
-	try {
-		const response = await httpService.put(`/npc/${npcId}`, payload);
+): Promise<{
+	id: string;
+	name: string;
+	description: string;
+}> => {
+	const response = await httpService.put<
+		OkResponse<{
+			id: string;
+			name: string;
+			description: string;
+		}>
+	>(`/npc/${npcId}`, payload);
 
-		const body = getNpcResSchema.parse(response.data);
+	// const body = getNpcResSchema.parse(response.data);
 
-		return {
-			ok: true,
-			message: body.message,
-			data: body.data,
-		};
-	} catch (error) {
-		return dispatchError(error);
-	}
+	return response.data.data;
 };
 
 export const getAllNPCsService = async (): Promise<

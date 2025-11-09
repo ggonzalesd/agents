@@ -4,7 +4,7 @@ import { Option } from '#/utils/Option';
 import type { AgentDB } from '$/models/Agent.model';
 
 import { safeJSONParse } from '$/utils/transform.utils';
-import * as SQL from '$/utils/sql.utils';
+import * as SQL from '$/utils/sql';
 
 function applyMetadataParsing(agent: {
 	metadata: string | { [key: string]: any };
@@ -33,12 +33,12 @@ type GetAgentByIdentifierType = SQL.InferSqlBuilder<
 export const getAgentByIdentifier: GetAgentByIdentifierType = SQL.sqlBuilder(
 	({ identifier }, sql) =>
 		Option.future(
-			SQL.selectByProperty<AgentDB, string>(
+			SQL.findOne<AgentDB>(
 				{
 					table: AGENT_TABLE_NAME,
-					property: 'identifier',
-					value: identifier,
-					many: false,
+					data: {
+						identifier,
+					},
 				},
 				sql,
 			),
@@ -50,12 +50,12 @@ type GetAgentByIdType = SQL.InferSqlBuilder<{ id: string }, Option<AgentDB>>;
 
 export const getAgentById: GetAgentByIdType = SQL.sqlBuilder(({ id }, sql) =>
 	Option.future(
-		SQL.selectByProperty<AgentDB, string>(
+		SQL.findOne<AgentDB>(
 			{
 				table: AGENT_TABLE_NAME,
-				property: 'id',
-				value: id,
-				many: false,
+				data: {
+					id,
+				},
 			},
 			sql,
 		),

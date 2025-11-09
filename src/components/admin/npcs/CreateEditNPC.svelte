@@ -8,6 +8,8 @@
 	import * as APIService from '@/services/api.service';
 	import Button from '@/components/ui/Button.svelte';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
+	import { createQuery } from '@tanstack/svelte-query';
+	import type { OkResponse } from '#/utils/http-client.util';
 
 	interface Props {
 		action: string;
@@ -35,15 +37,17 @@
 
 	onMount(() => {
 		if (action === 'edit') {
-			APIService.getOneNPCService(npcId!).then(({ agent, entity, npc }) => {
-				data.name = agent.display;
-				data.description = npc.description;
-				data.identifier = agent.identifier;
-				data.display = agent.display;
-				data.x = agent.positionX.toString();
-				data.y = agent.positionY.toString();
-				data.z = agent.positionZ.toString();
-				data.skin = npc.skinUrl;
+			APIService.getOneNPCService(npcId!).then((npc) => {
+				console.log(npc);
+
+				data.name = npc.display;
+				data.description = npc.description ?? '';
+				data.identifier = npc.identifier;
+				data.display = npc.display;
+				data.x = npc.x.toString();
+				data.y = npc.y.toString();
+				data.z = npc.z.toString();
+				data.skin = npc.skin;
 			});
 		}
 	});
@@ -63,70 +67,42 @@
 	const handleEdit = () => {
 		if (action === 'edit') {
 			APIService.updateNPCService(npcId!, data).then((res) => {
-				if (res.ok) {
-					console.log('NPC actualizado con éxito:', res.data);
-				} else {
-					console.error('Error al actualizar el NPC:', res.error);
-				}
+				console.log(res);
 			});
 		}
 	};
 
-	let skinState = $state({
-		ok: false,
-		loading: false,
-		error: null as string | null,
-		url: '',
-	});
+	let file: File | null = $state.raw(null);
 
-	const handleUploadSkin = async (file: File) => {
-		skinState = {
-			ok: false,
-			loading: true,
-			error: null,
-			url: '',
-		};
+	const queryUpload = createQuery(() => ({
+		queryKey: ['uploadSkin', file],
+		queryFn: async () => {
+			const f = $state.snapshot(file);
 
-		try {
-			// Simulate upload process
+			if (!f) {
+				throw new Error('No file selected');
+			}
+
 			const formData = new FormData();
-			formData.append('file', file);
+			formData.append('file', f);
 
-			const response = await httpService.post('/skin/save', formData, {
+			const response = await httpService.post<
+				OkResponse<{
+					url: string;
+					filename: string;
+				}>
+			>('/skin/save', formData, {
 				headers: {
 					'Content-Type': 'multipart/form-data',
 				},
 			});
 
-			if (response.status === 200) {
-				skinState = {
-					ok: true,
-					loading: false,
-					error: null,
-					url: response.data.data.url,
-				};
-				data.skin = skinState.url;
-			} else {
-				skinState = {
-					ok: false,
-					loading: false,
-					error: 'Failed to upload skin.',
-					url: '',
-				};
-			}
-		} catch (error) {
-			skinState = {
-				...skinState,
-				ok: false,
-				error: 'An error occurred during upload.',
-			};
-		} finally {
-			skinState = {
-				...skinState,
-				loading: false,
-			};
-		}
-	};
+			return response.data.data;
+		},
+		gcTime: 0,
+		staleTime: 0,
+		enabled: false,
+	}));
 </script>
 
 <section
@@ -206,18 +182,18 @@
 				<label
 					class="bg-gris-700 text-gris-200 text-md font-space-mono inline-flex h-10 items-center gap-2 rounded-sm px-3 py-2 hover:cursor-pointer"
 				>
-					{#if skinState.ok}
+					{#if data.skin}
 						<img
-							src={skinState.url}
+							src={data.skin}
 							alt="NPC Skin"
 							class="mt-2 size-8 object-cover"
 						/>
 					{/if}
 
 					<span>
-						{#if skinState.loading}
+						{#if queryUpload.isLoading}
 							Uploading...
-						{:else if skinState.ok}
+						{:else if queryUpload.isSuccess}
 							Skin Uploaded
 						{:else}
 							Upload Skin
@@ -228,9 +204,17 @@
 						type="file"
 						class="sr-only"
 						onchange={(e) => {
-							const files = (e.target as HTMLInputElement).files;
-							if (files && files.length > 0) {
-								handleUploadSkin(files[0]);
+							const target = e.target as HTMLInputElement;
+							if (target.files && target.files.length > 0) {
+								file = target.files[0];
+
+								setTimeout(() => {
+									queryUpload.refetch().then(({ data: _data }) => {
+										if (_data) {
+											data.skin = _data.url;
+										}
+									});
+								}, 10);
 							}
 						}}
 					/>
