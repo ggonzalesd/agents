@@ -62,7 +62,7 @@
 
 {#snippet renderRecommendedMessage(message: string)}
 	<button
-		class="text-gris-100 font-space-mono border-gris-100 hover:bg-gris-700 cursor-pointer rounded-lg border px-4 py-1 text-xs inline-flex items-center justify-center"
+		class="text-gris-100 font-space-mono border-gris-100 hover:bg-gris-700 inline-flex cursor-pointer items-center justify-center rounded-lg border px-4 py-1 text-xs"
 		onclick={() => {
 			inputRef.value = message;
 		}}
@@ -84,7 +84,7 @@
 
 	<div class="flex flex-col gap-3">
 		<p class="text-gris-50 text-lg font-bold">Recommended messages</p>
-		<div class="grid grid-cols-3 text-nowrap text-center gap-2">
+		<div class="grid grid-cols-3 gap-2 text-center text-nowrap">
 			{#each ['Hello!', 'Good game!', 'Well played!', 'Thanks!'] as msg}
 				{@render renderRecommendedMessage(msg)}
 			{/each}
