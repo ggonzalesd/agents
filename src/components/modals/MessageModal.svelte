@@ -1,17 +1,22 @@
 <svelte:options runes />
 
 <script lang="ts">
+	import { getContext, onMount } from 'svelte';
+
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
-	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
+
+	import { getMessageHistoryContext } from '@/hooks';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
+	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
 	import { GameInput } from '@/utils/input.utils';
-	import { getContext, onMount } from 'svelte';
+
 	import InputText from '../InputText.svelte';
 
 	let gameInputContext = getContext<GameInput>(GameInput.name);
 	let gameStateContext = getGameStateContext();
 	let worldEcsContext = getContext<Option<WorldEcs>>(WorldEcs.name);
+	let messageHistoryContext = getMessageHistoryContext();
 
 	function onSubmit(event: SubmitEvent) {
 		console.log('Message sent to server:', event);
@@ -46,18 +51,18 @@
 	});
 </script>
 
-{#snippet renderMessage(username: string, message: string)}
+{#snippet renderMessage(from: string, message: string)}
 	<div
 		class="text-gris-50 font-space-mono bg-gris-600 flex flex-col gap-1 rounded-lg px-4 py-2.5"
 	>
-		<p class="text-[12px] font-bold">{username}</p>
+		<p class="text-[12px]">From: {from}</p>
 		<p class="text-[14px]">{message}</p>
 	</div>
 {/snippet}
 
 {#snippet renderRecommendedMessage(message: string)}
 	<button
-		class="text-gris-100 font-space-mono border-gris-100 hover:bg-gris-700 cursor-pointer rounded-lg border px-4 py-2.5 text-[14px]"
+		class="text-gris-100 font-space-mono border-gris-100 hover:bg-gris-700 cursor-pointer rounded-lg border px-4 py-1 text-xs inline-flex items-center justify-center"
 		onclick={() => {
 			inputRef.value = message;
 		}}
@@ -72,17 +77,18 @@
 	<p class="text-gris-50 text-lg font-bold">Log messages</p>
 
 	<div class="flex h-full flex-col gap-3 overflow-y-auto">
-		{#each [{ username: 'User1', message: 'Hello!' }, { username: 'User2', message: 'Good game!' }] as msg}
-			{@render renderMessage(msg.username, msg.message)}
+		{#each $messageHistoryContext as { id, from, message } (id)}
+			{@render renderMessage(from, message)}
 		{/each}
 	</div>
 
 	<div class="flex flex-col gap-3">
 		<p class="text-gris-50 text-lg font-bold">Recommended messages</p>
-
-		{#each ['Hello!', 'Good game!', 'Well played!', 'Thanks!'] as msg}
-			{@render renderRecommendedMessage(msg)}
-		{/each}
+		<div class="grid grid-cols-3 text-nowrap text-center gap-2">
+			{#each ['Hello!', 'Good game!', 'Well played!', 'Thanks!'] as msg}
+				{@render renderRecommendedMessage(msg)}
+			{/each}
+		</div>
 	</div>
 
 	<div class="border-gris-500 h-[1px] border"></div>
