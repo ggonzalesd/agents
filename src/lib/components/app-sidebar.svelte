@@ -11,9 +11,9 @@
 		},
 		teams: [
 			{
-				name: 'Acme Inc',
+				name: 'Boundless Realms',
 				logo: User,
-				plan: 'Enterprise',
+				plan: 'Game',
 			},
 		],
 		navMain: [
@@ -39,11 +39,11 @@
 				items: [
 					{
 						title: 'Crear',
-						url: '#',
+						url: '/admin/users/create',
 					},
 					{
 						title: 'Listar',
-						url: '#',
+						url: '/admin/users/list',
 					},
 				],
 			},

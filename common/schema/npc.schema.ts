@@ -3,7 +3,7 @@ import { apiResSchema } from '#/schema/api.schema';
 
 export const createNpcRequestSchema = z.object({
 	name: z.string().min(2).max(255),
-	description: z.string().min(0).max(1024).optional(),
+	description: z.string().min(1024).max(65535),
 	identifier: z.string().min(2).max(255),
 	display: z.string().min(2).max(255),
 	x: z.string().min(1).max(255),
