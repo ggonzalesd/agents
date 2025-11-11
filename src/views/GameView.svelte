@@ -10,6 +10,7 @@
 
 	import { worldPrefab } from '@/game/prefab/world.client';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
+	import { getMessageHistoryContext } from '@/hooks';
 
 	let canvasRef = $state.raw<HTMLCanvasElement>(null!);
 
@@ -18,6 +19,7 @@
 	let gameInputContext = getContext<GameInput>(GameInput.name);
 	let gameStateContext = getGameStateContext();
 	let worldEcsContext = getContext<Option<WorldEcs>>(WorldEcs.name);
+	let messageHistoryContext = getMessageHistoryContext();
 
 	onMount(() => {
 		gameInputContext.disabled = false;
@@ -28,6 +30,7 @@
 			input: gameInputContext,
 			debug: debugContext,
 			actions: actionContext,
+			messageHistory: messageHistoryContext,
 			token: localStorage.getItem('token') ?? '',
 		});
 

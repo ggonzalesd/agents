@@ -29,6 +29,7 @@
 	setContext(GameInput.name, new GameInput());
 	setContext(HOOKS.useGameState.name, HOOKS.useGameState());
 	setContext(HOOKS.useRouter.name, HOOKS.useRouter('/login'));
+	setContext(HOOKS.useMessageHistory.name, HOOKS.useMessageHistory());
 	setContext(WorldEcs.name, Option.none<WorldEcs>());
 
 	onMount(() => {

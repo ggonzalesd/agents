@@ -11,6 +11,7 @@ import { UIClientEcs } from '../scripts/uiClient.ecs';
 import type { useGameState } from '@/hooks/useGameState.svelte';
 import { SkyboxEcs } from '../scripts/skybox.ecs';
 import { SeasonManagerEcs } from '../scripts/seasonManager.ecs';
+import type { useMessageHistory } from '@/hooks';
 
 type WorldPrefabProps = {
 	canvas: HTMLCanvasElement;
@@ -18,6 +19,7 @@ type WorldPrefabProps = {
 	debug: ReturnType<typeof useDebugHook>;
 	actions: ReturnType<typeof useActions>;
 	game: ReturnType<typeof useGameState>;
+	messageHistory: ReturnType<typeof useMessageHistory>;
 	token: string;
 };
 
@@ -27,6 +29,7 @@ export const worldPrefab = ({
 	actions,
 	debug,
 	game,
+	messageHistory,
 	token,
 }: WorldPrefabProps) =>
 	new WorldEcs({
@@ -35,6 +38,7 @@ export const worldPrefab = ({
 			debug,
 			actions,
 			game,
+			messageHistory,
 		}),
 		[ColyseusClientEcs.name]: new ColyseusClientEcs(
 			import.meta.env.VITE_WS_URL,
