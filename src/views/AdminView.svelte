@@ -7,6 +7,8 @@
 	import * as Sidebar from '@/lib/components/ui/sidebar/index.js';
 
 	import Router from '@/components/lib/Router.svelte';
+	import CreateEditUser from '@/components/admin/users/CreateEditUser.svelte';
+	import ListUser from '@/components/admin/users/ListUser.svelte';
 </script>
 
 <section class="size-full min-h-screen">
@@ -41,6 +43,29 @@
 
 				<Router route="/list">
 					<ListNPC />
+				</Router>
+			</Router>
+
+			<Router route="/users">
+				<Router route="/create">
+					<CreateEditUser action="create" />
+				</Router>
+
+				<Router route="/edit">
+					<svelte:boundary>
+						{#snippet failed(error)}
+							<p class="p-4 text-red-500">
+								Error loading NPC data:
+								{error instanceof Error ? error.message : 'Unknown error'}
+							</p>
+						{/snippet}
+
+						<CreateEditUser action="edit" />
+					</svelte:boundary>
+				</Router>
+
+				<Router route="/list">
+					<ListUser />
 				</Router>
 			</Router>
 		</Sidebar.Inset>

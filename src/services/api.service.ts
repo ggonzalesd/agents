@@ -19,6 +19,11 @@ import {
 	type ErrorResponse,
 	type OkResponse,
 } from '#/utils/http-client.util';
+import {
+	type createUserRequestSchema,
+	getUserResSchema,
+	listUsersResSchema
+} from '#/schema/user.schema';
 
 export const loginService = async (payload: {
 	username: string;
@@ -86,6 +91,8 @@ export const uploadSkinService = async (
 	}
 };
 
+// NPC Services
+
 export const getOneNPCService = async (
 	npcId: string,
 ): Promise<z.infer<typeof getNpcResSchema>['data']> => {
@@ -149,3 +156,66 @@ export const getAllNPCsService = async (): Promise<
 		data: body.data,
 	};
 };
+
+// User Services
+
+export const getOneUserService = async (
+	userId: string,
+): Promise<z.infer<typeof getUserResSchema>['data']> => {
+	const response = await httpService.get(`/user/${userId}`);
+	const body = getUserResSchema.parse(response.data);
+
+	return body.data;
+}
+
+export const createUserService = async (
+	payload: z.infer<typeof createUserRequestSchema>,
+): Promise<
+	OkResponse<z.infer<typeof getUserResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.post('/user', payload);
+
+		const body = getUserResSchema.parse(response.data);
+
+		return {
+			ok: true,
+			message: body.message,
+			data: body.data,
+		};
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const updateUserService = async (
+	userId: string,
+	payload: z.infer<typeof createUserRequestSchema>,
+): Promise<{
+	id: string;
+	name: string;
+	description: string;
+}> => {
+	const response = await httpService.put<
+		OkResponse<{
+			id: string;
+			name: string;
+			description: string;
+		}>
+	>(`/user/${userId}`, payload);
+
+	return response.data.data;
+};
+
+export const getAllUsersService = async (): Promise<
+	OkResponse<z.infer<typeof listUsersResSchema>['data']>
+> => {
+	const response = await httpService.get('/user');
+	const body = listUsersResSchema.parse(response.data);
+
+	return {
+		ok: true,
+		message: body.message,
+		data: body.data,
+	};
+}

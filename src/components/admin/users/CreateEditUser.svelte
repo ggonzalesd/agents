@@ -18,15 +18,15 @@
 	let { action }: Props = $props();
 
 	const routerContext = getRouterContext();
-	const npcId = get(routerContext).data?.npcId;
+	const userId = get(routerContext).data?.userId;
 
-	if (typeof npcId !== 'string' && action === 'edit') {
-		throw new Error('npcId must be a string');
+	if (typeof userId !== 'string' && action === 'edit') {
+		throw new Error('userId must be a string');
 	}
 
 	const data = $state({
 		name: '',
-		description: '',
+		password: '',
 		identifier: '',
 		display: '',
 		x: '',
@@ -37,42 +37,42 @@
 
 	onMount(() => {
 		if (action === 'edit') {
-			APIService.getOneNPCService(npcId!).then((npc) => {
-				console.log(npc);
+			APIService.getOneUserService(userId!).then((user) => {
+				console.log(user);
 
-				data.name = npc.display;
-				data.description = npc.description ?? '';
-				data.identifier = npc.identifier;
-				data.display = npc.display;
-				data.x = npc.x.toString();
-				data.y = npc.y.toString();
-				data.z = npc.z.toString();
-				data.skin = npc.skin;
+				data.name = user.display;
+				data.password = user.password ?? '';
+				data.identifier = user.identifier;
+				data.display = user.display;
+				data.x = user.x.toString();
+				data.y = user.y.toString();
+				data.z = user.z.toString();
+				data.skin = user.skin;
 			});
 		}
 	});
 
 	const handleCreate = () => {
 		if (action === 'create') {
-			APIService.createNPCService(data).then((res) => {
+			APIService.createUserService(data).then((res) => {
 				if (res.ok) {
-					console.log('NPC creado con éxito:', res.data);
+					console.log('User creado con éxito:', res.data);
 				} else {
-					console.error('Error al crear el NPC:', res.error);
+					console.error('Error al crear el User:', res.error);
 				}
 			});
 
-			routerContext.changeRoute('/admin/npcs/list');
+			routerContext.changeRoute('/admin/users/list');
 		}
 	};
 
 	const handleEdit = () => {
 		if (action === 'edit') {
-			APIService.updateNPCService(npcId!, data).then((res) => {
+			APIService.updateUserService(userId!, data).then((res) => {
 				console.log(res);
 			});
 
-			routerContext.changeRoute('/admin/npcs/list');
+			routerContext.changeRoute('/admin/users/list');
 		}
 	};
 
@@ -125,7 +125,7 @@
 			class="flex w-full flex-col justify-center gap-4 px-4 py-10 max-md:py-4 max-sm:gap-2 lg:w-[70%]"
 		>
 			<h1 class="font-zen-dots text-gris-50 w-full text-center text-xl">
-				{action === 'create' ? 'Crear nuevo NPC' : 'Editar NPC'}
+				{action === 'create' ? 'Crear nuevo User' : 'Editar User'}
 			</h1>
 
 			<div class="flex flex-col md:flex-row">
@@ -135,11 +135,11 @@
 				</div>
 
 				<div class="flex w-full flex-col gap-2.5 p-2.5">
-					<span class="font-space-mono text-gris-50 text-sm">Description</span>
+					<span class="font-space-mono text-gris-50 text-sm">Password</span>
 					<InputText
-						name="description"
-						placeholder="Description"
-						bind:value={data.description}
+						name="password"
+						placeholder="Password"
+						bind:value={data.password}
 					/>
 				</div>
 			</div>
@@ -189,7 +189,7 @@
 					{#if data.skin}
 						<img
 							src={data.skin}
-							alt="NPC Skin"
+							alt="User Skin"
 							class="mt-2 size-8 object-cover"
 						/>
 					{/if}
@@ -228,12 +228,12 @@
 			<div class="flex w-full justify-center">
 				{#if action === 'create'}
 					<Button class="!h-12" type="button" onclick={handleCreate}>
-						Create NPC
+						Create User
 					</Button>
 				{/if}
 				{#if action === 'edit'}
 					<Button class="!h-12" type="button" onclick={handleEdit}>
-						Actualizar NPC
+						Actualizar User
 					</Button>
 				{/if}
 			</div>
