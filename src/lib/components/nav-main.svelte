@@ -1,7 +1,9 @@
 <script lang="ts">
-	import * as Collapsible from "@lib/components/ui/collapsible/index.js";
-	import * as Sidebar from "@lib/components/ui/sidebar/index.js";
-	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+	import Button from '@/components/Button.svelte';
+	import { getRouterContext } from '@/hooks/useRouter.svelte';
+	import * as Collapsible from '@lib/components/ui/collapsible/index.js';
+	import * as Sidebar from '@lib/components/ui/sidebar/index.js';
+	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
 
 	let {
 		items,
@@ -19,10 +21,12 @@
 			}[];
 		}[];
 	} = $props();
+
+	const { changeRoute } = getRouterContext();
 </script>
 
 <Sidebar.Group>
-	<Sidebar.GroupLabel>Platform</Sidebar.GroupLabel>
+	<Sidebar.GroupLabel>Entidades</Sidebar.GroupLabel>
 	<Sidebar.Menu>
 		{#each items as item (item.title)}
 			<Collapsible.Root open={item.isActive} class="group/collapsible">
@@ -47,9 +51,13 @@
 									<Sidebar.MenuSubItem>
 										<Sidebar.MenuSubButton>
 											{#snippet child({ props })}
-												<a href={subItem.url} {...props}>
+												<Button
+													onclick={() => changeRoute(subItem.url)}
+													color="ghost"
+													{...props}
+												>
 													<span>{subItem.title}</span>
-												</a>
+												</Button>
 											{/snippet}
 										</Sidebar.MenuSubButton>
 									</Sidebar.MenuSubItem>

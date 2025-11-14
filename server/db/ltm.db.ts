@@ -13,7 +13,7 @@ model LongTermMemory {
 */
 
 import type { LongTermMemoryDB } from '$/models/LongTermMemory.model';
-import * as SQL from '$/utils/sql.utils';
+import * as SQL from '$/utils/sql';
 
 type RetrieveLongTermMemoryType = SQL.InferSqlBuilder<
 	{

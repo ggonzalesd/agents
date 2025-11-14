@@ -103,7 +103,7 @@ export class NPCContextEcs extends ComponentEcs {
 			// `{"type": "emote", "value": "HAPPY" | "SAD" | "ANGRY" | "CONFUSED" | "SURPRISED" | "NEUTRAL"} // 3d emote to express your mood`,
 
 			`{"type": "pick-item", "itemId": string, "slot": i32(0...35)}`,
-			// `{"type": "drop-item", "slot": i32(0...9)}`,
+			`{"type": "drop-item", "slot": i32(0...9)}`,
 
 			`{"type": "move-follow-entity", "entityId": string, "distance": f32}`,
 			// `{"type": "move-to-entity", "entityId": string, "distance": f32}`,

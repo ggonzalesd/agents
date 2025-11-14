@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { ServerError } from 'colyseus';
 
-import { treeifyError, ZodError } from 'zod';
+import { flattenError, ZodError } from 'zod';
 
 import { HttpError } from '#/utils/HttpError';
 import { jsonResponse } from '#/utils/HttpResponse';
@@ -38,10 +38,15 @@ export const errorHandlerFactory =
 		}
 
 		if (err instanceof ZodError) {
+			const flatten = flattenError(err);
+
 			res.status(400).json(
 				jsonResponse.error('Validation error', {
 					status: 400,
-					data: treeifyError(err),
+					data: {
+						errors: flatten.formErrors,
+						fields: flatten.fieldErrors,
+					},
 				}),
 			);
 			return;

@@ -169,6 +169,12 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				});
 			}
 
+			if (action.type === 'drop-item') {
+				this.entityParent.get(InventoryServerEcs).ifSome((inventory) => {
+					inventory.dropItem(action.slot);
+				});
+			}
+
 			if (action.type === '@request-acting-again') {
 				setTimeout(() => {
 					this.npcContextEcs.eventQueue.pushEvent(

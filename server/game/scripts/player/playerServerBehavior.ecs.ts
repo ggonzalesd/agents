@@ -103,6 +103,17 @@ export class PlayerServerBehavior extends ComponentEcs {
 				}
 				break;
 			}
+			case 'drop': {
+				console.log('DROP ACTION', message);
+
+				const slot = ((message as any)?.itemId as number | undefined) ?? null;
+
+				if (slot != null) {
+					this.inventory.dropItem(slot);
+				}
+
+				break;
+			}
 			case 'message':
 				// TODO:
 				if ('message' in message && typeof message.message === 'string') {

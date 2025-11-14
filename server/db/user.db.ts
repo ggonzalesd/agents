@@ -5,7 +5,7 @@ import { Option } from '#/utils/Option';
 
 import type { UserDB } from '$/models/user.model';
 
-import * as SQL from '$/utils/sql.utils';
+import * as SQL from '$/utils/sql';
 
 const USER_TABLE_NAME = 'User';
 
@@ -17,11 +17,12 @@ type GetUserByUsernameType = SQL.InferSqlBuilder<
 
 export const getUserByUsername: GetUserByUsernameType = SQL.sqlBuilder(
 	async ({ username }, sql) => {
-		return SQL.selectByProperty<UserDB, string>(
+		return SQL.findOne<UserDB>(
 			{
 				table: USER_TABLE_NAME,
-				property: 'username',
-				value: username,
+				data: {
+					username,
+				},
 			},
 			sql,
 		).then(Option.of);

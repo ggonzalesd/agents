@@ -5,9 +5,11 @@ import { Character3DEcs } from '../player/character3D.ecs';
 import { createTextTexture } from '@/utils/text.utils';
 import { RenderClientEcs } from '../renderClient.ecs';
 import { ColyseusClientEcs } from '../colyseus-client.ecs';
+import { UIClientEcs } from '../uiClient.ecs';
 
 export class MessageRenderEcs extends ComponentEcs {
 	private spot: THREE.Object3D;
+	private uiClient: UIClientEcs = null!;
 	private renderClient: RenderClientEcs = null!;
 	private colyseusClient: ColyseusClientEcs = null!;
 
@@ -24,7 +26,46 @@ export class MessageRenderEcs extends ComponentEcs {
 		this.spot = new THREE.Object3D();
 	}
 
+	/**
+	 * Handles incoming agent messages.
+	 * @param param0 Object containing the agent ID and message.
+	 * @returns void
+	 */
+	private onAgentMessage({ id, message }: { id: string; message: string }) {
+		if (this.parent !== id) return;
+
+		this.addMessage(message);
+
+		const thisCharacter = this.world
+			.getEntity(this.parent)
+			.map((entity) => entity.get(Character3DEcs))
+			.collapse()
+			.unwrap('Parent not found!');
+
+		const otherCharacters = this.world
+			.getEntity(this.colyseusClient.entityId)
+			.map((entity) => entity.get(Character3DEcs))
+			.collapse()
+			.raw();
+
+		if (!otherCharacters) return;
+
+		const distance = thisCharacter.object3D.position.distanceTo(
+			otherCharacters.object3D.position,
+		);
+
+		if (distance < 10) {
+			this.uiClient.messageHistory.addMessage(
+				`${id}- ${message}-${Date.now()}`,
+				this.parent,
+				message,
+			);
+		}
+	}
+
 	onStart(): void {
+		this.uiClient = this.world.get(UIClientEcs).unwrap('UIClient not found!');
+
 		this.colyseusClient = this.world
 			.get(ColyseusClientEcs)
 			.unwrap('ColyseusClient not found!');
@@ -32,14 +73,7 @@ export class MessageRenderEcs extends ComponentEcs {
 			.pick('room')
 			.unwrap('Room not found!');
 
-		room.onMessage(
-			'agent:message',
-			(({ id, message }: { id: string; message: string }) => {
-				if (this.parent === id) {
-					this.addMessage(message);
-				}
-			}).bind(this),
-		);
+		room.onMessage('agent:message', this.onAgentMessage.bind(this));
 
 		const parentEntity = this.world
 			.getEntity(this.parent)
@@ -96,7 +130,7 @@ export class MessageRenderEcs extends ComponentEcs {
 			),
 			textMaterial,
 		);
-		textPlane.position.y = 1.1;
+		textPlane.position.y = 1.3;
 
 		this.spot.add(textPlane);
 
@@ -109,7 +143,7 @@ export class MessageRenderEcs extends ComponentEcs {
 			texture: textTexture.texture,
 			material: textMaterial,
 			plane: textPlane,
-			time: 5000,
+			time: 10000,
 		});
 	}
 }

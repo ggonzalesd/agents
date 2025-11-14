@@ -7,8 +7,8 @@
 	import Loading from '@/views/Loading.svelte';
 	import { uploadSkinService } from '@/services/api.service';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
-	import { onMount } from 'svelte';
-	import axios from 'axios';
+
+	import { httpService } from '@/services/http.service';
 
 	let gameStateContext = getGameStateContext();
 
@@ -77,13 +77,11 @@
 			transparent: true,
 		});
 
-		axios
-			.get(import.meta.env.VITE_API_URL + '/api/v1/skin/exists/' + username)
-			.catch((error) => {
-				texture = loadTexture('/3d/gordon.png', false);
-				material.map = texture;
-				material.needsUpdate = true;
-			});
+		httpService.get('/skin/exists/' + username).catch((error) => {
+			texture = loadTexture('/3d/gordon.png', false);
+			material.map = texture;
+			material.needsUpdate = true;
+		});
 
 		let mixer: THREE.AnimationMixer | null = null;
 
@@ -172,7 +170,7 @@
 			</canvas>
 
 			<label
-				class="bg-magenta-700 font-space-mono pointer-events-auto absolute bottom-0 inline-flex h-14 rounded-md px-10 py-4 text-xl font-bold hover:cursor-pointer"
+				class="bg-magenta-700 hover:bg-magenta-600 font-space-mono text-md pointer-events-auto absolute bottom-0 inline-flex h-14 rounded-sm px-10 py-4 font-bold hover:cursor-pointer"
 			>
 				<span>Select Skin</span>
 				<input onchange={handleOnChange} type="file" class="sr-only" />
