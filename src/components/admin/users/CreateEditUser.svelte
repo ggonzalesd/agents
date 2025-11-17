@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { httpService } from '@/services/http.service';
 
 	import { get } from 'svelte/store';
 
@@ -9,7 +8,8 @@
 	import Button from '@/components/ui/Button.svelte';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
-	import type { OkResponse } from '#/utils/http-client.util';
+
+	import * as UploadFileService from '@/services/upload-file.service'
 
 	interface Props {
 		action: string;
@@ -87,21 +87,7 @@
 				throw new Error('No file selected');
 			}
 
-			const formData = new FormData();
-			formData.append('file', f);
-
-			const response = await httpService.post<
-				OkResponse<{
-					url: string;
-					filename: string;
-				}>
-			>('/skin/save', formData, {
-				headers: {
-					'Content-Type': 'multipart/form-data',
-				},
-			});
-
-			return response.data.data;
+			return UploadFileService.saveNPCSkin(f);
 		},
 		gcTime: 0,
 		staleTime: 0,

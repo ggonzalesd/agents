@@ -57,7 +57,7 @@ export class FollowPathEcs extends ComponentEcs {
 
 		const distance = Math.sqrt(dirX * dirX + dirZ * dirZ);
 
-		if (distance < 0.1) {
+		if (distance < 1) {
 			this.timeSinceLast = 0;
 			this.path.shift();
 			this.movement.movementState.isMoving = false;

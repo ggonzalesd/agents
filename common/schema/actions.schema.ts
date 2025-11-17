@@ -23,6 +23,12 @@ const actionJumpSchema = z.object({
 	type: z.literal('jump'),
 });
 
+const actionMoveToPointSchema = z.object({
+	type: z.literal('move-to-point'),
+	x: z.number(),
+	z: z.number(),
+});
+
 // (😄) Mood action schemas
 
 const actionSetMoodSchema = z.object({
@@ -84,6 +90,7 @@ export const actionsSchema = z.union([
 
 	actionMoveFollowEntitySchema,
 	actionMoveStopSchema,
+	actionMoveToPointSchema,
 	actionJumpSchema,
 
 	actionSetShortMemorySchema,

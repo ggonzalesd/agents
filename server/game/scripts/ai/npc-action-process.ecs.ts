@@ -13,6 +13,7 @@ import * as LLMService from '$/services/llm.service';
 import * as LTMRepository from '$/db/ltm.db';
 import { StopMovementOption } from '../entity/follow-path/stop-movement.class';
 import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
+import { FollowPositionOption } from '../entity/follow-path/follow-position.class';
 
 export class NPCActionProcessEcs extends ComponentEcs {
 	serverData: ServerDataEcs = null!;
@@ -91,6 +92,20 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						entity: this.entityParent,
 					});
 				});
+			}
+
+			if (action.type === 'move-to-point') {
+				this.world
+					.getEntity(this.parent)
+					.map((entity) => entity.getUnsafe(FollowPathEcs))
+					.ifSome((f) => {
+						f.option = new FollowPositionOption({
+							pathfinder: this.world.getUnsafe(WorldPathfinderEcs),
+							followPath: f,
+							position: { x: action.x, z: action.z },
+							entity: this.entityParent,
+						});
+					});
 			}
 
 			if (action.type === 'move-stop') {
