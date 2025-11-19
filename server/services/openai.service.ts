@@ -2,10 +2,14 @@ import openaiCli from '$/config/openai.config';
 
 import type * as LLMPort from '$/ports/llm.port';
 
-export const ask: LLMPort.ModelAskPort = async (_question, _instructions) =>
+export const ask: LLMPort.ModelAskPort = async (
+	_question,
+	_instructions,
+	_model,
+) =>
 	openaiCli.responses
 		.create({
-			model: 'gpt-4.1-mini',
+			model: _model ?? 'gpt-4.1-mini',
 			instructions:
 				_instructions ??
 				'You are an NPC in a game world making decisions based on context, response with JSON format.',

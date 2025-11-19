@@ -49,7 +49,7 @@ export class FollowPositionOption implements IFollowOption {
 
 		const distance = Math.sqrt(distX * distX + distZ * distZ);
 
-		if (distance > 5) {
+		if (distance > 1) {
 			// Get Current grid position
 			const currentGridPos = posRealToGrid(
 				{ x: currentPos.x, z: currentPos.z },

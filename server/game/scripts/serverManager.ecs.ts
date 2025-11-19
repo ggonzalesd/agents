@@ -6,6 +6,7 @@ import { itemServerFactory } from '../prefab/item.server';
 import { npcServerFactoryGenerator } from '../prefab/npc.server';
 
 import * as NPCRepository from '$/db/npc.db';
+import { defaultMap } from '#/maps/default.map';
 
 export class ServerManagerEcs extends ComponentEcs {
 	onStart(): void {
@@ -20,6 +21,22 @@ export class ServerManagerEcs extends ComponentEcs {
 
 		const colliderDesc = RAPIER.ColliderDesc.cuboid(100, 1, 100);
 		const collider = physics.createCollider(colliderDesc, body);
+
+		defaultMap.grid.forEach((row, z) => {
+			row.forEach((cell, x) => {
+				if (cell === 1) {
+					const wallBodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(
+						x + defaultMap.offsetX + 0.5,
+						0,
+						z + defaultMap.offsetY + 0.5,
+					);
+					const wallBody = physics.createRigidBody(wallBodyDesc);
+
+					const wallColliderDesc = RAPIER.ColliderDesc.cuboid(0.5, 1, 0.5);
+					physics.createCollider(wallColliderDesc, wallBody);
+				}
+			});
+		});
 
 		// Random Object
 		const types = ['sword', 'potion', 'cookie', 'seeds', 'coin'] as const;

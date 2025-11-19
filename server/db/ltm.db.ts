@@ -20,17 +20,18 @@ type RetrieveLongTermMemoryType = SQL.InferSqlBuilder<
 		npcIdentifier: string;
 		queryEmbedding: number[];
 		limit: number;
+		importance: number;
 	},
 	LongTermMemoryDB[]
 >;
 
 export const retrieveLongTermMemory: RetrieveLongTermMemoryType =
 	SQL.sqlBuilder(
-		({ npcIdentifier, queryEmbedding, limit }, sql) =>
+		({ npcIdentifier, queryEmbedding, limit, importance }, sql) =>
 			sql<LongTermMemoryDB[]>`SELECT * FROM "LongTermMemory"
 			WHERE "npcId" = (
 				SELECT id FROM "Agent" WHERE identifier = ${npcIdentifier}
-			)
+			) AND importance >= ${importance}
 			ORDER BY embedding <=> ${`[${queryEmbedding.join(',')}]`}::vector(3072)
 			LIMIT ${limit}
 		`,
@@ -42,12 +43,13 @@ type SaveLongTermMemory = SQL.InferSqlBuilder<
 		text: string;
 		metadata: object;
 		embedding: number[];
+		importance: number;
 	},
 	LongTermMemoryDB
 >;
 
 export const saveLongTermMemory: SaveLongTermMemory = SQL.sqlBuilder(
-	({ npcIdentifier, text, metadata, embedding }, sql) =>
+	({ npcIdentifier, text, metadata, embedding, importance }, sql) =>
 		SQL.transaction(sql, async (tx) => {
 			let identifier: string;
 			let count = 0;
@@ -76,13 +78,14 @@ export const saveLongTermMemory: SaveLongTermMemory = SQL.sqlBuilder(
 
 			const results = await tx<
 				LongTermMemoryDB[]
-			>`INSERT INTO "LongTermMemory" ("npcId", identifier, text, metadata, embedding)
+			>`INSERT INTO "LongTermMemory" ("npcId", identifier, text, metadata, embedding, importance)
 				VALUES (
 					(SELECT id FROM "Agent" WHERE identifier = ${npcIdentifier}),
 					${identifier},
 					${text},
 					${JSON.stringify(metadata)}::jsonb,
-					${`[${embedding.join(',')}]`}::vector(3072)
+					${`[${embedding.join(',')}]`}::vector(3072),
+					${importance}
 				)
 				RETURNING *
 		`;

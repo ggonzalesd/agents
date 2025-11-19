@@ -13,6 +13,8 @@ import * as LLMService from '$/services/llm.service';
 import * as LTMRepository from '$/db/ltm.db';
 import { StopMovementOption } from '../entity/follow-path/stop-movement.class';
 import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
+import { FollowPositionOption } from '../entity/follow-path/follow-position.class';
+import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 
 export class NPCActionProcessEcs extends ComponentEcs {
 	serverData: ServerDataEcs = null!;
@@ -70,6 +72,21 @@ export class NPCActionProcessEcs extends ComponentEcs {
 							this.parent === entity.name ? 0 : 10,
 						);
 					});
+
+				// TODO: ExperimentRetrievalResults event
+				const _ = {
+					message: this.world
+						.getEntity(this.parent)
+						.map((e) =>
+							e.getUnsafe(NPCContextEcs)?.lastMessages.toStringContext(),
+						),
+				};
+			}
+
+			if (action.type === 'attack') {
+				this.entityParent.get(CharacterBodyServerEcs).ifSome((character) => {
+					character.attack();
+				});
 			}
 
 			if (action.type === 'set-short-memory') {
@@ -91,6 +108,20 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						entity: this.entityParent,
 					});
 				});
+			}
+
+			if (action.type === 'move-to-point') {
+				this.world
+					.getEntity(this.parent)
+					.map((entity) => entity.getUnsafe(FollowPathEcs))
+					.ifSome((f) => {
+						f.option = new FollowPositionOption({
+							pathfinder: this.world.getUnsafe(WorldPathfinderEcs),
+							followPath: f,
+							position: { x: action.x, z: action.z },
+							entity: this.entityParent,
+						});
+					});
 			}
 
 			if (action.type === 'move-stop') {
@@ -136,6 +167,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						metadata: {},
 						npcIdentifier: this.entityParent.name,
 						text: action.value,
+						importance: action.importance,
 					}).then(({ embedding, ...ltm }) => {
 						console.log('Saved LongTermMemory:', {
 							...ltm,
@@ -151,6 +183,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						npcIdentifier: this.entityParent.name,
 						queryEmbedding: embeddings[0],
 						limit: action.limit,
+						importance: action.importance,
 					}).then((ltms) => {
 						this.npcContextEcs.longMemory.loadLongTermMemories(ltms);
 					});

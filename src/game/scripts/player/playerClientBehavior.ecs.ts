@@ -78,6 +78,10 @@ export class PlayerClientBehavior extends ComponentEcs {
 			this.room.send('client:action', { type: 'jump' });
 		}
 
+		if (this.input.down('KeyX') && this.room.connection.isOpen) {
+			this.room.send('client:action', { type: 'attack' });
+		}
+
 		// Movement
 		const isMoving = this.input.anyPress('KeyW', 'KeyA', 'KeyS', 'KeyD');
 		const axis = this.input.axisPress('KeyW', 'KeyS', 'KeyD', 'KeyA');

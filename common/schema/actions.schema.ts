@@ -23,6 +23,12 @@ const actionJumpSchema = z.object({
 	type: z.literal('jump'),
 });
 
+const actionMoveToPointSchema = z.object({
+	type: z.literal('move-to-point'),
+	x: z.number(),
+	z: z.number(),
+});
+
 // (😄) Mood action schemas
 
 const actionSetMoodSchema = z.object({
@@ -53,12 +59,14 @@ const actionRemoveShortMemorySchema = z.object({
 const actionSaveLongTermMemorySchema = z.object({
 	type: z.literal('save-long-term-memory'),
 	value: z.string(),
+	importance: z.number().min(0).max(1),
 });
 
 const actionRetrieveLongTermMemorySchema = z.object({
 	type: z.literal('retrieve-long-term-memory'),
 	value: z.string(),
 	limit: z.number().min(1).max(10),
+	importance: z.number().min(0).max(1),
 });
 
 // (🎁) Inventory action schemas
@@ -73,6 +81,11 @@ const actionDropItemSchema = z.object({
 	slot: z.number().int(),
 });
 
+const actionAttackSchema = z.object({
+	type: z.literal('attack'),
+	entityId: z.string(),
+});
+
 // (🎬) MetaActions for npc control
 const actionRequestActingAgainSchema = z.object({
 	type: z.literal('@request-acting-again'),
@@ -84,6 +97,7 @@ export const actionsSchema = z.union([
 
 	actionMoveFollowEntitySchema,
 	actionMoveStopSchema,
+	actionMoveToPointSchema,
 	actionJumpSchema,
 
 	actionSetShortMemorySchema,
@@ -97,6 +111,7 @@ export const actionsSchema = z.union([
 
 	actionPickItemSchema,
 	actionDropItemSchema,
+	actionAttackSchema,
 
 	actionRequestActingAgainSchema,
 ]);
