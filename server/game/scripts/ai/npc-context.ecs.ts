@@ -108,6 +108,8 @@ export class NPCContextEcs extends ComponentEcs {
 			`{"type": "pick-item", "itemId": string, "slot": i32(0...35)} // needs to be in close entities (2 meters)`,
 			`{"type": "drop-item", "slot": i32(0...9)}`,
 
+			`{"type": "attack", "entityId": string} // needs to be in close entities (2 meters)`,
+
 			`{"type": "move-follow-entity", "entityId": string, "distance": f32}`,
 			`{"type": "move-to-point", "x": f32, "z": f32}`,
 			// `{"type": "move-to-entity", "entityId": string, "distance": f32}`,

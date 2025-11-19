@@ -81,6 +81,11 @@ const actionDropItemSchema = z.object({
 	slot: z.number().int(),
 });
 
+const actionAttackSchema = z.object({
+	type: z.literal('attack'),
+	entityId: z.string(),
+});
+
 // (🎬) MetaActions for npc control
 const actionRequestActingAgainSchema = z.object({
 	type: z.literal('@request-acting-again'),
@@ -106,6 +111,7 @@ export const actionsSchema = z.union([
 
 	actionPickItemSchema,
 	actionDropItemSchema,
+	actionAttackSchema,
 
 	actionRequestActingAgainSchema,
 ]);

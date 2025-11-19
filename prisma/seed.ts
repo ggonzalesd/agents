@@ -118,11 +118,12 @@ async function main() {
 
 	// Seed NPC 1
 	const npc1 = await createNPC({
-		display: 'Guide Bot',
-		identifier: 'guide-bot-001',
-		model: 'robot',
+		display: 'Alan',
+		identifier: 'thief-123',
+		model: 'gpt-4.1-mini',
 		skinUrl: 'https://example.com/skins/robot.png',
-		description: 'A friendly guide bot to help new players.',
+		description:
+			'A sneaky thief who roams the city looking for valuables. I can hurt you if you get too close!. Always looking for an opportunity to steal or kill.',
 	});
 	console.log(`Created NPC 1: ${npc1.agent.display}`);
 }

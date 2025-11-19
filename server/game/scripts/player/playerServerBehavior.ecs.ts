@@ -10,6 +10,7 @@ import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
 import { NPCEventQueueEcs } from '../ai/npc-event-queue.ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { NPCContextEcs } from '../ai/npc-context.ecs';
+import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 
 const sessionSchema = z
 	.object({
@@ -20,6 +21,7 @@ const sessionSchema = z
 export class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
 
+	public character: CharacterBodyServerEcs = null!;
 	public movement: MovementServerEcs = null!;
 	public serverData: ServerDataEcs = null!;
 	public inventory: InventoryServerEcs = null!;
@@ -65,6 +67,10 @@ export class PlayerServerBehavior extends ComponentEcs {
 			.unwrap('MovementServerEcs not found');
 
 		this.movement.movementState = this.state.movement;
+
+		this.character = parent
+			.get(CharacterBodyServerEcs)
+			.unwrap('CharacterBodyServerEcs not found');
 	}
 
 	onLoop(_delta: number): void {
@@ -101,6 +107,14 @@ export class PlayerServerBehavior extends ComponentEcs {
 				if (itemId && newId != null) {
 					this.inventory.pickItemEntity(itemId, newId);
 				}
+				break;
+			}
+			case 'attack': {
+				console.log('ATTACK ACTION', message);
+
+				// Get Offset Position
+				this.character.attack();
+
 				break;
 			}
 			case 'drop': {

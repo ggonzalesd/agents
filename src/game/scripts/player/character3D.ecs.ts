@@ -14,10 +14,14 @@ export class Character3DEcs extends ComponentEcs {
 	public object3D: THREE.Object3D = new THREE.Object3D();
 
 	private renderClient: RenderClientEcs = null!;
+	private colyseusClient: ColyseusClientEcs = null!;
 
 	private actions: Record<'IDLE' | 'WALK', THREE.AnimationAction> = null!;
 	private mixer: THREE.AnimationMixer = null!;
 	private clientAuth: ClientAuthoritative | null = null;
+
+	public damageEffect = 0;
+	private damageMaterial: THREE.MeshStandardMaterial;
 
 	constructor(
 		private characterState: CharacterBodyState,
@@ -53,6 +57,7 @@ export class Character3DEcs extends ComponentEcs {
 			),
 		});
 		material.transparent = true;
+		this.damageMaterial = material;
 
 		{
 			const { mesh, mixer, actions } = cloneMesh(
@@ -78,6 +83,22 @@ export class Character3DEcs extends ComponentEcs {
 	}
 
 	onStart(): void {
+		this.colyseusClient = this.world
+			.get(ColyseusClientEcs)
+			.unwrap('ColyseusClient not found!');
+		const room = this.colyseusClient.connection
+			.pick('room')
+			.unwrap('Room not found!');
+
+		room.onMessage(
+			'agent:attacked',
+			((message: { id: string }) => {
+				if (message.id === this.parent) {
+					this.damageEffect = 1.5;
+				}
+			}).bind(this),
+		);
+
 		// World Components
 		this.renderClient = this.world
 			.get(RenderClientEcs)
@@ -119,6 +140,16 @@ export class Character3DEcs extends ComponentEcs {
 		this.object3D.quaternion.setFromEuler(
 			new THREE.Euler(0, this.characterState.rotationY, 0),
 		);
+
+		if (this.damageEffect > 0) {
+			this.damageEffect -= _delta * 0.002;
+
+			this.damageMaterial.emissive = new THREE.Color(1, 0, 0);
+			this.damageMaterial.emissiveIntensity = Math.min(this.damageEffect, 1.25);
+		} else {
+			this.damageEffect = 0;
+			this.damageMaterial.emissiveIntensity = 0;
+		}
 
 		// TODO: Is Moving from Share State
 		const isMoving =

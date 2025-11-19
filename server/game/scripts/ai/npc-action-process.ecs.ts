@@ -14,6 +14,7 @@ import * as LTMRepository from '$/db/ltm.db';
 import { StopMovementOption } from '../entity/follow-path/stop-movement.class';
 import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
 import { FollowPositionOption } from '../entity/follow-path/follow-position.class';
+import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 
 export class NPCActionProcessEcs extends ComponentEcs {
 	serverData: ServerDataEcs = null!;
@@ -80,6 +81,12 @@ export class NPCActionProcessEcs extends ComponentEcs {
 							e.getUnsafe(NPCContextEcs)?.lastMessages.toStringContext(),
 						),
 				};
+			}
+
+			if (action.type === 'attack') {
+				this.entityParent.get(CharacterBodyServerEcs).ifSome((character) => {
+					character.attack();
+				});
 			}
 
 			if (action.type === 'set-short-memory') {
