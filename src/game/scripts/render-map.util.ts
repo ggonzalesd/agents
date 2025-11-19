@@ -1,0 +1,224 @@
+import { defaultMap } from '#/maps/default.map';
+import { preloadGLB } from '@/utils/assets.utils';
+import * as THREE from 'three';
+
+const models = [
+	[
+		'Rock_1_G_Color1.gltf',
+		'Rock_1_H_Color1.gltf',
+		'Rock_1_I_Color1.gltf',
+		'Rock_1_J_Color1.gltf',
+		'Rock_1_K_Color1.gltf',
+		'Rock_1_L_Color1.gltf',
+		'Rock_1_M_Color1.gltf',
+		'Rock_1_N_Color1.gltf',
+		'Rock_1_O_Color1.gltf',
+		'Rock_1_P_Color1.gltf',
+		'Rock_1_Q_Color1.gltf',
+		'Rock_2_D_Color1.gltf',
+		'Rock_2_E_Color1.gltf',
+		'Rock_2_F_Color1.gltf',
+		'Rock_2_G_Color1.gltf',
+		'Rock_2_H_Color1.gltf',
+	],
+	[
+		'Rock_1_D_Color1.gltf',
+		'Rock_1_E_Color1.gltf',
+		'Rock_1_F_Color1.gltf',
+		'Rock_2_B_Color1.gltf',
+		'Rock_2_C_Color1.gltf',
+		'Rock_3_E_Color1.gltf',
+		'Rock_3_F_Color1.gltf',
+	],
+	[
+		'Rock_1_A_Color1.gltf',
+		'Rock_1_B_Color1.gltf',
+		'Rock_1_C_Color1.gltf',
+		'Rock_2_A_Color1.gltf',
+		'Rock_3_A_Color1.gltf',
+		'Rock_3_B_Color1.gltf',
+		'Rock_3_C_Color1.gltf',
+		'Rock_3_D_Color1.gltf',
+	],
+	[
+		'Tree_2_A_Color1.gltf',
+		'Tree_2_B_Color1.gltf',
+		'Tree_2_C_Color1.gltf',
+		'Tree_2_D_Color1.gltf',
+		'Tree_2_E_Color1.gltf',
+	],
+	[
+		'Bush_1_E_Color1.gltf',
+		'Bush_1_F_Color1.gltf',
+		'Bush_1_G_Color1.gltf',
+		'Bush_4_D_Color1.gltf',
+		'Bush_4_E_Color1.gltf',
+		'Bush_4_F_Color1.gltf',
+	],
+	[
+		'Grass_1_B_Color1.gltf',
+		'Grass_1_B_Singlesided_Color1.gltf',
+		'Grass_1_C_Color1.gltf',
+		'Grass_1_C_Singlesided_Color1.gltf',
+		'Grass_1_D_Color1.gltf',
+		'Grass_1_D_Singlesided_Color1.gltf',
+		'Grass_2_A_Singlesided_Color1.gltf',
+		'Grass_2_B_Singlesided_Color1.gltf',
+		'Grass_2_C_Singlesided_Color1.gltf',
+		'Grass_2_D_Singlesided_Color1.gltf',
+	],
+	[
+		'Tree_Bare_1_A_Color1.gltf',
+		'Tree_Bare_1_B_Color1.gltf',
+		'Tree_Bare_1_C_Color1.gltf',
+		'Tree_Bare_2_A_Color1.gltf',
+		'Tree_Bare_2_B_Color1.gltf',
+		'Tree_Bare_2_C_Color1.gltf',
+	],
+];
+
+export const renderMap = (scene: THREE.Scene) => {
+	scene.add(new THREE.AxesHelper(1));
+
+	defaultMap.grid.forEach((row, i) => {
+		row.forEach((cell, j) => {
+			/* ROCAS GRANDES */
+			if (cell === 2) {
+				const point = new THREE.Object3D();
+				const scale = 2 + Math.random() * 0.5;
+				preloadGLB(
+					'/trees/Assets/gltf/' +
+						models[0][Math.floor(Math.random() * models[0].length)],
+				).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+						0,
+						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+					);
+					point.scale.set(scale, scale, scale);
+					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+					scene.add(point);
+				});
+			}
+
+			/* ROCAS MEDIANAS */
+			if (cell === 3) {
+				const point = new THREE.Object3D();
+				const scale = 1 + Math.random() * 0.5;
+				preloadGLB(
+					'/trees/Assets/gltf/' +
+						models[1][Math.floor(Math.random() * models[1].length)],
+				).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+						0,
+						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+					);
+					point.scale.set(scale, scale, scale);
+					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+					scene.add(point);
+				});
+			}
+
+			/* PIEDRAS PEQUEÑAS */
+			if (cell === 4) {
+				const point = new THREE.Object3D();
+				const scale = Math.random() * 0.5 + 0.25;
+				preloadGLB(
+					'/trees/Assets/gltf/' +
+						models[2][Math.floor(Math.random() * models[2].length)],
+				).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+						0,
+						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+					);
+					point.scale.set(scale, scale, scale);
+					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+					scene.add(point);
+				});
+			}
+
+			/* ARBOLES */
+			if (cell === 5) {
+				const point = new THREE.Object3D();
+				const scale = Math.random() * 1 + 2;
+				const model = models[3][Math.floor(Math.random() * models[3].length)];
+				console.log(model);
+				preloadGLB('/trees/Assets/gltf/' + model).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+						0,
+						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+					);
+					point.scale.set(scale, scale, scale);
+					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+					scene.add(point);
+				});
+			}
+
+			/* ARBUSTOS */
+			if (cell === 6) {
+				const point = new THREE.Object3D();
+				const scale = Math.random() * 0.5 + 1;
+				preloadGLB(
+					'/trees/Assets/gltf/' +
+						models[4][Math.floor(Math.random() * models[4].length)],
+				).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+						0,
+						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+					);
+					point.scale.set(scale, scale, scale);
+					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+					scene.add(point);
+				});
+			}
+
+			/* CESPED */
+			if (cell === 7) {
+				const point = new THREE.Object3D();
+				const scale = Math.random() * 0.5 + 1;
+				preloadGLB(
+					'/trees/Assets/gltf/' +
+						models[5][Math.floor(Math.random() * models[5].length)],
+				).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+						0,
+						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+					);
+					point.scale.set(scale, scale, scale);
+					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+					scene.add(point);
+				});
+			}
+
+			/* TRONCOS */
+			if (cell === 8) {
+				const point = new THREE.Object3D();
+				const scale = Math.random() * 1 + 2;
+				const model = models[6][Math.floor(Math.random() * models[6].length)];
+				console.log(model);
+				preloadGLB('/trees/Assets/gltf/' + model).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+						0,
+						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+					);
+					point.scale.set(scale, scale, scale);
+					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+					scene.add(point);
+				});
+			}
+		});
+	});
+};
