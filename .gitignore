@@ -30,5 +30,6 @@ build
 .notes.txt
 
 /src/generated/prisma
+/server/generated/prisma
 
 /src/experiments/*

@@ -4,6 +4,8 @@ import { ComponentEcs } from '#/ecs/Component.ecs';
 
 import { defaultMap } from '#/maps/default.map';
 
+import { renderMap } from './render-map.util';
+
 export class RenderClientEcs extends ComponentEcs {
 	public scene: THREE.Scene;
 	public renderer: THREE.WebGLRenderer;
@@ -41,6 +43,8 @@ export class RenderClientEcs extends ComponentEcs {
 		});
 
 		this.scene.add(new THREE.AxesHelper(1));
+
+		renderMap(this.scene);
 
 		this.camera.position.z = 5;
 		this.camera.position.y = 5;
