@@ -59,12 +59,14 @@ const actionRemoveShortMemorySchema = z.object({
 const actionSaveLongTermMemorySchema = z.object({
 	type: z.literal('save-long-term-memory'),
 	value: z.string(),
+	importance: z.number().min(0).max(1),
 });
 
 const actionRetrieveLongTermMemorySchema = z.object({
 	type: z.literal('retrieve-long-term-memory'),
 	value: z.string(),
 	limit: z.number().min(1).max(10),
+	importance: z.number().min(0).max(1),
 });
 
 // (🎁) Inventory action schemas

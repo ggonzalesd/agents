@@ -71,6 +71,15 @@ export class NPCActionProcessEcs extends ComponentEcs {
 							this.parent === entity.name ? 0 : 10,
 						);
 					});
+
+				// TODO: ExperimentRetrievalResults event
+				const _ = {
+					message: this.world
+						.getEntity(this.parent)
+						.map((e) =>
+							e.getUnsafe(NPCContextEcs)?.lastMessages.toStringContext(),
+						),
+				};
 			}
 
 			if (action.type === 'set-short-memory') {
@@ -151,6 +160,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						metadata: {},
 						npcIdentifier: this.entityParent.name,
 						text: action.value,
+						importance: action.importance,
 					}).then(({ embedding, ...ltm }) => {
 						console.log('Saved LongTermMemory:', {
 							...ltm,
@@ -166,6 +176,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						npcIdentifier: this.entityParent.name,
 						queryEmbedding: embeddings[0],
 						limit: action.limit,
+						importance: action.importance,
 					}).then((ltms) => {
 						this.npcContextEcs.longMemory.loadLongTermMemories(ltms);
 					});

@@ -126,6 +126,31 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 		const itemServerBehavior = itemEntity.getUnsafe(ItemServerBehavior);
 		if (!itemServerBehavior) return;
 
+		// Check if the itemEntity is within 2 meters of the character before picking it up
+		const characterPosition = this.world
+			.getEntity(this.parent)
+			.map((p) => p.getUnsafe(CharacterBodyServerEcs))
+			.map((c) => c.body.translation())
+			.raw();
+		console.log('Character Position:', characterPosition);
+		if (!characterPosition) return;
+
+		const itemPosition = itemEntity
+			.getUnsafe(CharacterBodyServerEcs)
+			.body.translation();
+
+		const distanceSquared =
+			(characterPosition.x - itemPosition.x) ** 2 +
+			(characterPosition.y - itemPosition.y) ** 2 +
+			(characterPosition.z - itemPosition.z) ** 2;
+
+		if (distanceSquared >= 4) {
+			console.log('Item is too far to pick up:', {
+				distanceSquared,
+			});
+			return;
+		}
+
 		this.inventoryState.items.set(
 			newId.toString(),
 			itemServerBehavior.state.item.clone(),

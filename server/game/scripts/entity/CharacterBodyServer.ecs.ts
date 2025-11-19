@@ -32,12 +32,10 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		const colliderDesc =
 			this.configShape === 'capsule'
 				? RAPIER.ColliderDesc.capsule(0.5, 0.5)
-				: RAPIER.ColliderDesc.cuboid(0.25, 0.25, 0.25)
-						.setRestitution(0.1)
-						.setFriction(0.0);
+				: RAPIER.ColliderDesc.cuboid(0.25, 0.25, 0.25).setFriction(2.0);
 		this.collider = this.physic.createCollider(colliderDesc, this.body);
 
-		this.collider.setRestitution(0.01);
+		this.collider.setRestitution(0.5);
 
 		this.body.lockRotations(true, true);
 

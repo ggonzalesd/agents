@@ -15,6 +15,9 @@
 		"lint": "echo 'Running Biome lint...' && biome lint --skip=style/noNonNullAssertion && echo 'Running Typescript type on server...' && tsc -p tsconfig.node.json --noEmit && echo 'Running Typescript on client...' && svelte-check --tsconfig ./tsconfig.app.json && echo 'Running Typescript on common...' && tsc -p tsconfig.share.json --noEmit",
 		"format": "prettier --check --write src"
 	},
+	"prisma": {
+		"seed": "tsx --env-file=.env prisma/seed.ts"
+	},
 	"devDependencies": {
 		"@biomejs/biome": "^2.2.7",
 		"@internationalized/date": "^3.10.0",
@@ -54,6 +57,7 @@
 		"@colyseus/schema": "^3.0.56",
 		"@colyseus/ws-transport": "^0.16.5",
 		"@dimforge/rapier3d-compat": "^0.18.2",
+		"@prisma/client": "^6.19.0",
 		"@tanstack/svelte-query": "^6.0.5",
 		"axios": "^1.11.0",
 		"bcrypt": "^6.0.0",

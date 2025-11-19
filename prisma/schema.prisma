@@ -4,6 +4,11 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+generator client {
+  provider = "prisma-client-js"
+  output   = "./../server/generated/prisma/client"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DB_URL")
@@ -72,21 +77,38 @@ model NPC {
   skinUrl     String @db.Text
   model       String @db.VarChar(255)
 
-  entity         Entity           @relation(fields: [id], references: [id])
-  LongTermMemory LongTermMemory[]
+  entity                     Entity                       @relation(fields: [id], references: [id])
+  LongTermMemory             LongTermMemory[]
   // experimentVariabilityResults   ExperimentVariabilityResults[]
   // experimentRetrievalResults     ExperimentRetrievalResults[]
   // experimentHallucinationResults ExperimentHallucinationResults[]
+  experimentRetrievalResults ExperimentRetrievalResults[]
 }
 
 model LongTermMemory {
   id         String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   npcId      String                      @db.Uuid
   identifier String                      @unique @db.VarChar(255)
+  importance Float                       @default(0)
   text       String                      @db.Text
   metadata   Json                        @db.JsonB
   embedding  Unsupported("vector(3072)")
   createdAt  DateTime                    @default(now()) @db.Timestamptz(6)
+
+  NPC NPC @relation(fields: [npcId], references: [id])
+}
+
+model ExperimentRetrievalResults {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  npcId     String   @db.Uuid
+
+  // The message that was used to query the NPC's memory
+  queryMessage      String @db.Text
+  // The messages that were retrieved from the NPC's memory
+  resultsMessages   String @db.Text
+  // Score indicating the relevance of the retrieved results
+  llmRetrievalScore Float  @default(0)
 
   NPC NPC @relation(fields: [npcId], references: [id])
 }
@@ -103,18 +125,6 @@ model LongTermMemory {
  * failedActions     Int @default(0)
  * // Number of successful actions
  * successfulActions Int @default(0)
- * NPC NPC @relation(fields: [npcId], references: [id])
- * }
- * model ExperimentRetrievalResults {
- * id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
- * createdAt DateTime @default(now()) @db.Timestamptz(6)
- * npcId     String   @db.Uuid
- * // The message that was used to query the NPC's memory
- * queryMessage    String @db.Text
- * // The messages that were retrieved from the NPC's memory
- * resultsMessages String @db.Text
- * // Score indicating the relevance of the retrieved results
- * llmRetrievalScore Float @default(0)
  * NPC NPC @relation(fields: [npcId], references: [id])
  * }
  * model ExperimentHallucinationResults {
