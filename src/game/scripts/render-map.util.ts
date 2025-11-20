@@ -164,7 +164,7 @@ export const renderMap = (scene: THREE.Scene) => {
 			/* ARBUSTOS */
 			if (cell === 6) {
 				const point = new THREE.Object3D();
-				const scale = Math.random() * 0.5 + 1;
+				const scale = Math.random() * 0.5 + 0.5;
 				preloadGLB(
 					'/trees/Assets/gltf/' +
 						models[4][Math.floor(Math.random() * models[4].length)],
@@ -206,8 +206,7 @@ export const renderMap = (scene: THREE.Scene) => {
 				const point = new THREE.Object3D();
 				const scale = Math.random() * 1 + 2;
 				const model = models[6][Math.floor(Math.random() * models[6].length)];
-				console.log(model);
-				preloadGLB('/trees/Assets/gltf/' + model).then((glb) => {
+				preloadGLB(`/trees/Assets/gltf/${model}`).then((glb) => {
 					point.add(glb[0].scene);
 					point.position.set(
 						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
@@ -216,6 +215,167 @@ export const renderMap = (scene: THREE.Scene) => {
 					);
 					point.scale.set(scale, scale, scale);
 					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+					scene.add(point);
+				});
+			}
+
+			/* MUROS 1 */
+			if (cell === 9) {
+				const point = new THREE.Object3D();
+				const scale = 1;
+				preloadGLB(`/dungeons/Assets/gltf/wall.gltf`).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5,
+						0,
+						i + defaultMap.offsetY + 0.5,
+					);
+					point.scale.set(scale, 1.5, scale);
+					point.rotation.set(0, 0, 0);
+					scene.add(point);
+				});
+			}
+
+			/* PUERTA */
+			if (cell === 10) {
+				const point = new THREE.Object3D();
+				const scale = 1;
+				preloadGLB(`/dungeons/Assets/gltf/wall_doorway_open.gltf`).then(
+					(glb) => {
+						point.add(glb[0].scene);
+						point.position.set(
+							j + defaultMap.offsetX + 0.5,
+							0,
+							i + defaultMap.offsetY + 0.5,
+						);
+						point.scale.set(scale, 1.5, scale);
+						point.rotation.set(0, -0.5 * Math.PI, 0);
+						scene.add(point);
+					},
+				);
+			}
+
+			/* MUROS 2 */
+			if (cell === 11) {
+				const point = new THREE.Object3D();
+				const scale = 1;
+				preloadGLB(`/dungeons/Assets/gltf/wall.gltf`).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5,
+						0,
+						i + defaultMap.offsetY + 0.5,
+					);
+					point.scale.set(scale, 1.5, scale);
+					point.rotation.set(0, 0.5 * Math.PI, 0);
+					scene.add(point);
+				});
+			}
+
+			/* PISO 1 */
+			if (cell === 12) {
+				const point = new THREE.Object3D();
+				const scale = 1;
+				preloadGLB(`/dungeons/Assets/gltf/floor_dirt_small_D.gltf`).then(
+					(glb) => {
+						point.add(glb[0].scene);
+						point.position.set(
+							j + defaultMap.offsetX + 0.5,
+							0,
+							i + defaultMap.offsetY + 0.5,
+						);
+						point.scale.set(scale, scale, scale);
+						point.rotation.set(0, 0, 0);
+						scene.add(point);
+					},
+				);
+			}
+
+			/* SILLA LARGA */
+			if (cell === 14) {
+				const point = new THREE.Object3D();
+				const scale = 1;
+				preloadGLB(`/dungeons/Assets/gltf/chair.gltf`).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5,
+						0,
+						i + defaultMap.offsetY + 0.5,
+					);
+					point.scale.set(scale, scale, scale);
+					point.rotation.set(0, 0, 0);
+					scene.add(point);
+				});
+			}
+
+			/* MESA LARGA */
+			if (cell === 15) {
+				const point = new THREE.Object3D();
+				const scale = 1;
+				preloadGLB(`/dungeons/Assets/gltf/table_long.gltf`).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5,
+						0,
+						i + defaultMap.offsetY + 0.5,
+					);
+					point.scale.set(scale, scale, scale);
+					point.rotation.set(0, 0, 0);
+					scene.add(point);
+				});
+			}
+
+			/* MURO CON VENTANA */
+			if (cell === 16) {
+				const point = new THREE.Object3D();
+				const scale = 1;
+				const model =
+					Math.random() < 0.5
+						? 'wall_window_closed.gltf'
+						: 'wall_window_open.gltf';
+				preloadGLB(`/dungeons/Assets/gltf/${model}`).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5,
+						0,
+						i + defaultMap.offsetY + 0.5,
+					);
+					point.scale.set(scale, 1.5, scale);
+					point.rotation.set(0, 0, 0);
+					scene.add(point);
+				});
+			}
+
+			/* CAMA */
+			if (cell === 17) {
+				const point = new THREE.Object3D();
+				const scale = 1;
+				preloadGLB(`/dungeons/Assets/gltf/bed_frame.gltf`).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5,
+						0,
+						i + defaultMap.offsetY + 0.5,
+					);
+					point.scale.set(scale, scale, scale);
+					point.rotation.set(0, 0.5 * Math.PI, 0);
+					scene.add(point);
+				});
+			}
+
+			/* COFRE */
+			if (cell === 18) {
+				const point = new THREE.Object3D();
+				const scale = 1;
+				preloadGLB(`/dungeons/Assets/gltf/chest.gltf`).then((glb) => {
+					point.add(glb[0].scene);
+					point.position.set(
+						j + defaultMap.offsetX + 0.5,
+						0,
+						i + defaultMap.offsetY + 0.5,
+					);
+					point.scale.set(scale, scale, scale);
+					point.rotation.set(0, 1 * Math.PI, 0);
 					scene.add(point);
 				});
 			}
