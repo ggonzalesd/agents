@@ -9,7 +9,7 @@
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
 	import { createQuery } from '@tanstack/svelte-query';
 
-	import * as UploadFileService from '@/services/upload-file.service'
+	import * as UploadFileService from '@/services/upload-file.service';
 
 	interface Props {
 		action: string;

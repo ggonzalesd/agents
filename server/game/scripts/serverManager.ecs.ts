@@ -58,9 +58,11 @@ export class ServerManagerEcs extends ComponentEcs {
 
 		NPCRepository.getAllNPCs({}).then((npcs) =>
 			npcs.forEach((one) => {
-				console.log('Spawning NPC:', one.agent.identifier);
+				console.log('Spawning NPC:', one.npc.model);
 
 				const npc = npcServerFactory({
+					id: one.npc.id,
+					model: one.npc.model,
 					name: one.agent.identifier,
 					description: one.npc.description,
 					display: one.agent.display,

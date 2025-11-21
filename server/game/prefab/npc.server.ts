@@ -19,11 +19,15 @@ export const npcServerFactoryGenerator =
 		display,
 		pos,
 		description,
+		id,
+		model,
 	}: {
 		name: string;
 		display: string;
 		pos: IVec3;
 		description: string;
+		id: string;
+		model: string;
 	}) => {
 		const state = new NPCState(pos, name);
 
@@ -33,6 +37,10 @@ export const npcServerFactoryGenerator =
 			components: {
 				// Basic data components
 				[RecordEcs.name]: new RecordEcs({
+					db: {
+						id,
+						model,
+					},
 					stats: {
 						id: name,
 						name: display,

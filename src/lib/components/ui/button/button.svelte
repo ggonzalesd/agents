@@ -1,7 +1,6 @@
 <script lang="ts" module>
 	import { cn, type WithElementRef } from '@lib/utils.js';
 	import type {
-		ClassValue,
 		HTMLAnchorAttributes,
 		HTMLButtonAttributes,
 	} from 'svelte/elements';

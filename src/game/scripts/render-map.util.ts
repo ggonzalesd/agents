@@ -148,7 +148,7 @@ export const renderMap = (scene: THREE.Scene) => {
 				const scale = Math.random() * 1 + 2;
 				const model = models[3][Math.floor(Math.random() * models[3].length)];
 				console.log(model);
-				preloadGLB('/trees/Assets/gltf/' + model).then((glb) => {
+				preloadGLB(`/trees/Assets/gltf/${model}`).then((glb) => {
 					point.add(glb[0].scene);
 					point.position.set(
 						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),

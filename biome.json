@@ -27,7 +27,13 @@
 	},
 
 	"files": {
-		"includes": ["common/**/*.ts", "server/**/*.ts", "src/**/*.ts"]
+		"includes": [
+			"common/**/*.ts",
+			"server/**/*.ts",
+			"src/**/*.ts",
+			"!server/generated/**/*.*",
+			"!src/generated/**/*.*"
+		]
 	},
 
 	"vcs": {

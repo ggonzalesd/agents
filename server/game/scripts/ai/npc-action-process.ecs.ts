@@ -9,6 +9,7 @@ import { WorldPathfinderEcs } from '../world/world-grid.ecs';
 import { NPCContextEcs } from './npc-context.ecs';
 import { NPCEventQueueEcs } from './npc-event-queue.ecs';
 
+import * as ExperimentRepository from '$/db/experiment.db';
 import * as LLMService from '$/services/llm.service';
 import * as LTMRepository from '$/db/ltm.db';
 import { StopMovementOption } from '../entity/follow-path/stop-movement.class';
@@ -44,6 +45,17 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			return;
 		}
 
+		const npcId = this.world
+			.getEntity(this.parent)
+			.map((e) => e.getUnsafe(RecordEcs))
+			.map((r) =>
+				r
+					.getRecord<{ id: string }>('db')
+					.map((r) => r.id)
+					.unsafe(),
+			)
+			.orElse(crypto.randomUUID());
+
 		console.log('NPC Actions: ', this.npcContextEcs.actions);
 		console.log(JSON.stringify(this.npcContextEcs.actions, null, 2));
 		for (const action of this.npcContextEcs.actions) {
@@ -73,14 +85,14 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						);
 					});
 
-				// TODO: ExperimentRetrievalResults event
-				const _ = {
-					message: this.world
-						.getEntity(this.parent)
-						.map((e) =>
-							e.getUnsafe(NPCContextEcs)?.lastMessages.toStringContext(),
-						),
-				};
+				ExperimentRepository.saveExperimentHallucinationResults({
+					npcId: npcId,
+					relatedInfoInMemory: [
+						this.npcContextEcs.shortMemory.toStringContext(),
+						this.npcContextEcs.longMemory.toStringContext(),
+					].join('\n'),
+					message: this.npcContextEcs.lastMessages.toStringContext(),
+				});
 			}
 
 			if (action.type === 'attack') {
