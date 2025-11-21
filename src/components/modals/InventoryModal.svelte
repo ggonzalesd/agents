@@ -11,6 +11,12 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { IVec2 } from '#/utils/math.util';
 
+	import cookieSvgSrc from '@/assets/items/cookie.svg';
+	import potionSvgSrc from '@/assets/items/potion.svg';
+	import seedsSvgSrc from '@/assets/items/seeds.svg';
+	import swordSvgSrc from '@/assets/items/sword.svg';
+	import coinSvgSrc from '@/assets/items/coin.svg';
+
 	let worldOp = getContext<Option<WorldEcs>>(WorldEcs.name);
 
 	let mousePos: IVec2 = { x: 0, y: 0 };
@@ -129,7 +135,19 @@
 			>
 				{#if item}
 					<div class="Item" {@attach itemDropHandler(i.toString())}>
-						{item.type}
+						{#if item.type === 'cookie'}
+							<img src={cookieSvgSrc} alt="Cookie" class="h-10 w-10" />
+						{:else if item.type === 'potion'}
+							<img src={potionSvgSrc} alt="Potion" class="h-10 w-10" />
+						{:else if item.type === 'seeds'}
+							<img src={seedsSvgSrc} alt="Seeds" class="h-10 w-10" />
+						{:else if item.type === 'sword'}
+							<img src={swordSvgSrc} alt="Sword" class="h-10 w-10" />
+						{:else if item.type === 'coin'}
+							<img src={coinSvgSrc} alt="Coin" class="h-10 w-10" />
+						{:else}
+							{item.type}
+						{/if}
 					</div>
 				{:else}
 					<div class="Empty">Empty</div>

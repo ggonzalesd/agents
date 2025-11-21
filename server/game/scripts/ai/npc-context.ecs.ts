@@ -8,6 +8,7 @@ import * as TimeUtils from '#/utils/time.utils';
 
 import * as LLMService from '$/services/llm.service';
 import * as LTMRepository from '$/db/ltm.db';
+import * as ExperimentRepository from '$/db/experiment.db';
 
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 
@@ -269,6 +270,29 @@ export class NPCContextEcs extends ComponentEcs {
 
 	async ask() {
 		const currentTime = Date.now();
+
+		const npcId = this.world
+			.getEntity(this.parent)
+			.map((e) => e.getUnsafe(RecordEcs))
+			.map((r) =>
+				r
+					.getRecord<{ id: string; model: string }>('db')
+					.map((r) => r.id)
+					.unsafe(),
+			)
+			.orElse(crypto.randomUUID());
+
+		const npcModel = this.world
+			.getEntity(this.parent)
+			.map((e) => e.getUnsafe(RecordEcs))
+			.map((r) =>
+				r
+					.getRecord<{ id: string; model: string }>('db')
+					.map((r) => r.model)
+					.unsafe(),
+			)
+			.orElse('gpt-4.1-mini');
+
 		let actions = {
 			totalActions: 0,
 			successfulActions: 0,
@@ -277,22 +301,32 @@ export class NPCContextEcs extends ComponentEcs {
 
 		const npcIdentifier = this.parent ?? 'Unknown';
 
-		const embedding = await LLMService.embed([
-			this.buildContext([
-				'system',
-				'actions',
-				'stats',
-				'long-memory',
-				'events',
-				'inventory',
-			]),
+		const queryMessage = this.buildContext([
+			'system',
+			'actions',
+			'stats',
+			'long-memory',
+			'events',
+			'inventory',
 		]);
+		const embedding = await LLMService.embed([queryMessage]);
 
 		const longTermMemories = await LTMRepository.retrieveLongTermMemory({
 			limit: 2,
 			npcIdentifier: npcIdentifier,
 			queryEmbedding: embedding[0],
 			importance: 0.5,
+		});
+
+		// TODO: Save build and longtermmemories
+		// queryMessage
+		// resultsMessages
+
+		// Save experiment retrieval results
+		ExperimentRepository.saveExperimentRetrievalResults({
+			npcId: npcId,
+			queryMessage: queryMessage,
+			resultsMessages: longTermMemories.map((ltm) => ltm.text).join('\n'),
 		});
 
 		for (const ltm of longTermMemories) {
@@ -304,7 +338,7 @@ export class NPCContextEcs extends ComponentEcs {
 
 		const context = this.buildContext();
 		console.log('NPCContextEcs asking OpenAI with context:\n', context);
-		LLMService.ask(context)
+		LLMService.ask(context, undefined, npcModel)
 			.then((response) => {
 				actions = this.processActions(response);
 			})
@@ -313,6 +347,16 @@ export class NPCContextEcs extends ComponentEcs {
 				this.cooldown = 0;
 
 				const elapsed = Date.now() - currentTime;
+
+				// Save experiment variability results
+				// record db.id, elapsed, actions, failedActions, successfulActions
+				ExperimentRepository.saveExperimentVariabilityResults({
+					npcId: npcId,
+					delayInMs: elapsed,
+					actionsGenerated: actions.totalActions,
+					failedActions: actions.failedActions,
+					successfulActions: actions.successfulActions,
+				});
 
 				// TODO: Log to monitoring system
 				console.log(`NPCContextEcs ask completed in ${elapsed} ms`);

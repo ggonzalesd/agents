@@ -44,7 +44,7 @@ export class RenderClientEcs extends ComponentEcs {
 
 		this.scene.add(new THREE.AxesHelper(1));
 
-		renderMap(this.scene);
+		// renderMap(this.scene);
 
 		this.camera.position.z = 5;
 		this.camera.position.y = 5;

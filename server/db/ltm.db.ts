@@ -1,17 +1,3 @@
-/*
-model LongTermMemory {
-  id         String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  npcId      String                      @db.Uuid
-  identifier String                      @unique @db.VarChar(255)
-  text       String                      @db.Text
-  metadata   Json                        @db.JsonB
-  embedding  Unsupported("vector(3072)")
-  createdAt  DateTime                    @default(now()) @db.Timestamp(6)
-
-  NPC NPC @relation(fields: [npcId], references: [id])
-}
-*/
-
 import type { LongTermMemoryDB } from '$/models/LongTermMemory.model';
 import * as SQL from '$/utils/sql';
 

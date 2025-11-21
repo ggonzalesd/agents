@@ -22,7 +22,7 @@ import {
 import {
 	type createUserRequestSchema,
 	getUserResSchema,
-	listUsersResSchema
+	listUsersResSchema,
 } from '#/schema/user.schema';
 
 export const loginService = async (payload: {
@@ -166,7 +166,7 @@ export const getOneUserService = async (
 	const body = getUserResSchema.parse(response.data);
 
 	return body.data;
-}
+};
 
 export const createUserService = async (
 	payload: z.infer<typeof createUserRequestSchema>,
@@ -218,4 +218,4 @@ export const getAllUsersService = async (): Promise<
 		message: body.message,
 		data: body.data,
 	};
-}
+};

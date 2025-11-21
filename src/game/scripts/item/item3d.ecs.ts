@@ -9,7 +9,7 @@ import { preloadGLB } from '@/utils/assets.utils';
 
 export class Item3DEcs extends ComponentEcs {
 	public object3D: THREE.Object3D = new THREE.Object3D();
-	public mesh: THREE.Object3D;
+	public mesh: THREE.Mesh;
 	private glowRing!: THREE.Mesh;
 
 	constructor(private state: ItemEntityState) {
@@ -35,8 +35,13 @@ export class Item3DEcs extends ComponentEcs {
 			coin: 'axe_2handed',
 		};
 
-		this.mesh = new THREE.Object3D();
+		this.mesh = new THREE.Mesh(
+			new THREE.BoxGeometry(1, 1, 1),
+			new THREE.MeshBasicMaterial({ color: 0xffff00, wireframe: true }),
+		);
 		const scale = 0.5;
+
+		this.object3D.add(this.mesh);
 
 		// Crear outline brillante (círculo en el suelo)
 		this.createGlowRing();
@@ -45,19 +50,17 @@ export class Item3DEcs extends ComponentEcs {
 			preloadGLB(
 				`/vegetables/Assets/gltf/${typesModelVegetables[this.state.item.type as keyof typeof typesModelVegetables]}.gltf`,
 			).then((glb) => {
-				this.mesh.add(glb[0].scene);
+				this.object3D.add(glb[0].scene);
 				this.mesh.scale.set(scale, scale, scale);
 				this.mesh.rotation.set(0, 0, 0);
-				this.object3D.add(this.mesh);
 			});
 		} else if (this.state.item.type in typesModelArmors) {
 			preloadGLB(
 				`/armors/Assets/gltf/${typesModelArmors[this.state.item.type as keyof typeof typesModelArmors]}.gltf`,
 			).then((glb) => {
-				this.mesh.add(glb[0].scene);
+				this.object3D.add(glb[0].scene);
 				this.mesh.scale.set(scale, scale, scale);
 				this.mesh.rotation.set(0, 0, 0);
-				this.object3D.add(this.mesh);
 			});
 		}
 	}

@@ -77,12 +77,14 @@ model NPC {
   skinUrl     String @db.Text
   model       String @db.VarChar(255)
 
-  entity                     Entity                       @relation(fields: [id], references: [id])
-  LongTermMemory             LongTermMemory[]
+  entity                         Entity                           @relation(fields: [id], references: [id])
+  LongTermMemory                 LongTermMemory[]
   // experimentVariabilityResults   ExperimentVariabilityResults[]
   // experimentRetrievalResults     ExperimentRetrievalResults[]
   // experimentHallucinationResults ExperimentHallucinationResults[]
-  experimentRetrievalResults ExperimentRetrievalResults[]
+  experimentRetrievalResults     ExperimentRetrievalResults[]
+  experimentVariabilityResults   ExperimentVariabilityResults[]
+  experimentHallucinationResults ExperimentHallucinationResults[]
 }
 
 model LongTermMemory {
@@ -109,6 +111,37 @@ model ExperimentRetrievalResults {
   resultsMessages   String @db.Text
   // Score indicating the relevance of the retrieved results
   llmRetrievalScore Float  @default(0)
+
+  NPC NPC @relation(fields: [npcId], references: [id])
+}
+
+model ExperimentVariabilityResults {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  npcId     String   @db.Uuid
+
+  delayInMs         Int @default(0)
+  // Number of generated actions during the experiment
+  actionsGenerated  Int @default(0)
+  // Number of failed and successful actions
+  failedActions     Int @default(0)
+  // Number of successful actions
+  successfulActions Int @default(0)
+
+  NPC NPC @relation(fields: [npcId], references: [id])
+}
+
+model ExperimentHallucinationResults {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  npcId     String   @db.Uuid
+
+  // Information that was supposed to be in the NPC's memory
+  relatedInfoInMemory   String @db.Text
+  // Message that the NPC generated
+  message               String @db.Text
+  // Score indicating the level of hallucination in the message
+  llmHallucinationScore Float  @default(0)
 
   NPC NPC @relation(fields: [npcId], references: [id])
 }
