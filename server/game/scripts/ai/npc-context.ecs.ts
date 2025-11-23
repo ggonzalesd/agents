@@ -72,6 +72,7 @@ export class NPCContextEcs extends ComponentEcs {
 		return [
 			'# NPC Behavior Context',
 			'You are an autonomous NPC:',
+			'- Speak obligatory in spanish, not in other languages.',
 			'- You have unique personality traits, goals, and motivations.',
 			'- You have a context of the world, yourself, other entities and items.',
 			'- You have to manage your limited resources (life, mood, inventory, short-term and long-term memory, etc.).',

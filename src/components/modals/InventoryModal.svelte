@@ -150,7 +150,7 @@
 						{/if}
 					</div>
 				{:else}
-					<div class="Empty">Empty</div>
+					<div class="Empty"></div>
 				{/if}
 			</div>
 		{/each}
@@ -167,7 +167,7 @@
 						{item.type}
 					</div>
 				{:else}
-					<div class="Empty">Empty</div>
+					<div class="Empty"></div>
 				{/if}
 			</div>
 		{/each}
