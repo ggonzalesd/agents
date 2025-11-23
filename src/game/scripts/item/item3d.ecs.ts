@@ -16,52 +16,71 @@ export class Item3DEcs extends ComponentEcs {
 		super();
 
 		// const typesColor = ['sword', 'potion', 'cookie', 'seeds', 'coin'] as const;
-		const typesModelVegetables = {
-			lettuce: 'food_ingredient_lettuce',
-			carrot: 'food_ingredient_carrot',
-			tomato: 'food_ingredient_tomato',
-			cheese: 'food_ingredient_cheese',
-			onion: 'food_ingredient_onion',
-			ham: 'food_ingredient_ham',
-			steak: 'food_ingredient_steak',
-			potato: 'food_ingredient_potato',
-		};
-
-		const typesModelArmors = {
-			sword: 'sword_1handed',
-			potion: 'sword_2handed',
-			cookie: 'shield_square',
-			seeds: 'axe_1handed',
-			coin: 'axe_2handed',
+		const typesModel = {
+			default: {
+				path: '/3d/',
+				scale: 0.75,
+				items: {
+					potion: 'potion.glb',
+					seeds: 'seeds.glb',
+					coin: 'coin.glb',
+					cookies: 'cookies.glb',
+				},
+			},
+			vegetables: {
+				path: '/vegetables/Assets/gltf/',
+				scale: 0.75,
+				items: {
+					lettuce: 'food_ingredient_lettuce.gltf',
+					carrot: 'food_ingredient_carrot.gltf',
+					tomato: 'food_ingredient_tomato.gltf',
+					cheese: 'food_ingredient_cheese.gltf',
+					onion: 'food_ingredient_onion.gltf',
+					ham: 'food_ingredient_ham.gltf',
+					steak: 'food_ingredient_steak.gltf',
+					potato: 'food_ingredient_potato.gltf',
+				},
+			},
+			armors: {
+				path: '/armors/Assets/gltf/',
+				scale: 0.75,
+				items: {
+					sword: 'sword_1handed.gltf',
+					potion: 'sword_2handed.gltf',
+					cookie: 'shield_square.gltf',
+					seeds: 'axe_1handed.gltf',
+					coin: 'axe_2handed.gltf',
+				},
+			},
 		};
 
 		this.mesh = new THREE.Mesh(
 			new THREE.BoxGeometry(1, 1, 1),
 			new THREE.MeshBasicMaterial({ color: 0xffff00, wireframe: true }),
 		);
-		const scale = 0.5;
-
 		this.object3D.add(this.mesh);
 
 		// Crear outline brillante (círculo en el suelo)
 		this.createGlowRing();
 
-		if (this.state.item.type in typesModelVegetables) {
-			preloadGLB(
-				`/vegetables/Assets/gltf/${typesModelVegetables[this.state.item.type as keyof typeof typesModelVegetables]}.gltf`,
-			).then((glb) => {
-				this.object3D.add(glb[0].scene);
-				this.mesh.scale.set(scale, scale, scale);
-				this.mesh.rotation.set(0, 0, 0);
-			});
-		} else if (this.state.item.type in typesModelArmors) {
-			preloadGLB(
-				`/armors/Assets/gltf/${typesModelArmors[this.state.item.type as keyof typeof typesModelArmors]}.gltf`,
-			).then((glb) => {
-				this.object3D.add(glb[0].scene);
-				this.mesh.scale.set(scale, scale, scale);
-				this.mesh.rotation.set(0, 0, 0);
-			});
+		// Cargar modelo según tipo
+		const itemType = this.state.item.type;
+		for (const category of Object.values(typesModel)) {
+			if (itemType in category.items) {
+				const modelName =
+					category.items[itemType as keyof typeof category.items];
+				preloadGLB(`${category.path}${modelName}`).then((glb) => {
+					this.object3D.add(glb[0].scene);
+					this.object3D.scale.set(
+						category.scale,
+						category.scale,
+						category.scale,
+					);
+					this.mesh.scale.set(1, 1, 1);
+					this.mesh.rotation.set(0, 0, 0);
+				});
+				break;
+			}
 		}
 	}
 
