@@ -69,6 +69,10 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		// Attack Every Entity in Range
 		const attackRange = 2.0;
 
+		this.serverData.room.broadcast('agent:attack', {
+			id: this.parent,
+		});
+
 		this.world
 			// Get all entities with CharacterBodyServerEcs and MovementServerEcs
 			// INFO: MovementServerEcs is just to ensure we are targeting characters

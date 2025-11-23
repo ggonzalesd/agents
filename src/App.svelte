@@ -21,6 +21,7 @@
 	import ProfileView from '@/views/ProfileView.svelte';
 	import Loading from '@/views/Loading.svelte';
 	import AdminView from '@/views/AdminView.svelte';
+	import { models } from './game/scripts/render-map.util';
 
 	const queryClient = new QueryClient();
 
@@ -40,6 +41,27 @@
 	function preloadResources() {
 		return Promise.all([
 			preloadGLB('/3d/SkinModel.glb'),
+			preloadGLB(
+				...models.bareTrees.values.map((p) => `${models.bareTrees.path}${p}`),
+			),
+			preloadGLB(
+				...models.bushes.values.map((p) => `${models.bushes.path}${p}`),
+			),
+			preloadGLB(...models.grass.values.map((p) => `${models.grass.path}${p}`)),
+			preloadGLB(
+				...models.largeRocks.values.map((p) => `${models.largeRocks.path}${p}`),
+			),
+			preloadGLB(
+				...models.smallStones.values.map(
+					(p) => `${models.smallStones.path}${p}`,
+				),
+			),
+			preloadGLB(
+				...models.mediumRocks.values.map(
+					(p) => `${models.mediumRocks.path}${p}`,
+				),
+			),
+			preloadGLB(...models.trees.values.map((p) => `${models.trees.path}${p}`)),
 			preloadTextures('/3d/textures/seasons/autumn_ground.jpg'),
 			preloadTextures('/3d/textures/seasons/summer_ground.jpg'),
 			preloadTextures('/3d/textures/seasons/winter_ground.jpg'),

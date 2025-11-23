@@ -2,12 +2,12 @@
 
 <script lang="ts">
 	import { getContext, onMount } from 'svelte';
+	import { derived } from 'svelte/store';
 
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
 
-	import { getMessageHistoryContext } from '@/hooks';
-	import { getGameStateContext } from '@/hooks/useGameState.svelte';
+	import { getMessageHistoryContext, getGameStateContext } from '@/hooks';
 	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
 	import { GameInput } from '@/utils/input.utils';
 
@@ -17,6 +17,11 @@
 	let gameStateContext = getGameStateContext();
 	let worldEcsContext = getContext<Option<WorldEcs>>(WorldEcs.name);
 	let messageHistoryContext = getMessageHistoryContext();
+
+	let reverseMessages = derived(
+		messageHistoryContext,
+		($messageHistoryContext) => [...$messageHistoryContext].reverse()
+	);
 
 	function onSubmit(event: SubmitEvent) {
 		console.log('Message sent to server:', event);
@@ -77,7 +82,7 @@
 	<p class="text-gris-50 text-lg font-bold">Log messages</p>
 
 	<div class="flex h-full flex-col gap-3 overflow-y-auto">
-		{#each $messageHistoryContext as { id, from, message } (id)}
+		{#each $reverseMessages as { id, from, message } (id)}
 			{@render renderMessage(from, message)}
 		{/each}
 	</div>

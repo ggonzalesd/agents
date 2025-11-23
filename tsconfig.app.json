@@ -1,7 +1,7 @@
 {
 	"extends": "@tsconfig/svelte/tsconfig.json",
 	"compilerOptions": {
-		"target": "ES2022",
+		"target": "ES2023",
 		"experimentalDecorators": true,
 		"useDefineForClassFields": false,
 		"module": "ESNext",
