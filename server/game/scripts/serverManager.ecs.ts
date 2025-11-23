@@ -24,7 +24,7 @@ export class ServerManagerEcs extends ComponentEcs {
 
 		defaultMap.grid.forEach((row, z) => {
 			row.forEach((cell, x) => {
-				if (cell === 1) {
+				if (cell === 1 || cell === 2 || cell === 3 || cell === 8) {
 					const wallBodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(
 						x + defaultMap.offsetX + 0.5,
 						0,
