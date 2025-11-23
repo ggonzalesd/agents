@@ -41,27 +41,25 @@
 	function preloadResources() {
 		return Promise.all([
 			preloadGLB('/3d/SkinModel.glb'),
-			preloadGLB(
-				...models.bareTrees.values.map((p) => `${models.bareTrees.path}${p}`),
+
+			...models.bareTrees.values.map((p) =>
+				preloadGLB(`${models.bareTrees.path}${p}`),
 			),
-			preloadGLB(
-				...models.bushes.values.map((p) => `${models.bushes.path}${p}`),
+			...models.bushes.values.map((p) =>
+				preloadGLB(`${models.bushes.path}${p}`),
 			),
-			preloadGLB(...models.grass.values.map((p) => `${models.grass.path}${p}`)),
-			preloadGLB(
-				...models.largeRocks.values.map((p) => `${models.largeRocks.path}${p}`),
+			...models.grass.values.map((p) => preloadGLB(`${models.grass.path}${p}`)),
+			...models.largeRocks.values.map((p) =>
+				preloadGLB(`${models.largeRocks.path}${p}`),
 			),
-			preloadGLB(
-				...models.smallStones.values.map(
-					(p) => `${models.smallStones.path}${p}`,
-				),
+			...models.smallStones.values.map((p) =>
+				preloadGLB(`${models.smallStones.path}${p}`),
 			),
-			preloadGLB(
-				...models.mediumRocks.values.map(
-					(p) => `${models.mediumRocks.path}${p}`,
-				),
+			...models.mediumRocks.values.map((p) =>
+				preloadGLB(`${models.mediumRocks.path}${p}`),
 			),
-			preloadGLB(...models.trees.values.map((p) => `${models.trees.path}${p}`)),
+			...models.trees.values.map((p) => preloadGLB(`${models.trees.path}${p}`)),
+
 			preloadTextures('/3d/textures/seasons/autumn_ground.jpg'),
 			preloadTextures('/3d/textures/seasons/summer_ground.jpg'),
 			preloadTextures('/3d/textures/seasons/winter_ground.jpg'),
