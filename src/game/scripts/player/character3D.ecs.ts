@@ -12,6 +12,7 @@ import type { MovementState } from '#/state/movement.state';
 
 export class Character3DEcs extends ComponentEcs {
 	public object3D: THREE.Object3D = new THREE.Object3D();
+	public attackObject3D: THREE.Object3D = new THREE.Object3D();
 
 	private renderClient: RenderClientEcs = null!;
 	private colyseusClient: ColyseusClientEcs = null!;
@@ -22,6 +23,8 @@ export class Character3DEcs extends ComponentEcs {
 
 	public damageEffect = 0;
 	private damageMaterial: THREE.MeshStandardMaterial;
+
+	private attackAnimation = 0;
 
 	constructor(
 		private characterState: CharacterBodyState,
@@ -78,7 +81,8 @@ export class Character3DEcs extends ComponentEcs {
 				}
 			});
 
-			this.object3D.add(mesh);
+			this.attackObject3D.add(mesh);
+			this.object3D.add(this.attackObject3D);
 		}
 	}
 
@@ -95,6 +99,15 @@ export class Character3DEcs extends ComponentEcs {
 			((message: { id: string }) => {
 				if (message.id === this.parent) {
 					this.damageEffect = 1.5;
+				}
+			}).bind(this),
+		);
+
+		room.onMessage(
+			'agent:attack',
+			((message: { id: string }) => {
+				if (message.id === this.parent) {
+					this.attackAnimation = Math.PI / 4;
 				}
 			}).bind(this),
 		);
@@ -134,6 +147,17 @@ export class Character3DEcs extends ComponentEcs {
 
 	onLoop(_delta: number): void {
 		this.mixer.update(_delta * 0.001);
+
+		this.attackAnimation = Math.max(0, this.attackAnimation - _delta * 0.003);
+		this.attackObject3D.rotation.setFromQuaternion(
+			new THREE.Quaternion().setFromEuler(
+				new THREE.Euler(
+					Math.sin(this.attackAnimation * 10) * 0.1,
+					0,
+					-this.attackAnimation,
+				),
+			),
+		);
 
 		vec3Set(this.object3D.position, this.characterState.position);
 
