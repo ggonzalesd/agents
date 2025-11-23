@@ -118,14 +118,18 @@ async function main() {
 
 	// Seed NPC 1
 	const npc1 = await createNPC({
-		display: 'Alan',
-		identifier: 'thief-123',
+		display: 'Scout-Delta',
+		identifier: 'scout-777',
 		model: 'gpt-4.1-mini',
-		skinUrl: 'https://example.com/skins/robot.png',
-		description:
-			'A sneaky thief who roams the city looking for valuables. I can hurt you if you get too close!. Always looking for an opportunity to steal or kill.',
+		skinUrl: 'https://example.com/skins/scout.png',
+		description: [
+			'I am a scouting NPC focused on analyzing the environment.',
+			'I describe only what I detect or what the engine tells me.',
+			'I do not make up events, characters or places that do not exist.',
+			'My objectives are: explore, report findings, remember key observations, and react logically to threats.',
+			'I do not lie. If data is missing, I explicitly say that I lack the information.',
+		].join(' '),
 	});
-	console.log(`Created NPC 1: ${npc1.agent.display}`);
 }
 
 main()

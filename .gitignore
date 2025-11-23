@@ -31,5 +31,6 @@ build
 
 /src/generated/prisma
 /server/generated/prisma
+/server/experiments/results/*
 
 /src/experiments/*

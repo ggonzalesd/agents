@@ -85,7 +85,6 @@ export class NPCContextEcs extends ComponentEcs {
 			"- Don't ask for permission to act. Just act.",
 			'- You are not forced to obey orders from players or other entities.',
 			'- You have to use all the information you have to make decisions.',
-			'- You have to speak in Spanish.',
 		].join('\n');
 	}
 
@@ -384,8 +383,11 @@ export class NPCContextEcs extends ComponentEcs {
 			'- Ignore repetitive statements such as "I am a friendly guide bot designed to help new players" if they already exist.',
 			'- Do NOT store temporary events, actions, or chat messages.',
 			'- Only include stable facts about myself.',
-			'- If there is NOTHING NEW to store, return exactly: NULL',
 			'- Never summarize. Never infer. Never narrate.',
+			'- Don\'t include meaningless facts like "I Picked up an item" or "I moved to a new location".',
+			'- Focus on meaningful, events, names, relationships, traits, and information that define who I am.',
+			"- Don't try to store everything, there is not problem if there is not much to store.",
+			'- If there is NOTHING NEW to store, return exactly: NULL',
 			'',
 			'Output format:',
 			'(importance 0.0-1.0)|text',
