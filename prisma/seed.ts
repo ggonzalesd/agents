@@ -117,7 +117,7 @@ async function main() {
 	// --- Seed NPCs ---
 
 	// Seed NPC 1
-	const npc1 = await createNPC({
+	/* const npc1 = await createNPC({
 		display: 'Scout-Delta',
 		identifier: 'scout-777',
 		model: 'gpt-4.1-mini',
@@ -129,7 +129,7 @@ async function main() {
 			'My objectives are: explore, report findings, remember key observations, and react logically to threats.',
 			'I do not lie. If data is missing, I explicitly say that I lack the information.',
 		].join(' '),
-	});
+	}); */
 }
 
 main()

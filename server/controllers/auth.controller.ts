@@ -24,11 +24,13 @@ export const authLoginController = async (req: Request, res: Response) => {
 	>;
 
 	const userOption = await UserRepository.getUserByUsername({ username });
+	console.log('User option:', userOption);
 	const user = userOption.orElseThrow(
 		HttpError.unauthorized('Invalid username or password'),
 	);
 
 	const isPasswordValid = bcrypt.compareSync(password, user.password);
+	console.log('Is password valid:', isPasswordValid);
 	if (!isPasswordValid) {
 		throw HttpError.unauthorized('Invalid username or password');
 	}
