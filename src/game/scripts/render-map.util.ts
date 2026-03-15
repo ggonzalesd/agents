@@ -1,5 +1,5 @@
 import { defaultMap } from '#/maps/default.map';
-import { preloadGLB } from '@/utils/assets.utils';
+import { loadGLB } from '@/utils/assets.utils';
 import * as THREE from 'three';
 
 export const models = {
@@ -96,6 +96,20 @@ export const models = {
 			'Tree_Bare_2_C_Color1.gltf',
 		],
 	},
+	dungeons: {
+		path: '/dungeons/Assets/gltf/',
+		values: [
+			'wall.gltf',
+			'wall_doorway_open.gltf',
+			'floor_dirt_small_D.gltf',
+			'chair.gltf',
+			'table_long.gltf',
+			'wall_window_closed.gltf',
+			'wall_window_open.gltf',
+			'bed_frame.gltf',
+			'chest.gltf',
+		],
+	},
 };
 
 export const renderMap = (scene: THREE.Scene) => {
@@ -111,17 +125,16 @@ export const renderMap = (scene: THREE.Scene) => {
 					models.largeRocks.values[
 						Math.floor(Math.random() * models.largeRocks.values.length)
 					];
-				preloadGLB(`${models.largeRocks.path}${model}`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
-						0,
-						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
-					);
-					point.scale.set(scale, scale, scale);
-					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB(`${models.largeRocks.path}${model}`);
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+					0,
+					i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+				scene.add(point);
 			}
 
 			/* ROCAS MEDIANAS */
@@ -132,17 +145,16 @@ export const renderMap = (scene: THREE.Scene) => {
 					models.mediumRocks.values[
 						Math.floor(Math.random() * models.mediumRocks.values.length)
 					];
-				preloadGLB(`${models.mediumRocks.path}${model}`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
-						0,
-						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
-					);
-					point.scale.set(scale, scale, scale);
-					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB(`${models.mediumRocks.path}${model}`);
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+					0,
+					i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+				scene.add(point);
 			}
 
 			/* PIEDRAS PEQUEÑAS */
@@ -153,17 +165,16 @@ export const renderMap = (scene: THREE.Scene) => {
 					models.smallStones.values[
 						Math.floor(Math.random() * models.smallStones.values.length)
 					];
-				preloadGLB(`${models.smallStones.path}${model}`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
-						0,
-						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
-					);
-					point.scale.set(scale, scale, scale);
-					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB(`${models.smallStones.path}${model}`);
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+					0,
+					i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+				scene.add(point);
 			}
 
 			/* ARBOLES */
@@ -174,18 +185,16 @@ export const renderMap = (scene: THREE.Scene) => {
 					models.trees.values[
 						Math.floor(Math.random() * models.trees.values.length)
 					];
-				console.log(model);
-				preloadGLB(`${models.trees.path}${model}`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
-						0,
-						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
-					);
-					point.scale.set(scale, scale, scale);
-					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB(`${models.trees.path}${model}`);
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+					0,
+					i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+				scene.add(point);
 			}
 
 			/* ARBUSTOS */
@@ -196,17 +205,16 @@ export const renderMap = (scene: THREE.Scene) => {
 					models.bushes.values[
 						Math.floor(Math.random() * models.bushes.values.length)
 					];
-				preloadGLB(`${models.bushes.path}${model}`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
-						0,
-						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
-					);
-					point.scale.set(scale, scale, scale);
-					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB(`${models.bushes.path}${model}`);
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+					0,
+					i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+				scene.add(point);
 			}
 
 			/* CESPED */
@@ -217,17 +225,16 @@ export const renderMap = (scene: THREE.Scene) => {
 					models.grass.values[
 						Math.floor(Math.random() * models.grass.values.length)
 					];
-				preloadGLB(`${models.grass.path}${model}`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
-						0,
-						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
-					);
-					point.scale.set(scale, scale, scale);
-					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB(`${models.grass.path}${model}`);
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+					0,
+					i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+				scene.add(point);
 			}
 
 			/* TRONCOS */
@@ -238,123 +245,112 @@ export const renderMap = (scene: THREE.Scene) => {
 					models.bareTrees.values[
 						Math.floor(Math.random() * models.bareTrees.values.length)
 					];
-				preloadGLB(`${models.bareTrees.path}${model}`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
-						0,
-						i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
-					);
-					point.scale.set(scale, scale, scale);
-					point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB(`${models.bareTrees.path}${model}`);
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5 + (Math.random() * 0.5 - 0.25),
+					0,
+					i + defaultMap.offsetY + 0.5 + (Math.random() * 0.5 - 0.25),
+				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+				scene.add(point);
 			}
 
 			/* MUROS 1 */
 			if (cell === 9) {
 				const point = new THREE.Object3D();
 				const scale = 1;
-				preloadGLB(`/dungeons/Assets/gltf/wall.gltf`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5,
-						0,
-						i + defaultMap.offsetY + 0.5,
-					);
-					point.scale.set(scale, 1.5, scale);
-					point.rotation.set(0, 0, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB('/dungeons/Assets/gltf/wall.gltf');
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5,
+					0,
+					i + defaultMap.offsetY + 0.5,
+				);
+				point.scale.set(scale, 1.5, scale);
+				point.rotation.set(0, 0, 0);
+				scene.add(point);
 			}
 
 			/* PUERTA */
 			if (cell === 10) {
 				const point = new THREE.Object3D();
 				const scale = 1;
-				preloadGLB(`/dungeons/Assets/gltf/wall_doorway_open.gltf`).then(
-					(glb) => {
-						point.add(glb[0].scene);
-						point.position.set(
-							j + defaultMap.offsetX + 0.5,
-							0,
-							i + defaultMap.offsetY + 0.5,
-						);
-						point.scale.set(scale, 1.5, scale);
-						point.rotation.set(0, -0.5 * Math.PI, 0);
-						scene.add(point);
-					},
+				const glb = loadGLB('/dungeons/Assets/gltf/wall_doorway_open.gltf');
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5,
+					0,
+					i + defaultMap.offsetY + 0.5,
 				);
+				point.scale.set(scale, 1.5, scale);
+				point.rotation.set(0, -0.5 * Math.PI, 0);
+				scene.add(point);
 			}
 
 			/* MUROS 2 */
 			if (cell === 11) {
 				const point = new THREE.Object3D();
 				const scale = 1;
-				preloadGLB(`/dungeons/Assets/gltf/wall.gltf`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5,
-						0,
-						i + defaultMap.offsetY + 0.5,
-					);
-					point.scale.set(scale, 1.5, scale);
-					point.rotation.set(0, 0.5 * Math.PI, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB('/dungeons/Assets/gltf/wall.gltf');
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5,
+					0,
+					i + defaultMap.offsetY + 0.5,
+				);
+				point.scale.set(scale, 1.5, scale);
+				point.rotation.set(0, 0.5 * Math.PI, 0);
+				scene.add(point);
 			}
 
 			/* PISO 1 */
 			if (cell === 12) {
 				const point = new THREE.Object3D();
 				const scale = 1;
-				preloadGLB(`/dungeons/Assets/gltf/floor_dirt_small_D.gltf`).then(
-					(glb) => {
-						point.add(glb[0].scene);
-						point.position.set(
-							j + defaultMap.offsetX + 0.5,
-							0,
-							i + defaultMap.offsetY + 0.5,
-						);
-						point.scale.set(scale, scale, scale);
-						point.rotation.set(0, 0, 0);
-						scene.add(point);
-					},
+				const glb = loadGLB('/dungeons/Assets/gltf/floor_dirt_small_D.gltf');
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5,
+					0,
+					i + defaultMap.offsetY + 0.5,
 				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, 0, 0);
+				scene.add(point);
 			}
 
 			/* SILLA LARGA */
 			if (cell === 14) {
 				const point = new THREE.Object3D();
 				const scale = 1;
-				preloadGLB(`/dungeons/Assets/gltf/chair.gltf`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5,
-						0,
-						i + defaultMap.offsetY + 0.5,
-					);
-					point.scale.set(scale, scale, scale);
-					point.rotation.set(0, 0, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB('/dungeons/Assets/gltf/chair.gltf');
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5,
+					0,
+					i + defaultMap.offsetY + 0.5,
+				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, 0, 0);
+				scene.add(point);
 			}
 
 			/* MESA LARGA */
 			if (cell === 15) {
 				const point = new THREE.Object3D();
 				const scale = 1;
-				preloadGLB(`/dungeons/Assets/gltf/table_long.gltf`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5,
-						0,
-						i + defaultMap.offsetY + 0.5,
-					);
-					point.scale.set(scale, scale, scale);
-					point.rotation.set(0, 0, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB('/dungeons/Assets/gltf/table_long.gltf');
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5,
+					0,
+					i + defaultMap.offsetY + 0.5,
+				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, 0, 0);
+				scene.add(point);
 			}
 
 			/* MURO CON VENTANA */
@@ -365,51 +361,48 @@ export const renderMap = (scene: THREE.Scene) => {
 					Math.random() < 0.5
 						? 'wall_window_closed.gltf'
 						: 'wall_window_open.gltf';
-				preloadGLB(`/dungeons/Assets/gltf/${model}`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5,
-						0,
-						i + defaultMap.offsetY + 0.5,
-					);
-					point.scale.set(scale, 1.5, scale);
-					point.rotation.set(0, 0, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB(`/dungeons/Assets/gltf/${model}`);
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5,
+					0,
+					i + defaultMap.offsetY + 0.5,
+				);
+				point.scale.set(scale, 1.5, scale);
+				point.rotation.set(0, 0, 0);
+				scene.add(point);
 			}
 
 			/* CAMA */
 			if (cell === 17) {
 				const point = new THREE.Object3D();
 				const scale = 1;
-				preloadGLB(`/dungeons/Assets/gltf/bed_frame.gltf`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5,
-						0,
-						i + defaultMap.offsetY + 0.5,
-					);
-					point.scale.set(scale, scale, scale);
-					point.rotation.set(0, 0.5 * Math.PI, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB('/dungeons/Assets/gltf/bed_frame.gltf');
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5,
+					0,
+					i + defaultMap.offsetY + 0.5,
+				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, 0.5 * Math.PI, 0);
+				scene.add(point);
 			}
 
 			/* COFRE */
 			if (cell === 18) {
 				const point = new THREE.Object3D();
 				const scale = 1;
-				preloadGLB(`/dungeons/Assets/gltf/chest.gltf`).then((glb) => {
-					point.add(glb[0].scene);
-					point.position.set(
-						j + defaultMap.offsetX + 0.5,
-						0,
-						i + defaultMap.offsetY + 0.5,
-					);
-					point.scale.set(scale, scale, scale);
-					point.rotation.set(0, 1 * Math.PI, 0);
-					scene.add(point);
-				});
+				const glb = loadGLB('/dungeons/Assets/gltf/chest.gltf');
+				point.add(glb.scene.clone());
+				point.position.set(
+					j + defaultMap.offsetX + 0.5,
+					0,
+					i + defaultMap.offsetY + 0.5,
+				);
+				point.scale.set(scale, scale, scale);
+				point.rotation.set(0, 1 * Math.PI, 0);
+				scene.add(point);
 			}
 		});
 	});

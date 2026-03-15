@@ -60,6 +60,9 @@
 				preloadGLB(`${models.mediumRocks.path}${p}`),
 			),
 			...models.trees.values.map((p) => preloadGLB(`${models.trees.path}${p}`)),
+			...models.dungeons.values.map((p) =>
+				preloadGLB(`${models.dungeons.path}${p}`),
+			),
 
 			preloadTextures('/3d/textures/seasons/autumn_ground.jpg'),
 			preloadTextures('/3d/textures/seasons/summer_ground.jpg'),

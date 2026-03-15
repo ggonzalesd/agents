@@ -76,6 +76,9 @@ export const preloadGLB = async (...urls: string[]): Promise<GLTF[]> => {
 	const loader = new GLTFLoader();
 
 	const promises = urls.map(async (url) => {
+		const cached = glbCache.get(url);
+		if (cached) return cached;
+
 		const glv = await loader.loadAsync(url);
 
 		glbCache.set(url, glv);
