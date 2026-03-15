@@ -29,6 +29,9 @@ build
 
 .notes.txt
 
+# Experiments / tests locales
+experiments/openai.test.ts
+
 /src/generated/prisma
 /server/generated/prisma
 /server/experiments/results/*
