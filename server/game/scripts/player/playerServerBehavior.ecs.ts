@@ -11,8 +11,20 @@ import { NPCEventQueueEcs } from '../ai/npc-event-queue.ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { NPCContextEcs } from '../ai/npc-context.ecs';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
+import * as MissionService from '$/services/mission.service';
+import {
+	notifyNpcs,
+	notifyEntity,
+	notifyEntityById,
+} from '../missions/mission-action.handler';
 
 const sessionSchema = z
+	.object({
+		id: z.string(),
+	})
+	.loose();
+
+const dbSchema = z
 	.object({
 		id: z.string(),
 	})
@@ -155,6 +167,256 @@ export class PlayerServerBehavior extends ComponentEcs {
 						});
 				}
 				break;
+			case 'create-mission': {
+				const createMsg = message as unknown as {
+					title: string;
+					description: string;
+					reward?: string;
+				};
+				const dbCreate =
+					this.record.getUnsafeRecord<z.infer<typeof dbSchema>>('db');
+				const sessionCreate =
+					this.record.getUnsafeRecord<z.infer<typeof sessionSchema>>('session');
+				MissionService.createMission({
+					creatorId: dbCreate.id,
+					creatorType: 'USER',
+					payload: {
+						title: createMsg.title,
+						description: createMsg.description,
+						reward: createMsg.reward ?? null,
+					},
+				})
+					.then((mission) => {
+						this.serverData.room.broadcast('mission:created', {
+							mission,
+							creatorName: this.parent,
+						});
+						notifyNpcs(
+							this.world,
+							`${this.parent} created a new mission: "${mission.title}".`,
+							{
+								type: 'mission:created',
+								missionId: mission.id,
+								creatorName: this.parent ?? 'Unknown',
+							},
+						);
+						const client = this.serverData.room.clients.find(
+							(c) => c.sessionId === sessionCreate.id,
+						);
+						client?.send('mission:result', {
+							success: true,
+							event: 'mission:created',
+							data: mission,
+						});
+					})
+					.catch((err) => {
+						const client = this.serverData.room.clients.find(
+							(c) => c.sessionId === sessionCreate.id,
+						);
+						client?.send('mission:result', {
+							success: false,
+							error:
+								err instanceof Error ? err.message : 'Failed to create mission',
+						});
+					});
+				break;
+			}
+			case 'accept-mission': {
+				const acceptMsg = message as unknown as { missionId: string };
+				const dbAccept =
+					this.record.getUnsafeRecord<z.infer<typeof dbSchema>>('db');
+				const sessionAccept =
+					this.record.getUnsafeRecord<z.infer<typeof sessionSchema>>('session');
+				MissionService.acceptMission({
+					missionId: acceptMsg.missionId,
+					acceptorId: dbAccept.id,
+					acceptorType: 'USER',
+				})
+					.then(async (acceptance) => {
+						const mission = await MissionService.getMission(
+							acceptMsg.missionId,
+						);
+						this.serverData.room.broadcast('mission:accepted', {
+							missionId: acceptMsg.missionId,
+							missionTitle: mission.title,
+							acceptorName: this.parent,
+							acceptorType: 'USER',
+						});
+						notifyEntity(
+							this.serverData.room,
+							this.world,
+							mission.creatorId,
+							mission.creatorType,
+							{
+								type: 'mission:accepted',
+								missionId: acceptMsg.missionId,
+								missionTitle: mission.title,
+								acceptorName: this.parent ?? 'Unknown',
+							},
+						);
+						const client = this.serverData.room.clients.find(
+							(c) => c.sessionId === sessionAccept.id,
+						);
+						client?.send('mission:result', {
+							success: true,
+							event: 'mission:accepted',
+							data: acceptance,
+						});
+					})
+					.catch((err) => {
+						const client = this.serverData.room.clients.find(
+							(c) => c.sessionId === sessionAccept.id,
+						);
+						client?.send('mission:result', {
+							success: false,
+							error:
+								err instanceof Error ? err.message : 'Failed to accept mission',
+						});
+					});
+				break;
+			}
+			case 'complete-mission': {
+				const completeMsg = message as unknown as {
+					missionId: string;
+					acceptorId: string;
+				};
+				const dbComplete =
+					this.record.getUnsafeRecord<z.infer<typeof dbSchema>>('db');
+				const sessionComplete =
+					this.record.getUnsafeRecord<z.infer<typeof sessionSchema>>('session');
+				MissionService.completeMission({
+					missionId: completeMsg.missionId,
+					acceptorId: completeMsg.acceptorId,
+					creatorId: dbComplete.id,
+					creatorType: 'USER',
+				})
+					.then((mission) => {
+						this.serverData.room.broadcast('mission:completed', {
+							mission,
+							acceptorId: completeMsg.acceptorId,
+							validatorName: this.parent,
+						});
+						notifyEntityById(
+							this.serverData.room,
+							this.world,
+							completeMsg.acceptorId,
+							{
+								type: 'mission:completed',
+								missionId: completeMsg.missionId,
+								missionTitle: mission.title,
+								validatorName: this.parent ?? 'Unknown',
+							},
+						);
+						const client = this.serverData.room.clients.find(
+							(c) => c.sessionId === sessionComplete.id,
+						);
+						client?.send('mission:result', {
+							success: true,
+							event: 'mission:completed',
+							data: mission,
+						});
+					})
+					.catch((err) => {
+						const client = this.serverData.room.clients.find(
+							(c) => c.sessionId === sessionComplete.id,
+						);
+						client?.send('mission:result', {
+							success: false,
+							error:
+								err instanceof Error
+									? err.message
+									: 'Failed to complete mission',
+						});
+					});
+				break;
+			}
+			case 'abandon-mission': {
+				const abandonMsg = message as unknown as { missionId: string };
+				const dbAbandon =
+					this.record.getUnsafeRecord<z.infer<typeof dbSchema>>('db');
+				const sessionAbandon =
+					this.record.getUnsafeRecord<z.infer<typeof sessionSchema>>('session');
+				MissionService.abandonMission({
+					missionId: abandonMsg.missionId,
+					acceptorId: dbAbandon.id,
+					acceptorType: 'USER',
+				})
+					.then(async (acceptance) => {
+						const mission = await MissionService.getMission(
+							abandonMsg.missionId,
+						);
+						notifyEntity(
+							this.serverData.room,
+							this.world,
+							mission.creatorId,
+							mission.creatorType,
+							{
+								type: 'mission:abandoned',
+								missionId: abandonMsg.missionId,
+								missionTitle: mission.title,
+								abandonerName: this.parent ?? 'Unknown',
+							},
+						);
+						const client = this.serverData.room.clients.find(
+							(c) => c.sessionId === sessionAbandon.id,
+						);
+						client?.send('mission:result', {
+							success: true,
+							event: 'mission:abandoned',
+							data: acceptance,
+						});
+					})
+					.catch((err) => {
+						const client = this.serverData.room.clients.find(
+							(c) => c.sessionId === sessionAbandon.id,
+						);
+						client?.send('mission:result', {
+							success: false,
+							error:
+								err instanceof Error
+									? err.message
+									: 'Failed to abandon mission',
+						});
+					});
+				break;
+			}
+			case 'cancel-mission': {
+				const cancelMsg = message as unknown as { missionId: string };
+				const dbCancel =
+					this.record.getUnsafeRecord<z.infer<typeof dbSchema>>('db');
+				const sessionCancel =
+					this.record.getUnsafeRecord<z.infer<typeof sessionSchema>>('session');
+				MissionService.cancelMission({
+					missionId: cancelMsg.missionId,
+					creatorId: dbCancel.id,
+					creatorType: 'USER',
+				})
+					.then((mission) => {
+						this.serverData.room.broadcast('mission:cancelled', {
+							mission,
+							creatorName: this.parent,
+						});
+						const client = this.serverData.room.clients.find(
+							(c) => c.sessionId === sessionCancel.id,
+						);
+						client?.send('mission:result', {
+							success: true,
+							event: 'mission:cancelled',
+							data: mission,
+						});
+					})
+					.catch((err) => {
+						const client = this.serverData.room.clients.find(
+							(c) => c.sessionId === sessionCancel.id,
+						);
+						client?.send('mission:result', {
+							success: false,
+							error:
+								err instanceof Error ? err.message : 'Failed to cancel mission',
+						});
+					});
+				break;
+			}
 		}
 	}
 

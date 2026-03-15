@@ -173,3 +173,58 @@ model ExperimentHallucinationResults {
  * NPC NPC @relation(fields: [npcId], references: [id])
  * }
  */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mission System - Agnostic for Users and NPCs
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum EntityType {
+  USER
+  NPC
+}
+
+enum MissionStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum AcceptanceStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+  ABANDONED
+}
+
+model Mission {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  creatorId   String        @db.Uuid
+  creatorType EntityType
+  title       String        @db.VarChar(255)
+  description String        @db.Text
+  reward      String?       @db.Text
+  status      MissionStatus @default(OPEN)
+  createdAt   DateTime      @default(now()) @db.Timestamptz(6)
+  completedAt DateTime?     @db.Timestamptz(6)
+
+  acceptances MissionAcceptance[]
+
+  @@index([creatorId, creatorType])
+  @@index([status])
+}
+
+model MissionAcceptance {
+  id           String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  missionId    String           @db.Uuid
+  acceptorId   String           @db.Uuid
+  acceptorType EntityType
+  status       AcceptanceStatus @default(ACTIVE)
+  acceptedAt   DateTime         @default(now()) @db.Timestamptz(6)
+  completedAt  DateTime?        @db.Timestamptz(6)
+
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+
+  @@unique([missionId, acceptorId, acceptorType])
+  @@index([acceptorId, acceptorType])
+}

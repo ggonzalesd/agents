@@ -6,12 +6,20 @@
 	import MessageModal from './modals/MessageModal.svelte';
 	import InventoryModal from './modals/InventoryModal.svelte';
 	import OnLeaveModal from './modals/OnLeaveModal.svelte';
-	import { getContext, onMount } from 'svelte';
+	import { getContext } from 'svelte';
 	import { GameInput } from '@/utils/input.utils';
 	import EntityDetailsModal from './modals/EntityDetailsModal.svelte';
+	import MissionsModal from './modals/MissionsModal.svelte';
 
 	let gameState = getGameStateContext();
 	let inputs = getContext<GameInput>(GameInput.name);
+
+	// Reactively enable/disable game inputs when modal opens/closes
+	$effect(() => {
+		if ($gameState.paused) {
+			inputs.disabled = true;
+		}
+	});
 
 	const onClick = (e: MouseEvent) => {
 		// Prevent clicks inside the modal from closing it
@@ -27,10 +35,6 @@
 		gameState.setSelectedEntity(null);
 		inputs.disabled = false;
 	};
-
-	onMount(() => {
-		inputs.disabled = true;
-	});
 </script>
 
 {#if $gameState.paused}
@@ -51,6 +55,8 @@
 			<OnLeaveModal />
 		{:else if $gameState.view === 'ENTITYDETAILS'}
 			<EntityDetailsModal />
+		{:else if $gameState.view === 'MISSIONS'}
+			<MissionsModal />
 		{/if}
 	</div>
 {/if}

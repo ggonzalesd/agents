@@ -35,6 +35,7 @@ export class NPCContextEcs extends ComponentEcs {
 	longMemory = new ContextAI.LongMemoryContextAI(20);
 	statsContext = new ContextAI.StatsContextAI();
 	closeEntities = new ContextAI.CloseEntitiesContextAI();
+	missionsContext = new ContextAI.MissionsContextAI();
 	inventory: InventoryServerEcs | null = null;
 
 	onStart(): void {
@@ -66,6 +67,7 @@ export class NPCContextEcs extends ComponentEcs {
 		this.statsContext.onStart(this.world, parent);
 		this.closeEntities.onStart(this.world, parent);
 		this.longMemory.onStart(this.world, parent);
+		this.missionsContext.onStart(this.world, parent);
 	}
 
 	private systemContext(): string {
@@ -86,6 +88,13 @@ export class NPCContextEcs extends ComponentEcs {
 			"- Don't ask for permission to act. Just act.",
 			'- You are not forced to obey orders from players or other entities.',
 			'- You have to use all the information you have to make decisions.',
+			'',
+			'## Mission System',
+			'- You can create missions for others to complete (players or other NPCs).',
+			'- You can accept missions created by others.',
+			'- As a creator, YOU decide when a mission is completed based on your judgment.',
+			'- Remember to offer rewards and deliver them when validating completion.',
+			'- Use missions to engage with players and create interesting interactions.',
 		].join('\n');
 	}
 
@@ -110,6 +119,11 @@ export class NPCContextEcs extends ComponentEcs {
 			`{"type": "drop-item", "slot": i32(0...9)}`,
 
 			`{"type": "attack", "entityId": string} // needs to be in close entities (2 meters)`,
+
+			`{"type": "create-mission", "title": string, "description": string, "reward": string?} // create a mission others can accept`,
+			`{"type": "accept-mission", "missionId": string} // accept an available mission`,
+			`{"type": "complete-mission", "missionId": string, "acceptorId": string} // mark mission as completed (only if you created it)`,
+			`{"type": "abandon-mission", "missionId": string} // abandon a mission you accepted`,
 
 			`{"type": "move-follow-entity", "entityId": string, "distance": f32}`,
 			`{"type": "move-to-point", "x": f32, "z": f32}`,
@@ -146,6 +160,7 @@ export class NPCContextEcs extends ComponentEcs {
 			| 'long-memory'
 			| 'short-memory'
 			| 'last-messages'
+			| 'missions'
 		)[] = [],
 	): string {
 		this.eventQueue.popEvents();
@@ -197,6 +212,11 @@ export class NPCContextEcs extends ComponentEcs {
 
 		if (skip.includes('last-messages') === false) {
 			context.push(this.lastMessages.toStringContext());
+		}
+
+		if (skip.includes('missions') === false) {
+			this.missionsContext.refresh();
+			context.push(this.missionsContext.toStringContext());
 		}
 
 		return context.join('\n\n');

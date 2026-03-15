@@ -101,9 +101,13 @@
 				['Total Playtime', '300 hours', 'N/A'],
 			])}
 
-			<div class="flex w-full flex-row items-center justify-center gap-8">
+			<div class="flex w-full flex-row flex-wrap items-center justify-center gap-4">
 				<Button type="button" onclick={() => router.changeRoute('/game')}>
 					Go to Game
+				</Button>
+
+				<Button type="button" onclick={() => router.changeRoute('/missions')}>
+					Missions
 				</Button>
 
 				<Button type="button" onclick={logoutHandler}>Logout</Button>

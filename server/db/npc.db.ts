@@ -59,7 +59,7 @@ type UpdateNPCType = SQL.InferSqlBuilder<
 
 export const updateNPC: UpdateNPCType = SQL.sqlBuilder(
 	async ({ npcId, agent, entity, npc }, sql) => {
-		return sql.begin(async (tx) => {
+		return SQL.transaction(sql, async (tx) => {
 			// Validate Existence
 			const existingNPC = await SQL.findOne<NPCDB>(
 				{
@@ -158,7 +158,7 @@ type CreateNPCType = SQL.InferSqlBuilder<
 
 export const createNPC: CreateNPCType = SQL.sqlBuilder(
 	async ({ npc, entity, agent }, sql) => {
-		return sql.begin(async (tx) => {
+		return SQL.transaction(sql, async (tx) => {
 			const createdAgentOp = await SQL.insertIntoTable<AgentDB>(
 				'Agent',
 				{

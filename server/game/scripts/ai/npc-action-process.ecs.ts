@@ -12,6 +12,11 @@ import { NPCEventQueueEcs } from './npc-event-queue.ecs';
 import * as ExperimentRepository from '$/db/experiment.db';
 import * as LLMService from '$/services/llm.service';
 import * as LTMRepository from '$/db/ltm.db';
+import * as MissionService from '$/services/mission.service';
+import {
+	notifyEntity,
+	notifyEntityById,
+} from '../missions/mission-action.handler';
 import { StopMovementOption } from '../entity/follow-path/stop-movement.class';
 import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
 import { FollowPositionOption } from '../entity/follow-path/follow-position.class';
@@ -218,6 +223,134 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				this.entityParent.get(InventoryServerEcs).ifSome((inventory) => {
 					inventory.dropItem(action.slot);
 				});
+			}
+
+			// Mission actions
+			if (action.type === 'create-mission') {
+				MissionService.createMission({
+					creatorId: npcId,
+					creatorType: 'NPC',
+					payload: {
+						title: action.title,
+						description: action.description,
+						reward: action.reward ?? null,
+					},
+				})
+					.then((mission) => {
+						this.npcContextEcs.missionsContext.addCreatedMission(mission);
+						this.serverData.room.broadcast('mission:created', {
+							mission,
+							creatorName: this.parent,
+						});
+						console.log('NPC created mission:', mission.title);
+					})
+					.catch((err) => {
+						console.error('Failed to create mission:', err);
+					});
+			}
+
+			if (action.type === 'accept-mission') {
+				MissionService.acceptMission({
+					missionId: action.missionId,
+					acceptorId: npcId,
+					acceptorType: 'NPC',
+				})
+					.then(async (acceptance) => {
+						const mission = this.npcContextEcs.missionsContext.getMissionById(
+							action.missionId,
+						);
+						if (mission) {
+							this.npcContextEcs.missionsContext.addAcceptedMission({
+								...mission,
+								acceptances: [acceptance],
+							});
+						}
+						const fullMission = await MissionService.getMission(
+							action.missionId,
+						);
+						this.serverData.room.broadcast('mission:accepted', {
+							missionId: action.missionId,
+							missionTitle: fullMission.title,
+							acceptorName: this.parent,
+							acceptorType: 'NPC',
+						});
+						notifyEntity(
+							this.serverData.room,
+							this.world,
+							fullMission.creatorId,
+							fullMission.creatorType,
+							{
+								type: 'mission:accepted',
+								missionId: action.missionId,
+								missionTitle: fullMission.title,
+								acceptorName: this.parent ?? 'Unknown',
+							},
+						);
+						console.log('NPC accepted mission:', action.missionId);
+					})
+					.catch((err) => {
+						console.error('Failed to accept mission:', err);
+					});
+			}
+
+			if (action.type === 'complete-mission') {
+				MissionService.completeMission({
+					missionId: action.missionId,
+					acceptorId: action.acceptorId,
+					creatorId: npcId,
+					creatorType: 'NPC',
+				})
+					.then((mission) => {
+						this.npcContextEcs.missionsContext.removeMission(action.missionId);
+						this.serverData.room.broadcast('mission:completed', {
+							mission,
+							acceptorId: action.acceptorId,
+							validatorName: this.parent,
+						});
+						notifyEntityById(
+							this.serverData.room,
+							this.world,
+							action.acceptorId,
+							{
+								type: 'mission:completed',
+								missionId: action.missionId,
+								missionTitle: mission.title,
+								validatorName: this.parent ?? 'Unknown',
+							},
+						);
+						console.log('NPC completed mission:', mission.title);
+					})
+					.catch((err) => {
+						console.error('Failed to complete mission:', err);
+					});
+			}
+
+			if (action.type === 'abandon-mission') {
+				MissionService.abandonMission({
+					missionId: action.missionId,
+					acceptorId: npcId,
+					acceptorType: 'NPC',
+				})
+					.then(async () => {
+						this.npcContextEcs.missionsContext.removeMission(action.missionId);
+						const mission = await MissionService.getMission(action.missionId);
+						notifyEntity(
+							this.serverData.room,
+							this.world,
+							mission.creatorId,
+							mission.creatorType,
+							{
+								type: 'mission:abandoned',
+								missionId: action.missionId,
+								missionTitle: mission.title,
+								abandonerName: this.parent ?? 'Unknown',
+							},
+						);
+						console.log('NPC abandoned mission:', action.missionId);
+					})
+					.catch((err) => {
+						console.error('Failed to abandon mission:', err);
+					});
 			}
 
 			if (action.type === '@request-acting-again') {

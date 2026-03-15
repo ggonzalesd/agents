@@ -5,7 +5,14 @@ import { Publisher } from '#/utils/Publisher';
 
 type GameType = {
 	paused: boolean;
-	view: 'MENU' | 'MESSAGE' | 'INFO' | 'INVENTORY' | 'ONLEAVE' | 'ENTITYDETAILS';
+	view:
+		| 'MENU'
+		| 'MESSAGE'
+		| 'INFO'
+		| 'INVENTORY'
+		| 'ONLEAVE'
+		| 'ENTITYDETAILS'
+		| 'MISSIONS';
 	username: string;
 	selectedEntityId: string | null;
 };

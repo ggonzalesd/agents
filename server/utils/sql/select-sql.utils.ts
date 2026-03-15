@@ -1,4 +1,4 @@
-import type { Helper, PendingQuery, Row, Sql, TransactionSql } from 'postgres';
+import type { Helper, PendingQuery, Row, Sql } from 'postgres';
 import { buildWhereClause } from './basic-sql.utils';
 
 // Select Many
@@ -19,7 +19,7 @@ export function findMany<V extends { [key: string]: any }>(
 		limit?: number;
 		offset?: number;
 	},
-	sql: Sql | TransactionSql,
+	sql: Sql,
 ): Promise<V[]> {
 	if (!where) {
 		where = (data, sql) => sql`${buildWhereClause(data, sql)}`;
@@ -45,7 +45,7 @@ export function findOne<V extends { [key: string]: any }>(
 			sql: Sql,
 		) => PendingQuery<Row[]> | Helper<string, []>;
 	},
-	sql: Sql | TransactionSql,
+	sql: Sql,
 ): Promise<V | null> {
 	if (!where) {
 		where = (data, sql) => sql`${buildWhereClause(data, sql)}`;

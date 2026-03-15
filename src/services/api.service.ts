@@ -219,3 +219,168 @@ export const getAllUsersService = async (): Promise<
 		data: body.data,
 	};
 };
+
+// Mission Services
+
+import {
+	type CreateMissionInput,
+	createMissionResSchema,
+	getMissionResSchema,
+	listMissionsResSchema,
+	listMissionsWithAcceptancesResSchema,
+	acceptMissionResSchema,
+	completeMissionResSchema,
+	abandonMissionResSchema,
+} from '#/schema/mission.schema';
+
+export const getOpenMissionsService = async (
+	limit = 20,
+): Promise<
+	OkResponse<z.infer<typeof listMissionsResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.get(`/mission?limit=${limit}`);
+		const body = listMissionsResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const getMissionsByEntityIdService = async (
+	identifier: string,
+	limit = 20,
+): Promise<
+	OkResponse<z.infer<typeof listMissionsResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.get(
+			`/mission/entity/${identifier}?limit=${limit}`,
+		);
+		const body = listMissionsResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const getMyCreatedMissionsService = async (
+	limit = 10,
+): Promise<
+	| OkResponse<z.infer<typeof listMissionsWithAcceptancesResSchema>['data']>
+	| ErrorResponse
+> => {
+	try {
+		const response = await httpService.get(
+			`/mission/me/created?limit=${limit}`,
+		);
+		const body = listMissionsWithAcceptancesResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const getMyAcceptedMissionsService = async (
+	limit = 10,
+): Promise<
+	| OkResponse<z.infer<typeof listMissionsWithAcceptancesResSchema>['data']>
+	| ErrorResponse
+> => {
+	try {
+		const response = await httpService.get(
+			`/mission/me/accepted?limit=${limit}`,
+		);
+		const body = listMissionsWithAcceptancesResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const getMissionByIdService = async (
+	missionId: string,
+): Promise<
+	OkResponse<z.infer<typeof getMissionResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.get(`/mission/${missionId}`);
+		const body = getMissionResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const createMissionService = async (
+	payload: CreateMissionInput,
+): Promise<
+	OkResponse<z.infer<typeof createMissionResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.post('/mission', payload);
+		const body = createMissionResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const acceptMissionService = async (
+	missionId: string,
+): Promise<
+	OkResponse<z.infer<typeof acceptMissionResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.post(`/mission/${missionId}/accept`);
+		const body = acceptMissionResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const completeMissionService = async (
+	missionId: string,
+	acceptorId: string,
+): Promise<
+	OkResponse<z.infer<typeof completeMissionResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.post(
+			`/mission/${missionId}/complete/${acceptorId}`,
+		);
+		const body = completeMissionResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const abandonMissionService = async (
+	missionId: string,
+): Promise<
+	OkResponse<z.infer<typeof abandonMissionResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.post(`/mission/${missionId}/abandon`);
+		const body = abandonMissionResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const cancelMissionService = async (
+	missionId: string,
+): Promise<
+	OkResponse<z.infer<typeof completeMissionResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.delete(`/mission/${missionId}`);
+		const body = completeMissionResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};

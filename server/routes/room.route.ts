@@ -40,7 +40,7 @@ router.post(
 	async (req, res) => {
 		const { id } = req.params;
 
-		const rooms = await matchMaker.query({ roomId: id });
+		const rooms = await matchMaker.query({ roomId: id as string });
 		const room = rooms[0];
 
 		if (!room) {

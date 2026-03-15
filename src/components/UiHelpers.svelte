@@ -3,6 +3,11 @@
 <script lang="ts">
 	import ViewDebugContext from '@/components/ViewDebugContext.svelte';
 	import ViewActionsContext from './ViewActionsContext.svelte';
+	import { getRouterContext } from '@/hooks/useRouter.svelte';
+	import { getGameStateContext } from '@/hooks/useGameState.svelte';
+
+	const { changeRoute } = getRouterContext();
+	const gameState = getGameStateContext();
 
 	let helper = $state<'DEBUG' | 'ACTIONS'>('DEBUG');
 
@@ -26,6 +31,10 @@
 		<div class="w-2"></div>
 		{@render btn('Debug', () => (helper = 'DEBUG'))}
 		{@render btn('Actions', () => (helper = 'ACTIONS'))}
+		<div class="w-2"></div>
+		{@render btn('📋 Missions', () => gameState.setPause(true, 'MISSIONS'))}
+		{@render btn('🎒 Inventory', () => gameState.setPause(true, 'INVENTORY'))}
+		{@render btn('👤 Profile', () => changeRoute('/profile'))}
 	{/if}
 </div>
 

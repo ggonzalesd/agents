@@ -13,11 +13,12 @@ interface PlayerServerFactoryParams {
 	name: string;
 	pos: IVec3;
 	username: string;
+	entityId: string;
 }
 
 export const playerServerFactoryGenerator =
 	(world: WorldEcs) =>
-	({ sessionId, name, pos, username }: PlayerServerFactoryParams) => {
+	({ sessionId, name, pos, username, entityId }: PlayerServerFactoryParams) => {
 		const state = new PlayerState({ pos, skin: username, sessionId });
 
 		return new EntityEcs({
@@ -27,6 +28,9 @@ export const playerServerFactoryGenerator =
 				[RecordEcs.name]: new RecordEcs({
 					session: {
 						id: sessionId,
+					},
+					db: {
+						id: entityId,
 					},
 				}),
 				[CharacterBodyServerEcs.name]: new CharacterBodyServerEcs(

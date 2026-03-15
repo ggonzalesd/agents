@@ -86,6 +86,35 @@ const actionAttackSchema = z.object({
 	entityId: z.string(),
 });
 
+// (📜) Mission action schemas
+const actionCreateMissionSchema = z.object({
+	type: z.literal('create-mission'),
+	title: z.string().min(3).max(255),
+	description: z.string().min(10).max(2000),
+	reward: z.string().max(500).optional(),
+});
+
+const actionAcceptMissionSchema = z.object({
+	type: z.literal('accept-mission'),
+	missionId: z.string(),
+});
+
+const actionCompleteMissionSchema = z.object({
+	type: z.literal('complete-mission'),
+	missionId: z.string(),
+	acceptorId: z.string(),
+});
+
+const actionAbandonMissionSchema = z.object({
+	type: z.literal('abandon-mission'),
+	missionId: z.string(),
+});
+
+const actionCancelMissionSchema = z.object({
+	type: z.literal('cancel-mission'),
+	missionId: z.string(),
+});
+
 // (🎬) MetaActions for npc control
 const actionRequestActingAgainSchema = z.object({
 	type: z.literal('@request-acting-again'),
@@ -112,6 +141,12 @@ export const actionsSchema = z.union([
 	actionPickItemSchema,
 	actionDropItemSchema,
 	actionAttackSchema,
+
+	actionCreateMissionSchema,
+	actionAcceptMissionSchema,
+	actionCompleteMissionSchema,
+	actionAbandonMissionSchema,
+	actionCancelMissionSchema,
 
 	actionRequestActingAgainSchema,
 ]);

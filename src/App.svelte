@@ -21,6 +21,7 @@
 	import ProfileView from '@/views/ProfileView.svelte';
 	import Loading from '@/views/Loading.svelte';
 	import AdminView from '@/views/AdminView.svelte';
+	import MissionsView from '@/views/MissionsView.svelte';
 	import { models } from './game/scripts/render-map.util';
 
 	const queryClient = new QueryClient();
@@ -105,6 +106,10 @@
 
 		<Router route="/admin">
 			<AdminView />
+		</Router>
+
+		<Router route="/missions">
+			<MissionsView />
 		</Router>
 	</main>
 </QueryClientProvider>

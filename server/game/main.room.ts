@@ -135,6 +135,7 @@ export class MainRoom extends Room<GameState> {
 				sessionId: client.sessionId,
 				name: userInfo.agent.identifier,
 				username: payload.username,
+				entityId: userInfo.entity.id,
 				pos: {
 					x: userInfo.agent.positionX,
 					y: userInfo.agent.positionY,

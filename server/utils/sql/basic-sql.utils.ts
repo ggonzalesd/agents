@@ -10,10 +10,13 @@ import sql from '$/config/db.config';
  */
 export function transaction<T>(
 	t: TransactionSql | Sql,
-	cb: (sql: TransactionSql) => Promise<T>,
+	cb: (sql: Sql) => Promise<T>,
 ) {
-	const trx = 'savepoint' in t ? t.savepoint.bind(t) : t.begin.bind(t);
-	return trx(cb);
+	const wrappedCb = (tx: TransactionSql) => cb(tx as unknown as Sql);
+	if ('savepoint' in t) {
+		return t.savepoint(wrappedCb) as Promise<T>;
+	}
+	return t.begin(wrappedCb) as Promise<T>;
 }
 
 /**
@@ -22,10 +25,10 @@ export function transaction<T>(
  * @returns Una función que recibe los argumentos y un objeto SQL opcional.
  */
 export function sqlBuilder<P extends { [key: string]: unknown }, R>(
-	fn: (args: P, sql: TransactionSql | Sql) => Promise<R>,
+	fn: (args: P, sql: Sql) => Promise<R>,
 ) {
 	return (args: P, __sql?: TransactionSql | Sql): Promise<R> =>
-		fn({ ...args } as P, __sql ?? sql);
+		fn({ ...args } as P, (__sql ?? sql) as Sql);
 }
 
 /**
@@ -35,7 +38,7 @@ export function sqlBuilder<P extends { [key: string]: unknown }, R>(
  */
 export function buildWhereClause<T extends { [key: string]: any }>(
 	data: T,
-	sql: Sql | TransactionSql,
+	sql: Sql,
 ) {
 	return Object.entries(data)
 		.filter(([_, value]) => value !== undefined)

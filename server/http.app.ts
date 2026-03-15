@@ -12,6 +12,7 @@ import roomRoute from '$/routes/room.route';
 import authRoute from '$/routes/auth.route';
 import skinRoute from '$/routes/skin.route';
 import npcRoute from '$/routes/npc.route';
+import missionRoute from '$/routes/mission.route';
 
 import envConfig from '$/config/env.config';
 
@@ -57,6 +58,7 @@ export const applyHttpApplication = (
 	group.use('/auth', authRoute);
 	group.use('/skin', skinRoute);
 	group.use('/npc', npcRoute);
+	group.use('/mission', missionRoute);
 
 	app.use((_, res) => {
 		res.status(404).json({

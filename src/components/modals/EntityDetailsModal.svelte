@@ -10,17 +10,35 @@
 	import type { NPCState } from '#/state/game.state';
 	import * as THREE from 'three';
 	import { cloneMesh, loadGLB, loadTexture } from '@/utils/assets.utils';
+	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
+	import { getMissionsByEntityIdService, acceptMissionService } from '@/services/api.service';
+	import type { MissionResponse } from '#/schema/mission.schema';
+	import Button from '@/components/ui/Button.svelte';
 
 	let gameState = getGameStateContext();
 
-	// Access ECS world to read the selected entity state
 	const worldOp = getContext<Option<WorldEcs>>(WorldEcs.name);
+	const queryClient = useQueryClient();
 
-	// Derive selected entity data
 	let skin = $state<string | null>(null);
 	let title = $state('Entity Details');
+	let entityId = $state<string | null>(null);
 
 	let viewer = $state<{ setSkin: (s: string | null) => void } | null>(null);
+
+	type DetailsTab = 'stats' | 'missions';
+	let activeTab = $state<DetailsTab>('stats');
+
+	const entityMissionsQuery = createQuery(() => ({
+		queryKey: ['missions', 'entity', entityId],
+		queryFn: () => getMissionsByEntityIdService(entityId!),
+		enabled: !!entityId && activeTab === 'missions',
+	}));
+
+	const acceptMutation = createMutation(() => ({
+		mutationFn: (missionId: string) => acceptMissionService(missionId),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ['missions'] }),
+	}));
 
 	function skinUrl(s: string | null): string {
 		if (s && s.trim().length > 0) {
@@ -116,6 +134,8 @@
 
 		skin = null;
 		title = 'Entity Details';
+		entityId = selectedId;
+		activeTab = 'stats';
 
 		if (!world || !selectedId) return;
 
@@ -127,8 +147,6 @@
 
 		if (!record) return;
 
-		// Both PlayerState and NPCState have 'skin'
-		// For title we distinguish by shape (PlayerState has 'sessionId')
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		const anyRecord: any = record;
 		if ('sessionId' in anyRecord) {
@@ -138,13 +156,12 @@
 		}
 
 		skin = record.skin ?? null;
-		// Update viewer texture if already mounted
 		viewer?.setSkin(skin);
 	});
 </script>
 
 <div
-	class="text-gris-50 flex w-[400px] flex-col gap-6 rounded-lg bg-[url(/background-entity-information.svg)] bg-cover bg-center bg-no-repeat p-6 md:w-[550px]"
+	class="text-gris-50 flex w-[400px] flex-col gap-4 rounded-lg bg-[url(/background-entity-information.svg)] bg-cover bg-center bg-no-repeat p-6 md:w-[550px]"
 >
 	<h1 class="text-center text-2xl font-bold">{title}</h1>
 
@@ -155,22 +172,67 @@
 			<canvas class="h-full w-full" {@attach modelAttach}></canvas>
 		</div>
 
-		<div
-			class="border-gris-50 text-gris-50 flex w-full flex-col gap-1.5 rounded-lg border p-4 md:w-3/5"
-		>
-			{#each [['Health (HP)', '100 / 100'], ['Hunger (Food)', '75 / 100'], ['Stade', 'Happy'], ['Nº Missions', '12'], ['Nº Achievements', '14']] as stat, index}
-				<div class="flex justify-between">
-					<p class="text-md font-bold">{stat[0]}</p>
-					<p class="text-sm">{stat[1]}</p>
+		<div class="flex w-full flex-col gap-2 md:w-3/5">
+			<!-- Tabs -->
+			<div class="flex gap-1 border-b border-white/20 pb-2">
+				<button
+					class="px-3 py-1 text-xs font-medium rounded {activeTab === 'stats' ? 'bg-blue-600' : 'text-gray-300 hover:text-white'}"
+					onclick={() => activeTab = 'stats'}
+				>Stats</button>
+				<button
+					class="px-3 py-1 text-xs font-medium rounded {activeTab === 'missions' ? 'bg-blue-600' : 'text-gray-300 hover:text-white'}"
+					onclick={() => activeTab = 'missions'}
+				>Misiones</button>
+			</div>
+
+			{#if activeTab === 'stats'}
+				<div
+					class="border-gris-50 text-gris-50 flex w-full flex-col gap-1.5 rounded-lg border p-4"
+				>
+					{#each [['Health (HP)', '100 / 100'], ['Hunger (Food)', '75 / 100'], ['Stade', 'Happy'], ['Nº Missions', '12'], ['Nº Achievements', '14']] as stat, index}
+						<div class="flex justify-between">
+							<p class="text-md font-bold">{stat[0]}</p>
+							<p class="text-sm">{stat[1]}</p>
+						</div>
+						{#if index !== 4}
+							<hr class="border-gris-50" />
+						{/if}
+					{/each}
 				</div>
-				{#if index !== 4}
-					<hr class="border-gris-50" />
-				{/if}
-			{/each}
+			{:else}
+				<div class="flex flex-col gap-2 overflow-y-auto max-h-[280px] pr-1">
+					{#if entityMissionsQuery.isLoading}
+						<div class="text-gray-300 text-center py-4 text-sm">Cargando...</div>
+					{:else if entityMissionsQuery.isError}
+						<div class="text-red-400 text-center py-4 text-sm">Error al cargar misiones</div>
+					{:else if entityMissionsQuery.isSuccess && entityMissionsQuery.data.ok}
+						{#if entityMissionsQuery.data.data.missions.length === 0}
+							<div class="text-gray-400 text-center py-4 text-sm">No tiene misiones disponibles</div>
+						{:else}
+							{#each entityMissionsQuery.data.data.missions as mission (mission.id)}
+								<div class="bg-black/30 rounded p-3 border border-white/10">
+									<div class="flex justify-between items-start mb-1">
+										<span class="font-medium text-sm">{mission.title}</span>
+										<span class="text-xs px-2 py-0.5 rounded bg-green-600">{mission.status}</span>
+									</div>
+									<p class="text-gray-300 text-xs mb-2">{mission.description}</p>
+									{#if mission.reward}
+										<div class="text-xs text-amber-400 mb-2">🏆 {mission.reward}</div>
+									{/if}
+									<Button
+										type="button"
+										class="h-7 px-2 text-xs"
+										onclick={() => acceptMutation.mutate(mission.id)}
+										disabled={acceptMutation.isPending}
+									>
+										Aceptar misión
+									</Button>
+								</div>
+							{/each}
+						{/if}
+					{/if}
+				</div>
+			{/if}
 		</div>
 	</div>
-
-	<p class="text-center text-sm">
-		Detalles de la entidad seleccionada. (Contenido de ejemplo)
-	</p>
 </div>

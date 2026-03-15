@@ -1,11 +1,11 @@
 import { Option } from '#/utils/Option';
-import type { Helper, PendingQuery, Row, Sql, TransactionSql } from 'postgres';
+import type { Helper, PendingQuery, Row, Sql } from 'postgres';
 import { buildWhereClause } from './basic-sql.utils';
 
 export function insertIntoTable<T extends object>(
 	table: string,
 	data: Partial<T>,
-	sql: TransactionSql | Sql,
+	sql: Sql,
 ): Promise<Option<T>> {
 	const record: Record<string, unknown> = {};
 
@@ -37,7 +37,7 @@ export function updateTable<T extends object>(
 			sql: Sql,
 		) => PendingQuery<Row[]> | Helper<string, []>;
 	},
-	sql: TransactionSql | Sql,
+	sql: Sql,
 ): Promise<Option<T>> {
 	if (!whereFn) {
 		whereFn = (data, sql) => sql`${buildWhereClause(data, sql)}`;
