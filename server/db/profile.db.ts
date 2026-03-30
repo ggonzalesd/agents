@@ -1,76 +1,48 @@
 import { Option } from '#/utils/Option';
 import type { ProfileDB } from '$/models/Profile.model';
-
-import * as SQL from '$/utils/sql';
+import prisma from '$/config/prisma.config';
+import type { PrismaTransactionClient } from '$/config/prisma.config';
 
 export const PROFILE_TABLE_NAME = 'Profile';
 
 // * Get profile by username
-type GetProfileByUsernameType = SQL.InferSqlBuilder<
-	{ username: string },
-	ProfileDB[]
->;
-
-export const getProfileByUsername: GetProfileByUsernameType = SQL.sqlBuilder(
-	async ({ username }, sql) => {
-		const profiles = await sql<
-			ProfileDB[]
-		>`SELECT p.* FROM ${sql(PROFILE_TABLE_NAME)} as p JOIN "User" as u ON p."userId" = u."id" WHERE u."username" = ${username}`;
-
-		return profiles;
-	},
-);
+export const getProfileByUsername = async (
+	{ username }: { username: string },
+	tx?: PrismaTransactionClient,
+): Promise<ProfileDB[]> => {
+	const db = tx ?? prisma;
+	const profiles = await db.profile.findMany({
+		where: { User: { username } },
+	});
+	return profiles as ProfileDB[];
+};
 
 // * Get profiles by userId
-type GetProfilesByUserIdType = SQL.InferSqlBuilder<
-	{ userId: string },
-	ProfileDB[]
->;
-
-export const getProfilesByUserId: GetProfilesByUserIdType = SQL.sqlBuilder(
-	({ userId }, sql) =>
-		SQL.findMany<ProfileDB>(
-			{
-				table: PROFILE_TABLE_NAME,
-				data: {
-					userId,
-				},
-			},
-			sql,
-		),
-);
+export const getProfilesByUserId = async (
+	{ userId }: { userId: string },
+	tx?: PrismaTransactionClient,
+): Promise<ProfileDB[]> => {
+	const db = tx ?? prisma;
+	const profiles = await db.profile.findMany({ where: { userId } });
+	return profiles as ProfileDB[];
+};
 
 // * Get profile by entityId
-type GetProfileByEntityIdType = SQL.InferSqlBuilder<
-	{ entityId: string },
-	Option<ProfileDB>
->;
-
-export const getProfileByEntityId: GetProfileByEntityIdType = SQL.sqlBuilder(
-	async ({ entityId }, sql) =>
-		SQL.findOne<ProfileDB>(
-			{
-				table: PROFILE_TABLE_NAME,
-				data: {
-					entityId,
-				},
-			},
-			sql,
-		).then(Option.of),
-);
+export const getProfileByEntityId = async (
+	{ entityId }: { entityId: string },
+	tx?: PrismaTransactionClient,
+): Promise<Option<ProfileDB>> => {
+	const db = tx ?? prisma;
+	const profile = await db.profile.findUnique({ where: { entityId } });
+	return Option.of(profile as ProfileDB | null);
+};
 
 // * Create profile
-type CreateProfileType = SQL.InferSqlBuilder<
-	{ userId: string; entityId: string },
-	ProfileDB
->;
-
-export const createProfile: CreateProfileType = SQL.sqlBuilder(
-	async ({ userId, entityId }, sql) => {
-		const result = await sql<ProfileDB[]>`INSERT INTO ${sql(
-			PROFILE_TABLE_NAME,
-		)} ("userId", "entityId") VALUES (${userId}, ${entityId}) RETURNING *`;
-
-		return result[0];
-	},
-);
+export const createProfile = async (
+	{ userId, entityId }: { userId: string; entityId: string },
+	tx?: PrismaTransactionClient,
+): Promise<ProfileDB> => {
+	const db = tx ?? prisma;
+	const profile = await db.profile.create({ data: { userId, entityId } });
+	return profile as ProfileDB;
+};

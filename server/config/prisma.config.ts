@@ -1,19 +1,16 @@
-import postgres from 'postgres';
-
+import { PrismaClient, type Prisma } from '$/generated/prisma/client';
 import envConfig from './env.config';
 
-const sql = postgres(envConfig.DB_URL, {
-	max: 20,
-	connect_timeout: 10,
-	idle_timeout: 0,
-	max_lifetime: 60 * 30,
-	debug: (conn, query) => {
-		if (envConfig.NODE_ENV === 'development') {
-			console.log(
-				`\n\u001b[38;5;208m[SQL:${conn}] \u001b[33m${query}\n\u001b[0m`,
-			);
-		}
-	},
+export type PrismaTransactionClient = Prisma.TransactionClient;
+
+const prisma = new PrismaClient({
+	log:
+		envConfig.NODE_ENV === 'development'
+			? [
+					{ emit: 'stdout', level: 'query' },
+					{ emit: 'stdout', level: 'error' },
+				]
+			: [{ emit: 'stdout', level: 'error' }],
 });
 
 export async function checkDbConnection() {
@@ -21,7 +18,7 @@ export async function checkDbConnection() {
 	while (attempts > 0) {
 		try {
 			console.log('Checking database connection...');
-			await sql`SELECT 1`;
+			await prisma.$queryRaw`SELECT 1`;
 			console.log('Database connection successful');
 			break;
 		} catch (error) {
@@ -40,12 +37,11 @@ export async function checkDbConnection() {
 		}
 	}
 
-	// Gracefully close the database connection on process termination
 	process.on('SIGINT', async () => {
-		await sql.end({ timeout: 5 });
+		await prisma.$disconnect();
 		console.log('Database connection closed');
 		process.exit(0);
 	});
 }
 
-export default sql;
+export default prisma;

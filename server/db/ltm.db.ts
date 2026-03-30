@@ -1,87 +1,89 @@
 import type { LongTermMemoryDB } from '$/models/LongTermMemory.model';
-import * as SQL from '$/utils/sql';
+import prisma from '$/config/prisma.config';
 
-type RetrieveLongTermMemoryType = SQL.InferSqlBuilder<
-	{
-		npcIdentifier: string;
-		queryEmbedding: number[];
-		limit: number;
-		importance: number;
-	},
-	LongTermMemoryDB[]
->;
+export const retrieveLongTermMemory = async ({
+	npcIdentifier,
+	queryEmbedding,
+	limit,
+	importance,
+}: {
+	npcIdentifier: string;
+	queryEmbedding: number[];
+	limit: number;
+	importance: number;
+}): Promise<LongTermMemoryDB[]> => {
+	const vectorStr = `[${queryEmbedding.join(',')}]`;
 
-export const retrieveLongTermMemory: RetrieveLongTermMemoryType =
-	SQL.sqlBuilder(
-		({ npcIdentifier, queryEmbedding, limit, importance }, sql) =>
-			sql<LongTermMemoryDB[]>`SELECT * FROM "LongTermMemory"
-			WHERE "npcId" = (
-				SELECT id FROM "Agent" WHERE identifier = ${npcIdentifier}
-			) AND importance >= ${importance}
-			ORDER BY embedding <=> ${`[${queryEmbedding.join(',')}]`}::vector(3072)
-			LIMIT ${limit}
-		`,
-	);
+	return prisma.$queryRaw<LongTermMemoryDB[]>`
+		SELECT * FROM "LongTermMemory"
+		WHERE "npcId" = (
+			SELECT id FROM "Agent" WHERE identifier = ${npcIdentifier}
+		) AND importance >= ${importance}
+		ORDER BY embedding <=> ${vectorStr}::vector(3072)
+		LIMIT ${limit}
+	`;
+};
 
-type SaveLongTermMemory = SQL.InferSqlBuilder<
-	{
-		npcIdentifier: string;
-		text: string;
-		metadata: object;
-		embedding: number[];
-		importance: number;
-	},
-	LongTermMemoryDB
->;
+export const saveLongTermMemory = async ({
+	npcIdentifier,
+	text,
+	metadata,
+	embedding,
+	importance,
+}: {
+	npcIdentifier: string;
+	text: string;
+	metadata: object;
+	embedding: number[];
+	importance: number;
+}): Promise<LongTermMemoryDB> => {
+	return prisma.$transaction(async (tx) => {
+		let identifier: string;
+		let count = 0;
+		let existingCount: number;
 
-export const saveLongTermMemory: SaveLongTermMemory = SQL.sqlBuilder(
-	({ npcIdentifier, text, metadata, embedding, importance }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			let identifier: string;
-			let count = 0;
-			let existingCount: number;
+		do {
+			identifier = Math.random()
+				.toString(36)
+				.substring(2, 5 + count);
+			if (count < 5) count++;
 
-			do {
-				identifier = Math.random()
-					.toString(36)
-					.substring(2, 5 + count);
-				if (count < 5) count++;
-
-				existingCount = await tx<
-					{ count: number }[]
-				>`SELECT COUNT(*) count FROM "LongTermMemory" WHERE identifier = ${identifier}`
-					.then((result) => result[0].count)
-					.then(Number);
-			} while (existingCount > 0);
-
-			const existingNPC = await tx<{ id: string }[]>`
-				SELECT npc.id FROM "NPC" npc join "Agent" agent on npc.id = agent.id WHERE agent.identifier = ${npcIdentifier}
+			const result = await tx.$queryRaw<{ count: bigint }[]>`
+				SELECT COUNT(*) as count FROM "LongTermMemory" WHERE identifier = ${identifier}
 			`;
+			existingCount = Number(result[0].count);
+		} while (existingCount > 0);
 
-			if (existingNPC.length === 0) {
-				throw new Error(`NPC with identifier ${npcIdentifier} not found`);
-			}
+		const existingNPC = await tx.nPC.findFirst({
+			where: { entity: { agent: { identifier: npcIdentifier } } },
+		});
 
-			const results = await tx<
-				LongTermMemoryDB[]
-			>`INSERT INTO "LongTermMemory" ("npcId", identifier, text, metadata, embedding, importance)
-				VALUES (
-					(SELECT id FROM "Agent" WHERE identifier = ${npcIdentifier}),
-					${identifier},
-					${text},
-					${JSON.stringify(metadata)}::jsonb,
-					${`[${embedding.join(',')}]`}::vector(3072),
-					${importance}
-				)
-				RETURNING *
+		if (!existingNPC) {
+			throw new Error(`NPC with identifier ${npcIdentifier} not found`);
+		}
+
+		const vectorStr = `[${embedding.join(',')}]`;
+		const metadataJson = JSON.stringify(metadata);
+
+		const results = await tx.$queryRaw<LongTermMemoryDB[]>`
+			INSERT INTO "LongTermMemory" ("npcId", identifier, text, metadata, embedding, importance)
+			VALUES (
+				(SELECT id FROM "Agent" WHERE identifier = ${npcIdentifier}),
+				${identifier},
+				${text},
+				${metadataJson}::jsonb,
+				${vectorStr}::vector(3072),
+				${importance}
+			)
+			RETURNING *
 		`;
 
-			const result = results[0];
+		const result = results[0];
 
-			if (!result) {
-				throw new Error('Failed to insert LongTermMemory');
-			}
+		if (!result) {
+			throw new Error('Failed to insert LongTermMemory');
+		}
 
-			return result;
-		}),
-);
+		return result;
+	});
+};

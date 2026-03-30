@@ -6,7 +6,7 @@ import { applyColyseusApplication } from '$/colyseus.app';
 
 import envConfig from '$/config/env.config';
 
-import { checkDbConnection } from './config/db.config';
+import { checkDbConnection } from './config/prisma.config';
 
 import { checkServerListen } from './utils/server.utils';
 

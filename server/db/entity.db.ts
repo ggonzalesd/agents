@@ -1,70 +1,64 @@
 import { Option } from '#/utils/Option';
 import type { EntityDB } from '$/models/Entity.model';
-
-import * as SQL from '$/utils/sql';
-
-import { AGENT_TABLE_NAME } from './agent.db';
+import prisma from '$/config/prisma.config';
+import type { PrismaTransactionClient } from '$/config/prisma.config';
 
 export const ENTITY_TABLE_NAME = 'Entity';
 
 // * Get entity by ID
-type GetEntityById = SQL.InferSqlBuilder<{ id: string }, Option<EntityDB>>;
-
-export const getEntityById: GetEntityById = SQL.sqlBuilder(({ id }, sql) =>
-	SQL.findOne<EntityDB>(
-		{
-			table: ENTITY_TABLE_NAME,
-			data: {
-				id,
-			},
-		},
-		sql,
-	).then(Option.of),
-);
+export const getEntityById = async (
+	{ id }: { id: string },
+	tx?: PrismaTransactionClient,
+): Promise<Option<EntityDB>> => {
+	const db = tx ?? prisma;
+	const entity = await db.entity.findUnique({ where: { id } });
+	return Option.of(entity as EntityDB | null);
+};
 
 // * Create entity
-type CreateEntityType = SQL.InferSqlBuilder<
+export const createEntity = async (
 	{
+		id,
+		life,
+		maxLife,
+		saturation,
+		maxSaturation,
+	}: {
 		id: string;
 		life: number;
 		maxLife: number;
 		saturation: number;
 		maxSaturation: number;
 	},
-	Option<EntityDB>
->;
-
-export const createEntity: CreateEntityType = SQL.sqlBuilder(
-	async ({ id, life, maxLife, saturation, maxSaturation }, sql) => {
-		const result = await sql<
-			EntityDB[]
-		>`INSERT INTO ${sql(ENTITY_TABLE_NAME)} ("id", "life", "maxLife", "saturation", "maxSaturation") VALUES (${id}, ${life}, ${maxLife}, ${saturation}, ${maxSaturation}) RETURNING *`;
-
-		return Option.of(result[0]);
-	},
-);
+	tx?: PrismaTransactionClient,
+): Promise<Option<EntityDB>> => {
+	const db = tx ?? prisma;
+	const entity = await db.entity.create({
+		data: { id, life, maxLife, saturation, maxSaturation },
+	});
+	return Option.of(entity as EntityDB);
+};
 
 // * Save entity
-type SaveEntityType = SQL.InferSqlBuilder<
+export const saveEntity = async (
 	{
+		identifier,
+		data,
+	}: {
 		identifier: string;
 		data: Pick<EntityDB, 'life' | 'saturation'>;
 	},
-	Option<EntityDB>
->;
+	tx?: PrismaTransactionClient,
+): Promise<Option<EntityDB>> => {
+	const db = tx ?? prisma;
 
-export const saveEntity: SaveEntityType = SQL.sqlBuilder(
-	async ({ identifier, data }, sql) => {
-		const setObject = sql(data, 'life', 'saturation');
+	const agent = await db.agent.findUnique({ where: { identifier } });
+	if (!agent) return Option.none();
 
-		const result = await sql<EntityDB[]>`
-		UPDATE ${sql(ENTITY_TABLE_NAME)}
-		SET ${setObject}
-		WHERE "id" in (
-			SELECT "id" FROM ${sql(AGENT_TABLE_NAME)} WHERE "identifier" = ${identifier} LIMIT 1
-		)
-		RETURNING *`;
+	const entity = await db.entity.update({
+		where: { id: agent.id },
+		data: { life: data.life, saturation: data.saturation },
+	});
 
-		return Option.of(result[0]);
-	},
-);
+	return Option.of(entity as EntityDB);
+};

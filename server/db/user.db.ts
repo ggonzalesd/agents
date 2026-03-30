@@ -4,85 +4,67 @@ import * as bcrypt from 'bcrypt';
 import { Option } from '#/utils/Option';
 
 import type { UserDB } from '$/models/user.model';
-
-import * as SQL from '$/utils/sql';
-
-const USER_TABLE_NAME = 'User';
+import type { Role } from '$/generated/prisma/client';
+import prisma from '$/config/prisma.config';
+import type { PrismaTransactionClient } from '$/config/prisma.config';
 
 // * Get user by username
-type GetUserByUsernameType = SQL.InferSqlBuilder<
-	{ username: string },
-	Option<UserDB>
->;
-
-export const getUserByUsername: GetUserByUsernameType = SQL.sqlBuilder(
-	async ({ username }, sql) => {
-		return SQL.findOne<UserDB>(
-			{
-				table: USER_TABLE_NAME,
-				data: {
-					username,
-				},
-			},
-			sql,
-		).then(Option.of);
-	},
-);
+export const getUserByUsername = async (
+	{ username }: { username: string },
+	tx?: PrismaTransactionClient,
+): Promise<Option<UserDB>> => {
+	const db = tx ?? prisma;
+	const user = await db.user.findUnique({ where: { username } });
+	return Option.of(user as UserDB | null);
+};
 
 // * Create user
-type CreateUserType = SQL.InferSqlBuilder<
+export const createUser = async (
 	{
+		username,
+		password,
+		display,
+		role,
+	}: {
 		username: string;
 		password: string;
 		display?: string;
-		role?: 'USER' | 'ADMIN' | 'MODERATOR';
+		role?: Role;
 	},
-	Option<UserDB>
->;
+	tx?: PrismaTransactionClient,
+): Promise<Option<UserDB>> => {
+	const db = tx ?? prisma;
+	const hashedPassword = bcrypt.hashSync(password, 10);
 
-export const createUser: CreateUserType = SQL.sqlBuilder(
-	async ({ username, password, display, role }, sql) => {
-		const hashedPassword = bcrypt.hashSync(password, 10);
+	const user = await db.user.create({
+		data: {
+			username,
+			password: hashedPassword,
+			display: display ?? null,
+			role: role ?? 'USER',
+		},
+	});
 
-		const result = await sql<
-			UserDB[]
-		>`INSERT INTO "User" ("display", "password", "username", "role") VALUES (${display || null}, ${hashedPassword}, ${username}, ${role || 'USER'}) RETURNING *`;
-
-		return Option.of(result[0]);
-	},
-);
+	return Option.of(user as UserDB);
+};
 
 // * Revoke user hash (and optionally password)
-type RevokeUserHashType = SQL.InferSqlBuilder<
-	{
-		id: string;
-		withPassword?: string | undefined;
-	},
-	Option<boolean>
->;
+export const revokeUserHash = async (
+	{ id, withPassword }: { id: string; withPassword?: string },
+	tx?: PrismaTransactionClient,
+): Promise<Option<boolean>> => {
+	const db = tx ?? prisma;
 
-export const revokeUserHash: RevokeUserHashType = SQL.sqlBuilder(
-	async ({ id, withPassword }, sql) => {
-		const _user = await sql`SELECT * FROM "User" WHERE "id" = ${id} LIMIT 1`;
+	const user = await db.user.findUnique({ where: { id } });
+	if (!user) return Option.none();
 
-		if (_user.length === 0) {
-			return Option.none();
-		}
+	const data: { hash: string; password?: string } = { hash: uuidv4() };
+	if (withPassword) {
+		data.password = bcrypt.hashSync(withPassword, 10);
+	}
 
-		const columns = ['hash'];
-		const data: Record<string, string> = {
-			hash: uuidv4(),
-		};
+	const result = await db.user.update({ where: { id }, data });
+	console.log({ result });
 
-		if (withPassword) {
-			data.password = bcrypt.hashSync(withPassword, 10);
-			columns.push('password');
-		}
-
-		const result =
-			await sql`UPDATE "User" SET ${sql(data, columns)} WHERE "id" = ${id} RETURNING *`;
-		console.log({ result });
-
-		return Option.some(true);
-	},
-);
+	return Option.some(true);
+};

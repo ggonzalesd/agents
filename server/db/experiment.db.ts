@@ -1,86 +1,53 @@
-import type { ExperimentRetrievalResults } from '$/generated/prisma/client';
-import type {
-	ExperimentHallucinationResults,
-	ExperimentVariabilityResults,
-} from '$/models/Experiment.model';
-import * as SQL from '$/utils/sql';
+import prisma from '$/config/prisma.config';
 
-type SaveExperimentRetrievalResultsType = SQL.InferSqlBuilder<
-	{
-		npcId: string;
-
-		queryMessage: string;
-		resultsMessages: string;
-	},
-	void
->;
-
-export const saveExperimentRetrievalResults: SaveExperimentRetrievalResultsType =
-	SQL.sqlBuilder(async ({ npcId, queryMessage, resultsMessages }, sql) => {
-		await SQL.insertIntoTable<ExperimentRetrievalResults>(
-			'ExperimentRetrievalResults',
-			{
-				npcId,
-				queryMessage,
-				resultsMessages,
-				llmRetrievalScore: 0.0,
-			},
-			sql,
-		);
+export const saveExperimentRetrievalResults = async ({
+	npcId,
+	queryMessage,
+	resultsMessages,
+}: {
+	npcId: string;
+	queryMessage: string;
+	resultsMessages: string;
+}): Promise<void> => {
+	await prisma.experimentRetrievalResults.create({
+		data: { npcId, queryMessage, resultsMessages, llmRetrievalScore: 0.0 },
 	});
+};
 
-type SaveExperimentVariabilityResultsType = SQL.InferSqlBuilder<
-	{
-		npcId: string;
-
-		delayInMs: number;
-		actionsGenerated: number;
-		failedActions: number;
-		successfulActions: number;
-	},
-	void
->;
-
-export const saveExperimentVariabilityResults: SaveExperimentVariabilityResultsType =
-	SQL.sqlBuilder(
-		async (
-			{ npcId, delayInMs, actionsGenerated, failedActions, successfulActions },
-			sql,
-		) => {
-			await SQL.insertIntoTable<ExperimentVariabilityResults>(
-				'ExperimentVariabilityResults',
-				{
-					npcId,
-					delayInMs,
-					actionsGenerated,
-					failedActions,
-					successfulActions,
-				},
-				sql,
-			);
+export const saveExperimentVariabilityResults = async ({
+	npcId,
+	delayInMs,
+	actionsGenerated,
+	failedActions,
+	successfulActions,
+}: {
+	npcId: string;
+	delayInMs: number;
+	actionsGenerated: number;
+	failedActions: number;
+	successfulActions: number;
+}): Promise<void> => {
+	await prisma.experimentVariabilityResults.create({
+		data: {
+			npcId,
+			delayInMs,
+			actionsGenerated,
+			failedActions,
+			successfulActions,
 		},
-	);
-
-type SaveExperimentHallucinationResultsType = SQL.InferSqlBuilder<
-	{
-		npcId: string;
-
-		relatedInfoInMemory: string;
-		message: string;
-	},
-	void
->;
-
-export const saveExperimentHallucinationResults: SaveExperimentHallucinationResultsType =
-	SQL.sqlBuilder(async ({ npcId, relatedInfoInMemory, message }, sql) => {
-		await SQL.insertIntoTable<ExperimentHallucinationResults>(
-			'ExperimentHallucinationResults',
-			{
-				npcId,
-				relatedInfoInMemory,
-				message,
-				llmHallucinationScore: 0.0,
-			},
-			sql,
-		);
 	});
+};
+
+export const saveExperimentHallucinationResults = async ({
+	npcId,
+	relatedInfoInMemory,
+	message,
+}: {
+	npcId: string;
+	relatedInfoInMemory: string;
+	message: string;
+}): Promise<void> => {
+	await prisma.experimentHallucinationResults.create({
+		data: { npcId, relatedInfoInMemory, message, llmHallucinationScore: 0.0 },
+	});
+};

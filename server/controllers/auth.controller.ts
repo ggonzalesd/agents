@@ -9,7 +9,7 @@ import type {
 	revokeRequestSchema,
 } from '#/schema/auth.schema';
 
-import sql from '$/config/db.config';
+import prisma from '$/config/prisma.config';
 
 import { getAuth } from '$/utils/req.utils';
 import type { AuthPayload } from '$/models/Payload.model';
@@ -82,13 +82,13 @@ export const authRegisterController = async (req: Request, res: Response) => {
 export const revokeTokensController = async (req: Request, res: Response) => {
 	const body = req.body as ReturnType<typeof revokeRequestSchema.parse>;
 
-	await sql.begin((sql) =>
+	await prisma.$transaction((tx) =>
 		UserRepository.revokeUserHash(
 			{
 				id: body.id,
 				withPassword: body.newPassword,
 			},
-			sql,
+			tx,
 		),
 	);
 

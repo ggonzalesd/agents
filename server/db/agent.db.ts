@@ -2,124 +2,91 @@ import { metadataSchema } from '#/schema/utils.schema';
 import { Option } from '#/utils/Option';
 
 import type { AgentDB } from '$/models/Agent.model';
-
-import { safeJSONParse } from '$/utils/transform.utils';
-import * as SQL from '$/utils/sql';
+import prisma from '$/config/prisma.config';
+import type { PrismaTransactionClient } from '$/config/prisma.config';
+import type { Prisma } from '$/generated/prisma/client';
 
 function applyMetadataParsing(agent: {
-	metadata: string | { [key: string]: any };
+	metadata: string | { [key: string]: unknown };
 }) {
-	if (agent == null) {
-		return;
-	}
+	if (agent == null) return;
 
-	const metadataSafe = metadataSchema.safeParse(safeJSONParse(agent.metadata));
-
-	if (metadataSafe.success) {
-		agent.metadata = metadataSafe.data;
-	} else {
-		agent.metadata = {};
-	}
+	const metadataSafe = metadataSchema.safeParse(agent.metadata);
+	agent.metadata = metadataSafe.success ? metadataSafe.data : {};
 }
 
 export const AGENT_TABLE_NAME = 'Agent';
 
 // * Get agent by Identifier
-type GetAgentByIdentifierType = SQL.InferSqlBuilder<
-	{ identifier: string },
-	Option<AgentDB>
->;
-
-export const getAgentByIdentifier: GetAgentByIdentifierType = SQL.sqlBuilder(
-	({ identifier }, sql) =>
-		Option.future(
-			SQL.findOne<AgentDB>(
-				{
-					table: AGENT_TABLE_NAME,
-					data: {
-						identifier,
-					},
-				},
-				sql,
-			),
-		).then((op) => op.ifSome(applyMetadataParsing)),
-);
+export const getAgentByIdentifier = async (
+	{ identifier }: { identifier: string },
+	tx?: PrismaTransactionClient,
+): Promise<Option<AgentDB>> => {
+	const db = tx ?? prisma;
+	const agent = await db.agent.findUnique({ where: { identifier } });
+	if (!agent) return Option.none();
+	applyMetadataParsing(agent as unknown as AgentDB);
+	return Option.some(agent as unknown as AgentDB);
+};
 
 // * Get agent by ID
-type GetAgentByIdType = SQL.InferSqlBuilder<{ id: string }, Option<AgentDB>>;
-
-export const getAgentById: GetAgentByIdType = SQL.sqlBuilder(({ id }, sql) =>
-	Option.future(
-		SQL.findOne<AgentDB>(
-			{
-				table: AGENT_TABLE_NAME,
-				data: {
-					id,
-				},
-			},
-			sql,
-		),
-	).then((op) => op.ifSome(applyMetadataParsing)),
-);
+export const getAgentById = async (
+	{ id }: { id: string },
+	tx?: PrismaTransactionClient,
+): Promise<Option<AgentDB>> => {
+	const db = tx ?? prisma;
+	const agent = await db.agent.findUnique({ where: { id } });
+	if (!agent) return Option.none();
+	applyMetadataParsing(agent as unknown as AgentDB);
+	return Option.some(agent as unknown as AgentDB);
+};
 
 // * Create agent
-type CreateAgentType = SQL.InferSqlBuilder<
-	Omit<AgentDB, 'id' | 'createdAt'>,
-	Option<AgentDB>
->;
-
-export const createAgent: CreateAgentType = SQL.sqlBuilder(
-	async (props, sql) => {
-		const insertObject = sql(
-			{
-				...props,
-				metadata: JSON.stringify(props.metadata),
-			},
-			'display',
-			'identifier',
-			'positionX',
-			'positionY',
-			'positionZ',
-			'rotation',
-			'metadata',
-		);
-
-		return Option.future(
-			sql<AgentDB[]>`
-		INSERT INTO ${sql(AGENT_TABLE_NAME)} ${insertObject}
-		RETURNING *`,
-		).then((op) => op.map((agents) => agents[0]).ifSome(applyMetadataParsing));
-	},
-);
+export const createAgent = async (
+	props: Omit<AgentDB, 'id' | 'createdAt'>,
+	tx?: PrismaTransactionClient,
+): Promise<Option<AgentDB>> => {
+	const db = tx ?? prisma;
+	const agent = await db.agent.create({
+		data: {
+			display: props.display,
+			identifier: props.identifier,
+			positionX: props.positionX,
+			positionY: props.positionY,
+			positionZ: props.positionZ,
+			rotation: props.rotation,
+			metadata: props.metadata as unknown as Prisma.InputJsonValue,
+		},
+	});
+	applyMetadataParsing(agent as unknown as AgentDB);
+	return Option.some(agent as unknown as AgentDB);
+};
 
 // * Save agent
-type SaveAgentType = SQL.InferSqlBuilder<
+export const saveAgent = async (
 	{
+		identifier,
+		data,
+	}: {
 		identifier: string;
 		data: Pick<AgentDB, 'positionX' | 'positionY' | 'positionZ' | 'metadata'>;
 	},
-	Option<AgentDB>
->;
+	tx?: PrismaTransactionClient,
+): Promise<Option<AgentDB>> => {
+	const db = tx ?? prisma;
 
-export const saveAgent: SaveAgentType = SQL.sqlBuilder(
-	async ({ identifier, data }, sql) => {
-		const updateObject = sql(
-			{
-				...data,
-				metadata: JSON.stringify(data.metadata),
-			},
-			'positionX',
-			'positionY',
-			'positionZ',
-			'metadata',
-		);
+	const existing = await db.agent.findUnique({ where: { identifier } });
+	if (!existing) return Option.none();
 
-		return Option.future(
-			sql<AgentDB[]>`
-		UPDATE ${sql(AGENT_TABLE_NAME)}
-		SET ${updateObject}
-		WHERE "identifier" = ${identifier}
-		RETURNING *`,
-		).then((op) => op.map((agents) => agents[0]).ifSome(applyMetadataParsing));
-	},
-);
+	const agent = await db.agent.update({
+		where: { identifier },
+		data: {
+			positionX: data.positionX,
+			positionY: data.positionY,
+			positionZ: data.positionZ,
+			metadata: data.metadata as unknown as Prisma.InputJsonValue,
+		},
+	});
+	applyMetadataParsing(agent as unknown as AgentDB);
+	return Option.some(agent as unknown as AgentDB);
+};

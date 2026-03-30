@@ -6,425 +6,344 @@ import type {
 	MissionWithAcceptances,
 	AcceptanceStatus,
 } from '$/models/Mission.model';
-import * as SQL from '$/utils/sql';
+import {
+	MissionStatus,
+	AcceptanceStatus as PrismaAcceptanceStatus,
+} from '$/generated/prisma/client';
+import type { EntityType as PrismaEntityType } from '$/generated/prisma/client';
+import prisma from '$/config/prisma.config';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Create Mission
 // ─────────────────────────────────────────────────────────────────────────────
 
-type CreateMissionType = SQL.InferSqlBuilder<
-	{
-		creatorId: string;
-		creatorType: EntityType;
-		title: string;
-		description: string;
-		reward?: string | null;
-	},
-	MissionDB
->;
-
-export const createMission: CreateMissionType = SQL.sqlBuilder(
-	({ creatorId, creatorType, title, description, reward }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			const results = await tx<MissionDB[]>`
-				INSERT INTO "Mission" ("creatorId", "creatorType", title, description, reward)
-				VALUES (${creatorId}, ${creatorType}::"EntityType", ${title}, ${description}, ${reward ?? null})
-				RETURNING *
-			`;
-			const mission = results[0];
-			if (!mission) throw new Error('Failed to create mission');
-			mission.createdAt = new Date(mission.createdAt);
-			return mission;
-		}),
-);
+export const createMission = async ({
+	creatorId,
+	creatorType,
+	title,
+	description,
+	reward,
+}: {
+	creatorId: string;
+	creatorType: EntityType;
+	title: string;
+	description: string;
+	reward?: string | null;
+}): Promise<MissionDB> => {
+	const mission = await prisma.mission.create({
+		data: {
+			creatorId,
+			creatorType: creatorType as PrismaEntityType,
+			title,
+			description,
+			reward: reward ?? null,
+		},
+	});
+	return mission as unknown as MissionDB;
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Get Mission by ID
 // ─────────────────────────────────────────────────────────────────────────────
 
-type GetMissionByIdType = SQL.InferSqlBuilder<
-	{ missionId: string },
-	Option<MissionWithAcceptances>
->;
-
-export const getMissionById: GetMissionByIdType = SQL.sqlBuilder(
-	({ missionId }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			const missions = await tx<MissionDB[]>`
-				SELECT * FROM "Mission" WHERE id = ${missionId}
-			`;
-
-			if (missions.length === 0) return Option.none<MissionWithAcceptances>();
-
-			const mission = missions[0];
-			mission.createdAt = new Date(mission.createdAt);
-			if (mission.completedAt)
-				mission.completedAt = new Date(mission.completedAt);
-
-			const acceptances = await tx<MissionAcceptanceDB[]>`
-				SELECT * FROM "MissionAcceptance" WHERE "missionId" = ${missionId}
-			`;
-
-			for (const acc of acceptances) {
-				acc.acceptedAt = new Date(acc.acceptedAt);
-				if (acc.completedAt) acc.completedAt = new Date(acc.completedAt);
-			}
-
-			return Option.some<MissionWithAcceptances>({ ...mission, acceptances });
-		}),
-);
+export const getMissionById = async ({
+	missionId,
+}: {
+	missionId: string;
+}): Promise<Option<MissionWithAcceptances>> => {
+	const mission = await prisma.mission.findUnique({
+		where: { id: missionId },
+		include: { acceptances: true },
+	});
+	if (!mission) return Option.none();
+	return Option.some(mission as unknown as MissionWithAcceptances);
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Get Open Missions
 // ─────────────────────────────────────────────────────────────────────────────
 
-type GetOpenMissionsType = SQL.InferSqlBuilder<
-	{ limit?: number; excludeCreatorId?: string },
-	MissionDB[]
->;
-
-export const getOpenMissions: GetOpenMissionsType = SQL.sqlBuilder(
-	({ limit = 20, excludeCreatorId }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			const missions = excludeCreatorId
-				? await tx<MissionDB[]>`
-					SELECT * FROM "Mission"
-					WHERE status = 'OPEN'::"MissionStatus" AND "creatorId" != ${excludeCreatorId}
-					ORDER BY "createdAt" DESC
-					LIMIT ${limit}
-				`
-				: await tx<MissionDB[]>`
-					SELECT * FROM "Mission"
-					WHERE status = 'OPEN'::"MissionStatus"
-					ORDER BY "createdAt" DESC
-					LIMIT ${limit}
-				`;
-			for (const m of missions) {
-				m.createdAt = new Date(m.createdAt);
-			}
-			return missions;
-		}),
-);
+export const getOpenMissions = async ({
+	limit = 20,
+	excludeCreatorId,
+}: {
+	limit?: number;
+	excludeCreatorId?: string;
+}): Promise<MissionDB[]> => {
+	const missions = await prisma.mission.findMany({
+		where: {
+			status: MissionStatus.OPEN,
+			...(excludeCreatorId ? { creatorId: { not: excludeCreatorId } } : {}),
+		},
+		orderBy: { createdAt: 'desc' },
+		take: limit,
+	});
+	return missions as unknown as MissionDB[];
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Get Missions Created By Entity
 // ─────────────────────────────────────────────────────────────────────────────
 
-type GetMissionsCreatedByType = SQL.InferSqlBuilder<
-	{ creatorId: string; creatorType: EntityType; limit?: number },
-	MissionWithAcceptances[]
->;
-
-export const getMissionsCreatedBy: GetMissionsCreatedByType = SQL.sqlBuilder(
-	({ creatorId, creatorType, limit = 10 }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			const missions = await tx<MissionDB[]>`
-				SELECT * FROM "Mission"
-				WHERE "creatorId" = ${creatorId} AND "creatorType" = ${creatorType}::"EntityType"
-				ORDER BY "createdAt" DESC
-				LIMIT ${limit}
-			`;
-
-			const result: MissionWithAcceptances[] = [];
-			for (const m of missions) {
-				m.createdAt = new Date(m.createdAt);
-				if (m.completedAt) m.completedAt = new Date(m.completedAt);
-
-				const acceptances = await tx<MissionAcceptanceDB[]>`
-					SELECT * FROM "MissionAcceptance" WHERE "missionId" = ${m.id}
-				`;
-				for (const acc of acceptances) {
-					acc.acceptedAt = new Date(acc.acceptedAt);
-					if (acc.completedAt) acc.completedAt = new Date(acc.completedAt);
-				}
-
-				result.push({ ...m, acceptances });
-			}
-			return result;
-		}),
-);
+export const getMissionsCreatedBy = async ({
+	creatorId,
+	creatorType,
+	limit = 10,
+}: {
+	creatorId: string;
+	creatorType: EntityType;
+	limit?: number;
+}): Promise<MissionWithAcceptances[]> => {
+	const missions = await prisma.mission.findMany({
+		where: {
+			creatorId,
+			creatorType: creatorType as PrismaEntityType,
+		},
+		include: { acceptances: true },
+		orderBy: { createdAt: 'desc' },
+		take: limit,
+	});
+	return missions as unknown as MissionWithAcceptances[];
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Get Missions Accepted By Entity
 // ─────────────────────────────────────────────────────────────────────────────
 
-type GetMissionsAcceptedByType = SQL.InferSqlBuilder<
-	{ acceptorId: string; acceptorType: EntityType; limit?: number },
-	MissionWithAcceptances[]
->;
+export const getMissionsAcceptedBy = async ({
+	acceptorId,
+	acceptorType,
+	limit = 10,
+}: {
+	acceptorId: string;
+	acceptorType: EntityType;
+	limit?: number;
+}): Promise<MissionWithAcceptances[]> => {
+	const acceptances = await prisma.missionAcceptance.findMany({
+		where: {
+			acceptorId,
+			acceptorType: acceptorType as PrismaEntityType,
+		},
+		include: { mission: { include: { acceptances: true } } },
+		orderBy: { acceptedAt: 'desc' },
+		take: limit,
+	});
 
-export const getMissionsAcceptedBy: GetMissionsAcceptedByType = SQL.sqlBuilder(
-	({ acceptorId, acceptorType, limit = 10 }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			const acceptances = await tx<
-				(MissionAcceptanceDB & { mission: MissionDB })[]
-			>`
-				SELECT
-					ma.*,
-					row_to_json(m) as mission
-				FROM "MissionAcceptance" ma
-				JOIN "Mission" m ON ma."missionId" = m.id
-				WHERE ma."acceptorId" = ${acceptorId} AND ma."acceptorType" = ${acceptorType}::"EntityType"
-				ORDER BY ma."acceptedAt" DESC
-				LIMIT ${limit}
-			`;
-			return acceptances.map((acc) => {
-				const { mission, ...acceptance } = acc;
-				acceptance.acceptedAt = new Date(acceptance.acceptedAt);
-				if (acceptance.completedAt)
-					acceptance.completedAt = new Date(acceptance.completedAt);
-				mission.createdAt = new Date(mission.createdAt);
-				if (mission.completedAt)
-					mission.completedAt = new Date(mission.completedAt);
-				return {
-					...mission,
-					acceptances: [acceptance],
-				} as MissionWithAcceptances;
-			});
-		}),
-);
+	return acceptances.map((acc) => ({
+		...acc.mission,
+		acceptances: [acc],
+	})) as unknown as MissionWithAcceptances[];
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Get Missions By Entity (open missions created by a specific entity)
 // ─────────────────────────────────────────────────────────────────────────────
 
-type GetMissionsByEntityIdType = SQL.InferSqlBuilder<
-	{ entityId: string; limit?: number },
-	MissionDB[]
->;
-
-export const getMissionsByEntityId: GetMissionsByEntityIdType = SQL.sqlBuilder(
-	({ entityId, limit = 20 }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			const missions = await tx<MissionDB[]>`
-				SELECT * FROM "Mission"
-				WHERE "creatorId" = ${entityId} AND status = 'OPEN'::"MissionStatus"
-				ORDER BY "createdAt" DESC
-				LIMIT ${limit}
-			`;
-			for (const m of missions) {
-				m.createdAt = new Date(m.createdAt);
-				if (m.completedAt) m.completedAt = new Date(m.completedAt);
-			}
-			return missions;
-		}),
-);
+export const getMissionsByEntityId = async ({
+	entityId,
+	limit = 20,
+}: {
+	entityId: string;
+	limit?: number;
+}): Promise<MissionDB[]> => {
+	const missions = await prisma.mission.findMany({
+		where: { creatorId: entityId, status: MissionStatus.OPEN },
+		orderBy: { createdAt: 'desc' },
+		take: limit,
+	});
+	return missions as unknown as MissionDB[];
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Accept Mission
 // ─────────────────────────────────────────────────────────────────────────────
 
-type AcceptMissionType = SQL.InferSqlBuilder<
-	{ missionId: string; acceptorId: string; acceptorType: EntityType },
-	Option<MissionAcceptanceDB>
->;
+export const acceptMission = async ({
+	missionId,
+	acceptorId,
+	acceptorType,
+}: {
+	missionId: string;
+	acceptorId: string;
+	acceptorType: EntityType;
+}): Promise<Option<MissionAcceptanceDB>> => {
+	return prisma.$transaction(async (tx) => {
+		const mission = await tx.mission.findUnique({ where: { id: missionId } });
+		if (!mission || mission.status !== MissionStatus.OPEN) {
+			return Option.none<MissionAcceptanceDB>();
+		}
 
-export const acceptMission: AcceptMissionType = SQL.sqlBuilder(
-	({ missionId, acceptorId, acceptorType }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			// Check mission exists and is open
-			const missions = await tx<MissionDB[]>`
-				SELECT * FROM "Mission" WHERE id = ${missionId}
-			`;
+		const existing = await tx.missionAcceptance.findFirst({
+			where: {
+				missionId,
+				acceptorId,
+				acceptorType: acceptorType as PrismaEntityType,
+			},
+		});
+		if (existing) return Option.none<MissionAcceptanceDB>();
 
-			if (missions.length === 0 || missions[0].status !== 'OPEN') {
-				return Option.none<MissionAcceptanceDB>();
-			}
+		await tx.mission.update({
+			where: { id: missionId },
+			data: { status: MissionStatus.IN_PROGRESS },
+		});
 
-			// Check not already accepted by this entity
-			const existing = await tx<MissionAcceptanceDB[]>`
-				SELECT * FROM "MissionAcceptance"
-				WHERE "missionId" = ${missionId}
-				AND "acceptorId" = ${acceptorId}
-				AND "acceptorType" = ${acceptorType}::"EntityType"
-			`;
+		const acceptance = await tx.missionAcceptance.create({
+			data: {
+				missionId,
+				acceptorId,
+				acceptorType: acceptorType as PrismaEntityType,
+			},
+		});
 
-			if (existing.length > 0) {
-				return Option.none<MissionAcceptanceDB>();
-			}
-
-			// Update mission status
-			await tx`
-				UPDATE "Mission"
-				SET status = 'IN_PROGRESS'::"MissionStatus"
-				WHERE id = ${missionId}
-			`;
-
-			// Create acceptance
-			return tx<MissionAcceptanceDB[]>`
-				INSERT INTO "MissionAcceptance" ("missionId", "acceptorId", "acceptorType")
-				VALUES (${missionId}, ${acceptorId}, ${acceptorType}::"EntityType")
-				RETURNING *
-			`.then((results) => {
-				const acceptance = results[0];
-				if (!acceptance) throw new Error('Failed to create acceptance');
-				acceptance.acceptedAt = new Date(acceptance.acceptedAt);
-				return Option.some<MissionAcceptanceDB>(acceptance);
-			});
-		}),
-);
+		return Option.some(acceptance as unknown as MissionAcceptanceDB);
+	});
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Update Acceptance Status
 // ─────────────────────────────────────────────────────────────────────────────
 
-type UpdateAcceptanceStatusType = SQL.InferSqlBuilder<
-	{ acceptanceId: string; status: AcceptanceStatus },
-	Option<MissionAcceptanceDB>
->;
+export const updateAcceptanceStatus = async ({
+	acceptanceId,
+	status,
+}: {
+	acceptanceId: string;
+	status: AcceptanceStatus;
+}): Promise<Option<MissionAcceptanceDB>> => {
+	const completedAt =
+		status === 'COMPLETED' || status === 'FAILED' ? new Date() : null;
 
-export const updateAcceptanceStatus: UpdateAcceptanceStatusType =
-	SQL.sqlBuilder(({ acceptanceId, status }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			const completedAt =
-				status === 'COMPLETED' || status === 'FAILED' ? new Date() : null;
-
-			const results = await tx<MissionAcceptanceDB[]>`
-				UPDATE "MissionAcceptance"
-				SET status = ${status}::"AcceptanceStatus", "completedAt" = ${completedAt}
-				WHERE id = ${acceptanceId}
-				RETURNING *
-			`;
-
-			if (results.length === 0) return Option.none<MissionAcceptanceDB>();
-			const acceptance = results[0];
-			acceptance.acceptedAt = new Date(acceptance.acceptedAt);
-			if (acceptance.completedAt)
-				acceptance.completedAt = new Date(acceptance.completedAt);
-			return Option.some<MissionAcceptanceDB>(acceptance);
-		}),
-	);
+	try {
+		const acceptance = await prisma.missionAcceptance.update({
+			where: { id: acceptanceId },
+			data: {
+				status: status as PrismaAcceptanceStatus,
+				completedAt,
+			},
+		});
+		return Option.some(acceptance as unknown as MissionAcceptanceDB);
+	} catch {
+		return Option.none();
+	}
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Complete Mission (by creator)
 // ─────────────────────────────────────────────────────────────────────────────
 
-type CompleteMissionType = SQL.InferSqlBuilder<
-	{
-		missionId: string;
-		acceptorId: string;
-		creatorId: string;
-		creatorType: EntityType;
-	},
-	Option<MissionDB>
->;
+export const completeMission = async ({
+	missionId,
+	acceptorId,
+	creatorId,
+	creatorType,
+}: {
+	missionId: string;
+	acceptorId: string;
+	creatorId: string;
+	creatorType: EntityType;
+}): Promise<Option<MissionDB>> => {
+	return prisma.$transaction(async (tx) => {
+		const mission = await tx.mission.findFirst({
+			where: {
+				id: missionId,
+				creatorId,
+				creatorType: creatorType as PrismaEntityType,
+			},
+		});
+		if (!mission) return Option.none<MissionDB>();
 
-export const completeMission: CompleteMissionType = SQL.sqlBuilder(
-	({ missionId, acceptorId, creatorId, creatorType }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			// Verify creator owns mission
-			const missions = await tx<MissionDB[]>`
-				SELECT * FROM "Mission"
-				WHERE id = ${missionId}
-				AND "creatorId" = ${creatorId}
-				AND "creatorType" = ${creatorType}::"EntityType"
-			`;
+		await tx.missionAcceptance.updateMany({
+			where: { missionId, acceptorId },
+			data: {
+				status: PrismaAcceptanceStatus.COMPLETED,
+				completedAt: new Date(),
+			},
+		});
 
-			if (missions.length === 0) {
-				return Option.none<MissionDB>();
-			}
+		const updated = await tx.mission.update({
+			where: { id: missionId },
+			data: {
+				status: MissionStatus.COMPLETED,
+				completedAt: new Date(),
+			},
+		});
 
-			// Update acceptance to completed
-			await tx`
-				UPDATE "MissionAcceptance"
-				SET status = 'COMPLETED'::"AcceptanceStatus", "completedAt" = NOW()
-				WHERE "missionId" = ${missionId}
-				AND "acceptorId" = ${acceptorId}
-			`;
-
-			// Update mission to completed
-			return tx<MissionDB[]>`
-				UPDATE "Mission"
-				SET status = 'COMPLETED'::"MissionStatus", "completedAt" = NOW()
-				WHERE id = ${missionId}
-				RETURNING *
-			`.then((results) => {
-				if (results.length === 0) return Option.none<MissionDB>();
-				const mission = results[0];
-				mission.createdAt = new Date(mission.createdAt);
-				if (mission.completedAt)
-					mission.completedAt = new Date(mission.completedAt);
-				return Option.some<MissionDB>(mission);
-			});
-		}),
-);
+		return Option.some(updated as unknown as MissionDB);
+	});
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Cancel Mission (by creator)
 // ─────────────────────────────────────────────────────────────────────────────
 
-type CancelMissionType = SQL.InferSqlBuilder<
-	{ missionId: string; creatorId: string; creatorType: EntityType },
-	Option<MissionDB>
->;
+export const cancelMission = async ({
+	missionId,
+	creatorId,
+	creatorType,
+}: {
+	missionId: string;
+	creatorId: string;
+	creatorType: EntityType;
+}): Promise<Option<MissionDB>> => {
+	try {
+		const mission = await prisma.mission.updateMany({
+			where: {
+				id: missionId,
+				creatorId,
+				creatorType: creatorType as PrismaEntityType,
+				status: { not: MissionStatus.COMPLETED },
+			},
+			data: { status: MissionStatus.CANCELLED },
+		});
 
-export const cancelMission: CancelMissionType = SQL.sqlBuilder(
-	({ missionId, creatorId, creatorType }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			const results = await tx<MissionDB[]>`
-				UPDATE "Mission"
-				SET status = 'CANCELLED'::"MissionStatus"
-				WHERE id = ${missionId}
-				AND "creatorId" = ${creatorId}
-				AND "creatorType" = ${creatorType}::"EntityType"
-				AND status != 'COMPLETED'::"MissionStatus"
-				RETURNING *
-			`;
+		if (mission.count === 0) return Option.none();
 
-			if (results.length === 0) return Option.none<MissionDB>();
-			const mission = results[0];
-			mission.createdAt = new Date(mission.createdAt);
-			return Option.some<MissionDB>(mission);
-		}),
-);
+		const updated = await prisma.mission.findUnique({
+			where: { id: missionId },
+		});
+		return Option.of(updated as unknown as MissionDB);
+	} catch {
+		return Option.none();
+	}
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Get Active Acceptances for Mission
 // ─────────────────────────────────────────────────────────────────────────────
 
-type GetActiveAcceptancesType = SQL.InferSqlBuilder<
-	{ missionId: string },
-	MissionAcceptanceDB[]
->;
-
-export const getActiveAcceptances: GetActiveAcceptancesType = SQL.sqlBuilder(
-	({ missionId }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			const acceptances = await tx<MissionAcceptanceDB[]>`
-				SELECT * FROM "MissionAcceptance"
-				WHERE "missionId" = ${missionId}
-				AND status = 'ACTIVE'::"AcceptanceStatus"
-			`;
-			for (const acc of acceptances) {
-				acc.acceptedAt = new Date(acc.acceptedAt);
-			}
-			return acceptances;
-		}),
-);
+export const getActiveAcceptances = async ({
+	missionId,
+}: {
+	missionId: string;
+}): Promise<MissionAcceptanceDB[]> => {
+	const acceptances = await prisma.missionAcceptance.findMany({
+		where: {
+			missionId,
+			status: PrismaAcceptanceStatus.ACTIVE,
+		},
+	});
+	return acceptances as unknown as MissionAcceptanceDB[];
+};
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Get Acceptance by Mission and Acceptor
 // ─────────────────────────────────────────────────────────────────────────────
 
-type GetAcceptanceType = SQL.InferSqlBuilder<
-	{ missionId: string; acceptorId: string; acceptorType: EntityType },
-	Option<MissionAcceptanceDB>
->;
-
-export const getAcceptance: GetAcceptanceType = SQL.sqlBuilder(
-	({ missionId, acceptorId, acceptorType }, sql) =>
-		SQL.transaction(sql, async (tx) => {
-			const results = await tx<MissionAcceptanceDB[]>`
-				SELECT * FROM "MissionAcceptance"
-				WHERE "missionId" = ${missionId}
-				AND "acceptorId" = ${acceptorId}
-				AND "acceptorType" = ${acceptorType}::"EntityType"
-			`;
-			if (results.length === 0) return Option.none<MissionAcceptanceDB>();
-			const acceptance = results[0];
-			acceptance.acceptedAt = new Date(acceptance.acceptedAt);
-			if (acceptance.completedAt)
-				acceptance.completedAt = new Date(acceptance.completedAt);
-			return Option.some<MissionAcceptanceDB>(acceptance);
-		}),
-);
+export const getAcceptance = async ({
+	missionId,
+	acceptorId,
+	acceptorType,
+}: {
+	missionId: string;
+	acceptorId: string;
+	acceptorType: EntityType;
+}): Promise<Option<MissionAcceptanceDB>> => {
+	const acceptance = await prisma.missionAcceptance.findFirst({
+		where: {
+			missionId,
+			acceptorId,
+			acceptorType: acceptorType as PrismaEntityType,
+		},
+	});
+	return Option.of(acceptance as unknown as MissionAcceptanceDB | null);
+};

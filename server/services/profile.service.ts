@@ -4,7 +4,7 @@ import * as UserRepository from '$/db/user.db';
 import * as ProfileRepository from '$/db/profile.db';
 import * as EntityRepository from '$/db/entity.db';
 import * as AgentRepository from '$/db/agent.db';
-import sql from '$/config/db.config';
+import prisma from '$/config/prisma.config';
 import type { AgentDB } from '$/models/Agent.model';
 import type { EntityDB } from '$/models/Entity.model';
 import { Result } from '#/utils/Result';
@@ -21,8 +21,8 @@ export const saveUserInfo = async ({
 	>;
 	entityData: Pick<EntityDB, 'life' | 'saturation'>;
 }) =>
-	sql
-		.begin(async (tx) => {
+	prisma
+		.$transaction(async (tx) => {
 			const savedAgent = (
 				await AgentRepository.saveAgent(
 					{

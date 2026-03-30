@@ -2,47 +2,90 @@ import { HttpError } from '#/utils/HttpError';
 import { Option } from '#/utils/Option';
 import type { AgentDB } from '$/models/Agent.model';
 import type { EntityDB } from '$/models/Entity.model';
-
 import type { NPCDB } from '$/models/NPC.model';
-
-import * as SQL from '$/utils/sql';
-import { AGENT_TABLE_NAME } from './agent.db';
-import { ENTITY_TABLE_NAME } from './entity.db';
+import prisma from '$/config/prisma.config';
+import type { PrismaTransactionClient } from '$/config/prisma.config';
 
 export const NPC_TABLE_NAME = 'NPC';
 
-type GetNPCByIdType = SQL.InferSqlBuilder<
+type NPCWithRelations = { npc: NPCDB; entity: EntityDB; agent: AgentDB };
+
+function mapNPCResult(row: {
+	id: string;
+	description: string;
+	skinUrl: string;
+	model: string;
+	entity: {
+		id: string;
+		life: number;
+		maxLife: number;
+		saturation: number;
+		maxSaturation: number;
+		agent: {
+			id: string;
+			identifier: string;
+			display: string;
+			positionX: number;
+			positionY: number;
+			positionZ: number;
+			rotation: number;
+			metadata: unknown;
+			createdAt: Date;
+		};
+	};
+}): NPCWithRelations {
+	return {
+		npc: {
+			id: row.id,
+			description: row.description,
+			skinUrl: row.skinUrl,
+			model: row.model,
+		},
+		entity: {
+			id: row.entity.id,
+			life: row.entity.life,
+			maxLife: row.entity.maxLife,
+			saturation: row.entity.saturation,
+			maxSaturation: row.entity.maxSaturation,
+		},
+		agent: {
+			id: row.entity.agent.id,
+			identifier: row.entity.agent.identifier,
+			display: row.entity.agent.display,
+			positionX: row.entity.agent.positionX,
+			positionY: row.entity.agent.positionY,
+			positionZ: row.entity.agent.positionZ,
+			rotation: row.entity.agent.rotation,
+			metadata: (row.entity.agent.metadata ?? {}) as Record<string, unknown>,
+			createdAt: row.entity.agent.createdAt,
+		},
+	};
+}
+
+const npcInclude = {
+	entity: { include: { agent: true } },
+} as const;
+
+export const getNPCById = async (
+	{ npcId }: { npcId: string },
+	tx?: PrismaTransactionClient,
+): Promise<Option<NPCWithRelations>> => {
+	const db = tx ?? prisma;
+	const row = await db.nPC.findUnique({
+		where: { id: npcId },
+		include: npcInclude,
+	});
+	if (!row) return Option.none();
+	return Option.some(mapNPCResult(row));
+};
+
+export const updateNPC = async (
 	{
-		npcId: string;
-	},
-	Option<{
-		npc: NPCDB;
-		entity: EntityDB;
-		agent: AgentDB;
-	}>
->;
-
-export const getNPCById: GetNPCByIdType = SQL.sqlBuilder(
-	async ({ npcId }, sql) => {
-		const npc = await sql<
-			{ npc: NPCDB; entity: EntityDB; agent: AgentDB }[]
-		>`SELECT npc.id, row_to_json(npc) AS npc, row_to_json(e) as entity, row_to_json(a) as agent FROM "NPC" npc join "Entity" e on npc.id = e.id join "Agent" a on a.id = e.id WHERE npc.id = ${npcId}`.then(
-			(npcs) => {
-				if (npcs.length === 0) {
-					return null;
-				}
-				const npc = npcs[0];
-				npc.agent.createdAt = new Date(npc.agent.createdAt);
-				return npc;
-			},
-		);
-
-		return Option.of(npc);
-	},
-);
-
-type UpdateNPCType = SQL.InferSqlBuilder<
-	{
+		npcId,
+		agent,
+		entity,
+		npc,
+	}: {
 		npcId: string;
 		agent?: Partial<
 			Omit<AgentDB, 'id' | 'rotation' | 'metadata' | 'createdAt'>
@@ -50,164 +93,86 @@ type UpdateNPCType = SQL.InferSqlBuilder<
 		entity?: Partial<Omit<EntityDB, 'id'>>;
 		npc?: Partial<Omit<NPCDB, 'id'>>;
 	},
-	Option<{
-		npc: NPCDB;
-		entity: EntityDB;
-		agent: AgentDB;
-	}>
->;
+	tx?: PrismaTransactionClient,
+): Promise<Option<NPCWithRelations>> => {
+	const run = async (db: PrismaTransactionClient) => {
+		const existingNPC = await db.nPC.findUnique({ where: { id: npcId } });
+		if (!existingNPC) throw HttpError.notFound('NPC not found');
 
-export const updateNPC: UpdateNPCType = SQL.sqlBuilder(
-	async ({ npcId, agent, entity, npc }, sql) => {
-		return SQL.transaction(sql, async (tx) => {
-			// Validate Existence
-			const existingNPC = await SQL.findOne<NPCDB>(
-				{
-					data: {
-						id: npcId,
-					},
-					table: NPC_TABLE_NAME,
-				},
-				tx,
-			);
+		if (agent) {
+			await db.agent.update({ where: { id: npcId }, data: agent });
+		}
+		if (entity) {
+			await db.entity.update({ where: { id: npcId }, data: entity });
+		}
+		if (npc) {
+			await db.nPC.update({ where: { id: npcId }, data: npc });
+		}
 
-			if (!existingNPC) {
-				throw HttpError.notFound('NPC not found');
-			}
+		return getNPCById({ npcId }, db);
+	};
 
-			if (agent) {
-				await SQL.updateTable<AgentDB>(
-					{
-						table: AGENT_TABLE_NAME,
-						where: {
-							id: npcId,
-						},
-						data: agent,
-					},
-					tx,
-				);
-			}
+	if (tx) return run(tx);
+	return prisma.$transaction((txClient) => run(txClient));
+};
 
-			if (entity) {
-				await SQL.updateTable<EntityDB>(
-					{
-						table: ENTITY_TABLE_NAME,
-						where: {
-							id: npcId,
-						},
-						data: entity,
-					},
-					tx,
-				);
-			}
+export const getAllNPCs = async (
+	_: Record<string, unknown>,
+	tx?: PrismaTransactionClient,
+): Promise<NPCWithRelations[]> => {
+	const db = tx ?? prisma;
+	const rows = await db.nPC.findMany({ include: npcInclude });
+	return rows.map(mapNPCResult);
+};
 
-			if (npc) {
-				await SQL.updateTable<NPCDB>(
-					{
-						table: NPC_TABLE_NAME,
-						where: {
-							id: npcId,
-						},
-						data: npc,
-					},
-					tx,
-				);
-			}
-
-			const updatedNPC = await getNPCById({ npcId }, tx);
-
-			return updatedNPC;
-		});
-	},
-);
-
-type GetAllNPCsType = SQL.InferSqlBuilder<
-	{ [key: string]: unknown },
+export const createNPC = async (
 	{
-		npc: NPCDB;
-		entity: EntityDB;
-		agent: AgentDB;
-	}[]
->;
-
-export const getAllNPCs: GetAllNPCsType = SQL.sqlBuilder((_, sql) =>
-	sql<
-		{ npc: NPCDB; entity: EntityDB; agent: AgentDB }[]
-	>`SELECT npc.id, row_to_json(npc) AS npc, row_to_json(e) as entity, row_to_json(a) as agent FROM "NPC" npc join "Entity" e on npc.id = e.id join "Agent" a on a.id = e.id`.then(
-		(npcs) => {
-			npcs.forEach((npc) => {
-				npc.agent.createdAt = new Date(npc.agent.createdAt);
-			});
-			return npcs;
-		},
-	),
-);
-
-type CreateNPCType = SQL.InferSqlBuilder<
-	{
+		npc,
+		entity,
+		agent,
+	}: {
 		npc: Omit<NPCDB, 'id'>;
 		entity: Omit<EntityDB, 'id'>;
 		agent: Omit<AgentDB, 'id' | 'rotation' | 'metadata' | 'createdAt'>;
 	},
-	Option<{
-		npc: NPCDB;
-		entity: EntityDB;
-		agent: AgentDB;
-	}>
->;
-
-export const createNPC: CreateNPCType = SQL.sqlBuilder(
-	async ({ npc, entity, agent }, sql) => {
-		return SQL.transaction(sql, async (tx) => {
-			const createdAgentOp = await SQL.insertIntoTable<AgentDB>(
-				'Agent',
-				{
-					...agent,
-					rotation: 0,
-					metadata: {},
-				},
-				tx,
-			);
-			if (createdAgentOp.isNone()) {
-				return Option.none();
-			}
-			const createdAgent = createdAgentOp.unwrap();
-
-			const createdEntityOp = await SQL.insertIntoTable<EntityDB>(
-				'Entity',
-				{
-					...entity,
-					id: createdAgent.id,
-				},
-				tx,
-			);
-			if (createdEntityOp.isNone()) {
-				return Option.none();
-			}
-			const createdEntity = createdEntityOp.unwrap();
-
-			const createdNPCOp = await SQL.insertIntoTable<NPCDB>(
-				'NPC',
-				{
-					...npc,
-					id: createdAgent.id,
-				},
-				tx,
-			);
-			if (createdNPCOp.isNone()) {
-				return Option.none();
-			}
-			const createdNPC = createdNPCOp.unwrap();
-
-			if (createdAgentOp.isNone()) {
-				return Option.none();
-			}
-
-			return Option.of({
-				npc: createdNPC,
-				entity: createdEntity,
-				agent: createdAgent,
-			});
+	tx?: PrismaTransactionClient,
+): Promise<Option<NPCWithRelations>> => {
+	const run = async (db: PrismaTransactionClient) => {
+		const createdAgent = await db.agent.create({
+			data: {
+				display: agent.display,
+				identifier: agent.identifier,
+				positionX: agent.positionX,
+				positionY: agent.positionY,
+				positionZ: agent.positionZ,
+				rotation: 0,
+				metadata: {},
+			},
 		});
-	},
-);
+
+		await db.entity.create({
+			data: {
+				id: createdAgent.id,
+				life: entity.life,
+				maxLife: entity.maxLife,
+				saturation: entity.saturation,
+				maxSaturation: entity.maxSaturation,
+			},
+		});
+
+		const row = await db.nPC.create({
+			data: {
+				id: createdAgent.id,
+				description: npc.description,
+				skinUrl: npc.skinUrl,
+				model: npc.model,
+			},
+			include: npcInclude,
+		});
+
+		return Option.some(mapNPCResult(row));
+	};
+
+	if (tx) return run(tx);
+	return prisma.$transaction((txClient) => run(txClient));
+};
