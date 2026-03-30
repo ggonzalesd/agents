@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { onMount, setContext } from 'svelte';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+	import { Toaster } from 'svelte-sonner';
 
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
@@ -71,6 +72,20 @@
 		]);
 	}
 </script>
+
+<Toaster
+	position="top-right"
+	richColors
+	toastOptions={{
+		style: 'background: #333; color: #fff; border-radius: 8px; padding: 10px;',
+		classes: {
+      error: 'bg-red-900 text-red-100 border-red-700',
+      success: 'bg-green-900 text-green-100 border-green-700',
+      info: 'bg-blue-900 text-blue-100 border-blue-700',
+      warning: 'bg-yellow-900 text-yellow-100 border-yellow-700',
+    },
+	}}
+/>
 
 <QueryClientProvider client={queryClient}>
 	<Router route="/game">

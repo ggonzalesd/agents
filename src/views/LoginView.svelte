@@ -6,6 +6,8 @@
 
 	import { loginRequestSchema } from '#/schema/auth.schema';
 
+	import { toast } from 'svelte-sonner';
+
 	import InputText from '@/components/InputText.svelte';
 	import Button from '@/components/ui/Button.svelte';
 
@@ -42,12 +44,10 @@
 		});
 	});
 
-	let errorMessage = $state<string | null>(null);
 	let loading = $state(false);
 	const onSubmit = async (event: SubmitEvent) => {
 		event.preventDefault();
 		loading = true;
-		errorMessage = null;
 
 		const formData = new FormData(event.target as HTMLFormElement);
 		const username = formData.get('username') as string;
@@ -60,7 +60,7 @@
 			routerContext.changeRoute('/profile');
 			localStorage.setItem('token', response.data.token);
 		} else {
-			errorMessage = response.error.message;
+			toast.error(response.error.message);
 		}
 
 		loading = false;
@@ -113,11 +113,6 @@
 
 		<Button type="submit" disabled={loading}>Log In</Button>
 
-		{#if errorMessage}
-			<div class="text-red-500">
-				<p class="text-xs text-red-500">* {errorMessage}</p>
-			</div>
-		{/if}
 	</form>
 </div>
 
