@@ -1,7 +1,7 @@
 import { itemServerFactory } from '$/game/prefab/item.server';
 
 import { ComponentEcs } from '#/ecs';
-import type { InventoryState } from '#/state/inventory.state';
+import { ItemState, type InventoryState } from '#/state/inventory.state';
 import type { IVec3 } from '#/utils/math.util';
 
 import { ItemServerBehavior } from '../item/itemServerBehavior.ecs';
@@ -86,6 +86,28 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 		} else {
 			this.inventoryState.items.delete(strId);
 		}
+	}
+
+	public splitItem(fromSlot: number, toSlot: number, quantity: number): void {
+		if (!this.isIdValid(fromSlot) || !this.isIdFree(toSlot)) return;
+
+		const strFrom = fromSlot.toString();
+		const item = this.inventoryState.items.get(strFrom);
+		if (!item) return;
+
+		if (quantity <= 0 || quantity >= item.quantity) return;
+
+		item.quantity -= quantity;
+
+		const metadataRecord: Record<string, string> = {};
+		item.metadata.forEach((value, key) => {
+			metadataRecord[key] = value;
+		});
+
+		this.inventoryState.items.set(
+			toSlot.toString(),
+			new ItemState(item.type, quantity, metadataRecord),
+		);
 	}
 
 	public dropItem(itemId: number): void {

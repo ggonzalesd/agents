@@ -225,6 +225,18 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				});
 			}
 
+			if (action.type === 'move-item') {
+				this.entityParent.get(InventoryServerEcs).ifSome((inventory) => {
+					inventory.moveItem(action.fromSlot, action.toSlot);
+				});
+			}
+
+			if (action.type === 'split-item') {
+				this.entityParent.get(InventoryServerEcs).ifSome((inventory) => {
+					inventory.splitItem(action.fromSlot, action.toSlot, action.quantity);
+				});
+			}
+
 			// Mission actions
 			if (action.type === 'create-mission') {
 				MissionService.createMission({

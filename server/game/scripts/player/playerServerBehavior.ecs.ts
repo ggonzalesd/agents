@@ -130,12 +130,31 @@ export class PlayerServerBehavior extends ComponentEcs {
 				break;
 			}
 			case 'drop': {
-				console.log('DROP ACTION', message);
-
 				const slot = ((message as any)?.itemId as number | undefined) ?? null;
 
 				if (slot != null) {
 					this.inventory.dropItem(slot);
+				}
+
+				break;
+			}
+			case 'move-item': {
+				const fromSlot = (message as any)?.fromSlot as number | undefined;
+				const toSlot = (message as any)?.toSlot as number | undefined;
+
+				if (fromSlot != null && toSlot != null) {
+					this.inventory.moveItem(fromSlot, toSlot);
+				}
+
+				break;
+			}
+			case 'split-item': {
+				const fromSlot = (message as any)?.fromSlot as number | undefined;
+				const toSlot = (message as any)?.toSlot as number | undefined;
+				const quantity = (message as any)?.quantity as number | undefined;
+
+				if (fromSlot != null && toSlot != null && quantity != null) {
+					this.inventory.splitItem(fromSlot, toSlot, quantity);
 				}
 
 				break;

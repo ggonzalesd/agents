@@ -81,6 +81,19 @@ const actionDropItemSchema = z.object({
 	slot: z.number().int(),
 });
 
+const actionMoveItemSchema = z.object({
+	type: z.literal('move-item'),
+	fromSlot: z.number().int(),
+	toSlot: z.number().int(),
+});
+
+const actionSplitItemSchema = z.object({
+	type: z.literal('split-item'),
+	fromSlot: z.number().int(),
+	toSlot: z.number().int(),
+	quantity: z.number().int().min(1),
+});
+
 const actionAttackSchema = z.object({
 	type: z.literal('attack'),
 	entityId: z.string(),
@@ -140,6 +153,8 @@ export const actionsSchema = z.union([
 
 	actionPickItemSchema,
 	actionDropItemSchema,
+	actionMoveItemSchema,
+	actionSplitItemSchema,
 	actionAttackSchema,
 
 	actionCreateMissionSchema,

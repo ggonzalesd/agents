@@ -8,6 +8,7 @@
 	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
 	import { RecordEcs } from '#/ecs/lib/Record.ecs';
 	import type { PlayerState } from '#/state/player.state';
+	import type { MapSchema } from '@colyseus/schema';
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { IVec2 } from '#/utils/math.util';
 
@@ -20,23 +21,24 @@
 	let worldOp = getContext<Option<WorldEcs>>(WorldEcs.name);
 
 	let mousePos: IVec2 = { x: 0, y: 0 };
+	let dragFromSlot: string | null = $state(null);
+	let dragOverSlot: string | null = $state(null);
 
-	let itemState = new SvelteMap<
-		string,
-		{
-			type: string;
-			quantity?: number;
-			metadata?: Record<string, any>;
-		}
-	>();
+	type InventoryItem = {
+		type: string;
+		quantity: number;
+		metadata?: MapSchema<string> | Record<string, unknown>;
+	};
+
+	let itemState = new SvelteMap<string, InventoryItem>();
+
+	let roomRef: { send: (type: string, data: unknown) => void } | null = null;
 
 	onMount(() => {
 		const world = worldOp.raw();
 		if (!world) {
 			return () => {};
 		}
-
-		console.log('Mounting InventoryModal');
 
 		const colyseusClient = world
 			.get(ColyseusClientEcs)
@@ -47,9 +49,8 @@
 			return () => {};
 		}
 
-		console.log('Connection found in InventoryModal');
-
 		const { proxy, room } = connection;
+		roomRef = room;
 
 		const state = world
 			.getEntity(colyseusClient.entityId)
@@ -57,28 +58,99 @@
 			.collapse()
 			.raw() as PlayerState | undefined;
 
-		console.log('Player state in InventoryModal:', { state });
-
 		if (!state) {
 			return () => {};
 		}
 
-		const detachAdd = proxy(state.inventory).items.onAdd((item, key) => {
+		const inventoryProxy = proxy(state.inventory).items;
+
+		const detachAdd = inventoryProxy.onAdd((item, key) => {
 			itemState.set(key, {
 				type: item.type,
 				quantity: item.quantity,
 				metadata: item.metadata,
 			});
-			console.log('Item added to inventory:', item, key);
 		}, true);
+
+		const detachRemove = inventoryProxy.onRemove((_item, key) => {
+			itemState.delete(key);
+		});
+
+		const detachChange = inventoryProxy.onChange((item, key) => {
+			itemState.set(key, {
+				type: item.type,
+				quantity: item.quantity,
+				metadata: item.metadata,
+			});
+		});
 
 		return () => {
 			detachAdd();
+			detachRemove();
+			detachChange();
 		};
 	});
 
 	function onMouseMove(event: MouseEvent) {
 		mousePos = { x: event.clientX, y: event.clientY };
+	}
+
+	function sendAction(data: Record<string, unknown>) {
+		roomRef?.send('client:action', data);
+	}
+
+	function getFirstFreeSlot(): number | null {
+		const capacity = 36;
+		for (let i = 0; i < capacity; i++) {
+			if (!itemState.has(i.toString())) return i;
+		}
+		return null;
+	}
+
+	function handleDragStart(slotId: string) {
+		dragFromSlot = slotId;
+	}
+
+	function handleDragOver(e: DragEvent, slotId: string) {
+		e.preventDefault();
+		dragOverSlot = slotId;
+	}
+
+	function handleDragLeave() {
+		dragOverSlot = null;
+	}
+
+	function handleDrop(slotId: string) {
+		if (dragFromSlot != null && dragFromSlot !== slotId) {
+			sendAction({
+				type: 'move-item',
+				fromSlot: Number(dragFromSlot),
+				toSlot: Number(slotId),
+			});
+		}
+		dragFromSlot = null;
+		dragOverSlot = null;
+	}
+
+	function handleDragEnd() {
+		dragFromSlot = null;
+		dragOverSlot = null;
+	}
+
+	function handleSlotClick(e: MouseEvent, slotId: string) {
+		if (!e.shiftKey) return;
+		const item = itemState.get(slotId);
+		if (!item || item.quantity <= 1) return;
+
+		const freeSlot = getFirstFreeSlot();
+		if (freeSlot == null) return;
+
+		sendAction({
+			type: 'split-item',
+			fromSlot: Number(slotId),
+			toSlot: freeSlot,
+			quantity: Math.floor(item.quantity / 2),
+		});
 	}
 
 	const itemDropHandler = (id: string) => (itemDiv: HTMLDivElement) => {
@@ -98,7 +170,6 @@
 		}
 
 		const onKeyQ = (event: KeyboardEvent) => {
-			// Check if the itemDiv is hovered
 			const rect = itemDiv.getBoundingClientRect();
 
 			if (
@@ -121,6 +192,56 @@
 	};
 </script>
 
+{#snippet itemIcon(item: InventoryItem)}
+	{#if item.type === 'cookie'}
+		<img src={cookieSvgSrc} alt="Cookie" class="h-10 w-10" />
+	{:else if item.type === 'potion'}
+		<img src={potionSvgSrc} alt="Potion" class="h-10 w-10" />
+	{:else if item.type === 'seeds'}
+		<img src={seedsSvgSrc} alt="Seeds" class="h-10 w-10" />
+	{:else if item.type === 'sword'}
+		<img src={swordSvgSrc} alt="Sword" class="h-10 w-10" />
+	{:else if item.type === 'coin'}
+		<img src={coinSvgSrc} alt="Coin" class="h-10 w-10" />
+	{:else}
+		{item.type}
+	{/if}
+{/snippet}
+
+{#snippet slot(slotId: string)}
+	{@const item = itemState.get(slotId)}
+	<!-- svelte-ignore a11y_no_static_element_interactions a11y_click_events_have_key_events -->
+	<div
+		class="border-gris-300 relative flex aspect-square size-19 cursor-pointer items-center justify-center border-4 transition-colors"
+		class:border-[#8965F2]={dragOverSlot === slotId}
+		ondragover={(e: DragEvent) => handleDragOver(e, slotId)}
+		ondragleave={handleDragLeave}
+		ondrop={() => handleDrop(slotId)}
+		onclick={(e: MouseEvent) => handleSlotClick(e, slotId)}
+		onkeydown={(e: KeyboardEvent) => { if (e.key === 'Enter') handleSlotClick(e as unknown as MouseEvent, slotId); }}
+	>
+		{#if item}
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div
+				class="Item flex h-full w-full items-center justify-center"
+				draggable="true"
+				ondragstart={() => handleDragStart(slotId)}
+				ondragend={handleDragEnd}
+				{@attach itemDropHandler(slotId)}
+			>
+				{@render itemIcon(item)}
+			</div>
+			{#if item.quantity > 1}
+				<span class="absolute bottom-0 right-0 rounded bg-black/50 px-1 text-xs font-bold text-white">
+					{item.quantity}
+				</span>
+			{/if}
+		{:else}
+			<div class="Empty"></div>
+		{/if}
+	</div>
+{/snippet}
+
 <svelte:document on:mousemove={onMouseMove} />
 
 <div
@@ -129,47 +250,13 @@
 	<h1 class="font-zen-dots text-center text-2xl">INVENTORY</h1>
 	<div class="grid grid-cols-9 [direction:reverse]">
 		{#each new Array(27) as _, i}
-			{@const item = itemState.get(i.toString())}
-			<div
-				class="border-gris-300 flex aspect-square size-19 cursor-pointer items-center justify-center border-4 hover:border-[#8965F2]"
-			>
-				{#if item}
-					<div class="Item" {@attach itemDropHandler(i.toString())}>
-						{#if item.type === 'cookie'}
-							<img src={cookieSvgSrc} alt="Cookie" class="h-10 w-10" />
-						{:else if item.type === 'potion'}
-							<img src={potionSvgSrc} alt="Potion" class="h-10 w-10" />
-						{:else if item.type === 'seeds'}
-							<img src={seedsSvgSrc} alt="Seeds" class="h-10 w-10" />
-						{:else if item.type === 'sword'}
-							<img src={swordSvgSrc} alt="Sword" class="h-10 w-10" />
-						{:else if item.type === 'coin'}
-							<img src={coinSvgSrc} alt="Coin" class="h-10 w-10" />
-						{:else}
-							{item.type}
-						{/if}
-					</div>
-				{:else}
-					<div class="Empty"></div>
-				{/if}
-			</div>
+			{@render slot(i.toString())}
 		{/each}
 	</div>
 
 	<div class="grid grid-cols-9 [direction:reverse]">
 		{#each new Array(9) as _, i}
-			{@const item = itemState.get((i + 27).toString())}
-			<div
-				class="border-gris-300 flex aspect-square size-19 cursor-pointer items-center justify-center border-4 hover:border-[#8965F2]"
-			>
-				{#if item}
-					<div class="Item" {@attach itemDropHandler((i + 27).toString())}>
-						{item.type}
-					</div>
-				{:else}
-					<div class="Empty"></div>
-				{/if}
-			</div>
+			{@render slot((i + 27).toString())}
 		{/each}
 	</div>
 </div>
