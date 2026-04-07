@@ -22,8 +22,16 @@ export class LongMemoryContextAI implements IContextAI {
 	}
 
 	addMemory(key: string, value: string, date: Date = new Date()) {
-		if (this.memory.size >= this.maxMemoryItems) {
-			return;
+		if (this.memory.size >= this.maxMemoryItems && !this.memory.has(key)) {
+			let oldestKey: string | null = null;
+			let oldestDate = Infinity;
+			for (const [k, v] of this.memory) {
+				if (v.date.getTime() < oldestDate) {
+					oldestDate = v.date.getTime();
+					oldestKey = k;
+				}
+			}
+			if (oldestKey) this.memory.delete(oldestKey);
 		}
 
 		this.memory.set(key, {

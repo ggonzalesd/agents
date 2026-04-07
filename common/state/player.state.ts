@@ -26,13 +26,17 @@ export class PlayerState extends Schema {
 		pos,
 		skin,
 		sessionId,
+		life,
+		maxLife,
 	}: {
 		pos: IVec3;
 		skin?: string;
 		sessionId: string;
+		life?: number;
+		maxLife?: number;
 	}) {
 		super();
-		this.character = new CharacterBodyState(pos);
+		this.character = new CharacterBodyState(pos, life, maxLife);
 		this.skin = skin ?? this.skin;
 		this.sessionId = sessionId;
 	}

@@ -56,11 +56,11 @@
 	});
 </script>
 
-{#snippet renderMessage(from: string, message: string)}
+{#snippet renderMessage(from: string, message: string, kind: 'talk' | 'thought')}
 	<div
-		class="text-gris-50 font-space-mono bg-gris-600 flex flex-col gap-1 rounded-lg px-4 py-2.5"
+		class="font-space-mono flex flex-col gap-1 rounded-lg px-4 py-2.5 {kind === 'thought' ? 'text-violet-200 bg-violet-900/60 italic' : 'text-gris-50 bg-gris-600'}"
 	>
-		<p class="text-[12px]">From: {from}</p>
+		<p class="text-[12px]">{kind === 'thought' ? '💭' : ''} From: {from}</p>
 		<p class="text-[14px]">{message}</p>
 	</div>
 {/snippet}
@@ -82,8 +82,8 @@
 	<p class="text-gris-50 text-lg font-bold">Log messages</p>
 
 	<div class="flex h-full flex-col gap-3 overflow-y-auto">
-		{#each $reverseMessages as { id, from, message } (id)}
-			{@render renderMessage(from, message)}
+		{#each $reverseMessages as { id, from, message, kind } (id)}
+			{@render renderMessage(from, message, kind)}
 		{/each}
 	</div>
 

@@ -21,7 +21,6 @@ export const statsSchema = z
 	.object({
 		name: z.string(),
 		description: z.string().optional(),
-		life: z.number().min(0),
 	})
 	.loose();
 
@@ -100,7 +99,8 @@ export class NPCContextEcs extends ComponentEcs {
 
 	private actionContext(): string {
 		const actionsDescription = [
-			`{"type": "talk", "content": string, "targets": string[]} // empty targets means everyone and avoid talking your thoughts out loud`,
+			`{"type": "talk", "content": string, "targets": string[]} // empty targets means everyone. Use "think" for internal thoughts instead of talking them.`,
+			`{"type": "think", "content": string} // private internal thought, not spoken aloud. Use this to reason, plan, or reflect before acting.`,
 
 			`{"type": "save-long-term-memory", "value": string, "importance": f32(0...1)} // save information permanently in your long-term memory. Use this with frequency.`,
 			`{"type": "retrieve-long-term-memory", "value": string, "limit": i32(1...10), "importance": f32(0...1)} // retrieve relevant memories from your long-term memory to help you make decisions`,
@@ -117,6 +117,8 @@ export class NPCContextEcs extends ComponentEcs {
 
 			`{"type": "pick-item", "itemId": string, "slot": i32(0...35)} // needs to be in close entities (2 meters)`,
 			`{"type": "drop-item", "slot": i32(0...9)}`,
+
+			`{"type": "consume-item", "slot": i32(0...35)} // consume a consumable item from inventory (food heals, potions heal, weapons/materials can't be consumed)`,
 
 			`{"type": "attack", "entityId": string} // needs to be in close entities (2 meters)`,
 

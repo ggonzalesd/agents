@@ -22,6 +22,7 @@ export class Character3DEcs extends ComponentEcs {
 	private clientAuth: ClientAuthoritative | null = null;
 
 	public damageEffect = 0;
+	public healEffect = 0;
 	private damageMaterial: THREE.MeshStandardMaterial;
 
 	private attackAnimation = 0;
@@ -112,6 +113,24 @@ export class Character3DEcs extends ComponentEcs {
 			}).bind(this),
 		);
 
+		room.onMessage(
+			'agent:healed',
+			((message: { id: string }) => {
+				if (message.id === this.parent) {
+					this.healEffect = 1.5;
+				}
+			}).bind(this),
+		);
+
+		room.onMessage(
+			'agent:respawn',
+			((message: { id: string }) => {
+				if (message.id === this.parent) {
+					this.healEffect = 2.0;
+				}
+			}).bind(this),
+		);
+
 		// World Components
 		this.renderClient = this.world
 			.get(RenderClientEcs)
@@ -170,8 +189,14 @@ export class Character3DEcs extends ComponentEcs {
 
 			this.damageMaterial.emissive = new THREE.Color(1, 0, 0);
 			this.damageMaterial.emissiveIntensity = Math.min(this.damageEffect, 1.25);
+		} else if (this.healEffect > 0) {
+			this.healEffect -= _delta * 0.002;
+
+			this.damageMaterial.emissive = new THREE.Color(0, 1, 0);
+			this.damageMaterial.emissiveIntensity = Math.min(this.healEffect, 1.25);
 		} else {
 			this.damageEffect = 0;
+			this.healEffect = 0;
 			this.damageMaterial.emissiveIntensity = 0;
 		}
 

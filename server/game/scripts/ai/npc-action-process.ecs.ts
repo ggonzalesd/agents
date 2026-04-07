@@ -100,6 +100,19 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				});
 			}
 
+			if (action.type === 'think') {
+				this.serverData.room.broadcast('agent:thought', {
+					id: this.parent,
+					message: action.content,
+				});
+
+				this.npcContextEcs.eventQueue.pushEvent(
+					`I thought: "${action.content}"`,
+					{ from: this.parent, message: action.content },
+					0,
+				);
+			}
+
 			if (action.type === 'attack') {
 				this.entityParent.get(CharacterBodyServerEcs).ifSome((character) => {
 					character.attack();
@@ -234,6 +247,18 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			if (action.type === 'split-item') {
 				this.entityParent.get(InventoryServerEcs).ifSome((inventory) => {
 					inventory.splitItem(action.fromSlot, action.toSlot, action.quantity);
+				});
+			}
+
+			if (action.type === 'consume-item') {
+				this.entityParent.get(InventoryServerEcs).ifSome((inventory) => {
+					const result = inventory.consumeItem(action.slot);
+					if (!result.success) {
+						this.serverData.room.broadcast('agent:consume-error', {
+							id: this.parent,
+							message: result.message,
+						});
+					}
 				});
 			}
 

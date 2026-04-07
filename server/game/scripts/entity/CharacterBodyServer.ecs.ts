@@ -56,6 +56,51 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		vec3Set(this.characterState.position, this.body.translation());
 	}
 
+	private static readonly SPAWN_POINT = { x: 0, y: 2, z: 0 };
+	private static readonly ATTACK_DAMAGE = 10;
+
+	public takeDamage(amount: number): void {
+		this.characterState.life = Math.max(0, this.characterState.life - amount);
+
+		this.serverData.room.broadcast('agent:damaged', {
+			id: this.parent,
+			amount,
+			newLife: this.characterState.life,
+		});
+
+		if (this.characterState.life <= 0) {
+			this.respawn();
+		}
+	}
+
+	public heal(amount: number): void {
+		const prev = this.characterState.life;
+		this.characterState.life = Math.min(
+			this.characterState.maxLife,
+			this.characterState.life + amount,
+		);
+		const healed = this.characterState.life - prev;
+
+		if (healed > 0) {
+			this.serverData.room.broadcast('agent:healed', {
+				id: this.parent,
+				amount: healed,
+				newLife: this.characterState.life,
+			});
+		}
+	}
+
+	private respawn(): void {
+		const sp = CharacterBodyServerEcs.SPAWN_POINT;
+		this.body.setTranslation({ x: sp.x, y: sp.y, z: sp.z }, true);
+		this.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+		this.characterState.life = this.characterState.maxLife;
+
+		this.serverData.room.broadcast('agent:respawn', {
+			id: this.parent,
+		});
+	}
+
 	public attack(): void {
 		const position = this.body.translation();
 		const rotation = this.characterState.rotationY;
@@ -105,6 +150,8 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 					true,
 				);
 
+				body.takeDamage(CharacterBodyServerEcs.ATTACK_DAMAGE);
+
 				this.serverData.room.broadcast('agent:attacked', {
 					id: entity.name,
 				});
@@ -116,7 +163,6 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 						15,
 					);
 				});
-				// Here you can apply damage or effects to the target entity
 			});
 	}
 }

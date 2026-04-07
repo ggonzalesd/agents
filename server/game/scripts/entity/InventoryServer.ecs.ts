@@ -8,6 +8,7 @@ import { ItemServerBehavior } from '../item/itemServerBehavior.ecs';
 import type { IContextAI } from '../context-ai/context.interface';
 
 import { CharacterBodyServerEcs } from './CharacterBodyServer.ecs';
+import { type ConsumeResult, applyItemEffects } from './item-effect.handler';
 
 export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 	constructor(public inventoryState: InventoryState) {
@@ -186,5 +187,34 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 			if (this.isIdFree(i)) return i;
 		}
 		return null;
+	}
+
+	public consumeItem(slot: number): ConsumeResult {
+		if (!this.isIdValid(slot)) {
+			return { success: false, message: 'Invalid slot' };
+		}
+
+		const strSlot = slot.toString();
+		const item = this.inventoryState.items.get(strSlot);
+		if (!item) {
+			return { success: false, message: 'No item in that slot' };
+		}
+
+		const parentEntity = this.world.getEntity(this.parent).raw();
+		if (!parentEntity) {
+			return { success: false, message: 'Entity not found' };
+		}
+
+		const result = applyItemEffects(parentEntity, item);
+
+		if (result.success) {
+			if (item.quantity <= 1) {
+				this.inventoryState.items.delete(strSlot);
+			} else {
+				item.quantity -= 1;
+			}
+		}
+
+		return result;
 	}
 }

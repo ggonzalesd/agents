@@ -11,8 +11,16 @@ export class CharacterBodyState extends Schema {
 	@type('float32')
 	public rotationY: number = 0;
 
-	constructor(pos: IVec3) {
+	@type('float32')
+	public life: number = 100;
+
+	@type('float32')
+	public maxLife: number = 100;
+
+	constructor(pos: IVec3, life = 100, maxLife = 100) {
 		super();
 		this.position = new Vector3(pos);
+		this.life = life;
+		this.maxLife = maxLife;
 	}
 }

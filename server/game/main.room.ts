@@ -136,6 +136,8 @@ export class MainRoom extends Room<GameState> {
 				name: userInfo.agent.identifier,
 				username: payload.username,
 				entityId: userInfo.entity.id,
+				life: userInfo.entity.life,
+				maxLife: userInfo.entity.maxLife,
 				pos: {
 					x: userInfo.agent.positionX,
 					y: userInfo.agent.positionY,
@@ -154,12 +156,11 @@ export class MainRoom extends Room<GameState> {
 			.getEntity(userInfo.agent.identifier)
 			.unwrap('Entity not found on disconnect');
 
-		const body = entity
+		const characterBody = entity
 			.get(CharacterBodyServerEcs)
-			.map((c) => c.body)
 			.unwrap('CharacterBodyServerEcs not found on disconnect');
 
-		const position = body.translation();
+		const position = characterBody.body.translation();
 
 		await ProfileService.saveUserInfo({
 			identifier: userInfo.agent.identifier,
@@ -170,7 +171,7 @@ export class MainRoom extends Room<GameState> {
 				metadata: {},
 			},
 			entityData: {
-				life: 100,
+				life: characterBody.characterState.life,
 				saturation: 100,
 			},
 		});

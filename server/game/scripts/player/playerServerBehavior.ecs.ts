@@ -159,6 +159,21 @@ export class PlayerServerBehavior extends ComponentEcs {
 
 				break;
 			}
+			case 'consume-item': {
+				const slot = (message as any)?.slot as number | undefined;
+
+				if (slot != null) {
+					const result = this.inventory.consumeItem(slot);
+					if (!result.success) {
+						this.serverData.room.broadcast('agent:consume-error', {
+							id: this.parent,
+							message: result.message,
+						});
+					}
+				}
+
+				break;
+			}
 			case 'message':
 				// TODO:
 				if ('message' in message && typeof message.message === 'string') {

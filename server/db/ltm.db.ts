@@ -15,7 +15,9 @@ export const retrieveLongTermMemory = async ({
 	const vectorStr = `[${queryEmbedding.join(',')}]`;
 
 	return prisma.$queryRaw<LongTermMemoryDB[]>`
-		SELECT * FROM "LongTermMemory"
+		SELECT id, "npcId", identifier, text, metadata, importance, "createdAt",
+			embedding::text as embedding
+		FROM "LongTermMemory"
 		WHERE "npcId" = (
 			SELECT id FROM "Agent" WHERE identifier = ${npcIdentifier}
 		) AND importance >= ${importance}
@@ -75,7 +77,8 @@ export const saveLongTermMemory = async ({
 				${vectorStr}::vector(3072),
 				${importance}
 			)
-			RETURNING *
+			RETURNING id, "npcId", identifier, text, metadata, importance, "createdAt",
+				embedding::text as embedding
 		`;
 
 		const result = results[0];

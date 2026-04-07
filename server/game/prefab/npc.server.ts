@@ -45,7 +45,6 @@ export const npcServerFactoryGenerator =
 						id: name,
 						name: display,
 						description,
-						life: 100,
 					},
 					mood: {
 						happiness: 50,

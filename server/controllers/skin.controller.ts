@@ -68,7 +68,7 @@ export const getSkinController = async (req: Request, res: Response) => {
 	const exists = await S3Service.exists(`skins/${username}.png`);
 	const url = exists
 		? `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/${username}.png`
-		: `${envConfig.CLIENT_URL}/3d/gordon.png`;
+		: `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/default.png`;
 
 	// Redirect to the signed URL
 	res.redirect(302, url);

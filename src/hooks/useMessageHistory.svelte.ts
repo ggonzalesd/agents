@@ -6,18 +6,20 @@ type MessageType = {
 	from: string;
 	message: string;
 	createdAt: Date;
+	kind: 'talk' | 'thought';
 };
 
 export const useMessageHistory = () => {
 	const { subscribe, update } = writable<MessageType[]>([]);
 
-	const addMessage = (id: string, from: string, message: string) => {
+	const addMessage = (id: string, from: string, message: string, kind: 'talk' | 'thought' = 'talk') => {
 		update((messages) => {
 			const newMessage: MessageType = {
 				id,
 				from,
 				message,
 				createdAt: new Date(),
+				kind,
 			};
 
 			const newMessages = [...messages.slice(-99), newMessage];

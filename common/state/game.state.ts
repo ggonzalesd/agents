@@ -19,9 +19,9 @@ export class NPCState extends Schema {
 	@type(InventoryState)
 	public inventory: InventoryState = new InventoryState();
 
-	constructor(pos: IVec3, skin: string) {
+	constructor(pos: IVec3, skin: string, life = 100, maxLife = 100) {
 		super();
-		this.character = new CharacterBodyState(pos);
+		this.character = new CharacterBodyState(pos, life, maxLife);
 		this.skin = skin;
 	}
 }

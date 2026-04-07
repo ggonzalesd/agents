@@ -1,12 +1,15 @@
 import * as THREE from 'three';
 
-export const createTextTexture = (text: string) => {
+export const createTextTexture = (
+	text: string,
+	options?: { color?: string; background?: string },
+) => {
 	const font = '600 20px Arial';
-	const color = 'white';
-	const background: string = 'black';
+	const color = options?.color ?? 'white';
+	const background: string = options?.background ?? 'black';
 	const padding = 10;
 
-	const maxWidth = 300; // máximo ancho antes de hacer salto de línea
+	const maxWidth = 400; // máximo ancho antes de hacer salto de línea
 	const lineHeight = 24; // altura entre líneas
 
 	const canvas = document.createElement('canvas');

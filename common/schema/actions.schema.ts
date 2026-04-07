@@ -8,6 +8,13 @@ const actionTalkSchema = z.object({
 	targets: z.array(z.string()),
 });
 
+// (💭) Think action schema
+
+const actionThinkSchema = z.object({
+	type: z.literal('think'),
+	content: z.string(),
+});
+
 // (🚶) Movement action schemas
 
 const actionMoveFollowEntitySchema = z.object({
@@ -99,6 +106,12 @@ const actionAttackSchema = z.object({
 	entityId: z.string(),
 });
 
+// (🍎) Consume item action schema
+const actionConsumeItemSchema = z.object({
+	type: z.literal('consume-item'),
+	slot: z.number().int().min(0).max(35),
+});
+
 // (📜) Mission action schemas
 const actionCreateMissionSchema = z.object({
 	type: z.literal('create-mission'),
@@ -136,6 +149,7 @@ const actionRequestActingAgainSchema = z.object({
 
 export const actionsSchema = z.union([
 	actionTalkSchema,
+	actionThinkSchema,
 
 	actionMoveFollowEntitySchema,
 	actionMoveStopSchema,
@@ -156,6 +170,7 @@ export const actionsSchema = z.union([
 	actionMoveItemSchema,
 	actionSplitItemSchema,
 	actionAttackSchema,
+	actionConsumeItemSchema,
 
 	actionCreateMissionSchema,
 	actionAcceptMissionSchema,

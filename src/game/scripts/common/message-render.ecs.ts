@@ -18,6 +18,7 @@ export class MessageRenderEcs extends ComponentEcs {
 		material: THREE.MeshBasicMaterial;
 		plane: THREE.Mesh;
 		time: number;
+		height: number;
 	}> = [];
 
 	constructor() {
@@ -35,7 +36,21 @@ export class MessageRenderEcs extends ComponentEcs {
 		if (this.parent !== id) return;
 
 		this.addMessage(message);
+		this.addToHistoryIfClose(id, message, 'talk');
+	}
 
+	private onAgentThought({ id, message }: { id: string; message: string }) {
+		if (this.parent !== id) return;
+
+		this.addMessage(message, { color: '#c4b5fd', background: '#1e1b4b' });
+		this.addToHistoryIfClose(id, message, 'thought');
+	}
+
+	private addToHistoryIfClose(
+		id: string,
+		message: string,
+		kind: 'talk' | 'thought',
+	) {
 		const thisCharacter = this.world
 			.getEntity(this.parent)
 			.map((entity) => entity.get(Character3DEcs))
@@ -56,9 +71,10 @@ export class MessageRenderEcs extends ComponentEcs {
 
 		if (distance < 10) {
 			this.uiClient.messageHistory.addMessage(
-				`${id}- ${message}-${Date.now()}`,
-				this.parent,
+				`${id}-${kind}-${message}-${Date.now()}`,
+				this.parent ?? 'Unknown',
 				message,
+				kind,
 			);
 		}
 	}
@@ -74,6 +90,7 @@ export class MessageRenderEcs extends ComponentEcs {
 			.unwrap('Room not found!');
 
 		room.onMessage('agent:message', this.onAgentMessage.bind(this));
+		room.onMessage('agent:thought', this.onAgentThought.bind(this));
 
 		const parentEntity = this.world
 			.getEntity(this.parent)
@@ -91,14 +108,13 @@ export class MessageRenderEcs extends ComponentEcs {
 	}
 
 	onLoop(_delta: number): void {
-		// Look at the camera
-
 		this.spot.lookAt(this.renderClient.camera.position);
 
 		for (let i = 0; i < this.messages.length; i++) {
-			const message = this.messages[i];
-			message.time -= _delta;
+			this.messages[i].time -= _delta;
 		}
+
+		const prevLength = this.messages.length;
 		this.messages = this.messages.filter((message) => {
 			if (message.time > 0) return true;
 
@@ -108,42 +124,53 @@ export class MessageRenderEcs extends ComponentEcs {
 
 			message.material.dispose();
 			message.plane.geometry.dispose();
-
 			this.spot.remove(message.plane);
 
 			return false;
 		});
+
+		if (this.messages.length !== prevLength) {
+			this.recalculatePositions();
+		}
 	}
 
-	public addMessage(text: string) {
-		const textTexture = createTextTexture(text);
+	private recalculatePositions() {
+		let bottomY = 1.3;
+		for (let i = this.messages.length - 1; i >= 0; i--) {
+			const msg = this.messages[i];
+			msg.plane.position.y = bottomY + msg.height / 2;
+			bottomY += msg.height + 0.05;
+		}
+	}
+
+	public addMessage(
+		text: string,
+		textOptions?: { color?: string; background?: string },
+	) {
+		const textTexture = createTextTexture(text, textOptions);
+		const height = textTexture.size.height / 100;
 
 		const textMaterial = new THREE.MeshBasicMaterial({
 			map: textTexture.texture,
 			transparent: true,
+			depthWrite: false,
 		});
 
 		const textPlane = new THREE.Mesh(
-			new THREE.PlaneGeometry(
-				textTexture.size.width / 100,
-				textTexture.size.height / 100,
-			),
+			new THREE.PlaneGeometry(textTexture.size.width / 100, height),
 			textMaterial,
 		);
-		textPlane.position.y = 1.3;
 
 		this.spot.add(textPlane);
-
-		for (let i = 0; i < this.messages.length; i++) {
-			const message = this.messages[i];
-			message.plane.position.y += textTexture.size.height / 100;
-		}
 
 		this.messages.push({
 			texture: textTexture.texture,
 			material: textMaterial,
 			plane: textPlane,
 			time: 10000,
+			height,
 		});
+
+		this.recalculatePositions();
 	}
 }

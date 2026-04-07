@@ -4,12 +4,12 @@ import type { EntityEcs, WorldEcs } from '#/ecs';
 import type { IContextAI } from './context.interface';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { FollowPathEcs } from '../entity/follow-path/follow-path.ecs';
+import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 
 export const statsSchema = z
 	.object({
 		name: z.string(),
 		description: z.string().optional(),
-		life: z.number().min(0),
 	})
 	.loose();
 
@@ -18,6 +18,7 @@ export const moodSchema = z.record(z.string(), z.number().min(0).max(100));
 export class StatsContextAI implements IContextAI {
 	private record: RecordEcs = null!;
 	private followPath: FollowPathEcs = null!;
+	private characterBody: CharacterBodyServerEcs = null!;
 
 	onStart(_world: WorldEcs, _parent: EntityEcs): void {
 		this.record = _parent
@@ -27,6 +28,12 @@ export class StatsContextAI implements IContextAI {
 		this.followPath = _parent
 			.get(FollowPathEcs)
 			.unwrap('FollowPathEcs not found on StatsContextAI parent entity');
+
+		this.characterBody = _parent
+			.get(CharacterBodyServerEcs)
+			.unwrap(
+				'CharacterBodyServerEcs not found on StatsContextAI parent entity',
+			);
 	}
 
 	toStringContext(): string {
@@ -42,12 +49,14 @@ export class StatsContextAI implements IContextAI {
 			.map(([key, value]) => `- ${key}: ${value}%`)
 			.join('\n');
 
+		const { life, maxLife } = this.characterBody.characterState;
+
 		return [
 			'# Stats',
 			`- id: ${this.record.parent ?? 'unknown'}`,
 			`- name: ${stats.name ?? 'unknown'}`,
 			`- description: ${stats.description ?? 'N/A'}`,
-			`- life: ${stats.life ?? 0}`,
+			`- life: ${life}/${maxLife}`,
 			'',
 			this.followPath.option.toContextString(),
 			'',
