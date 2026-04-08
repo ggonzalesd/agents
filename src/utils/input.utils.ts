@@ -5,8 +5,19 @@ export class GameInput {
 
 	private keyMap: Map<string, number> = new Map();
 	private prevent: boolean = true;
-	public disabled: boolean = true;
+	private _disabled: boolean = true;
 	private contextMenu: boolean = false;
+
+	public get disabled(): boolean {
+		return this._disabled;
+	}
+
+	public set disabled(value: boolean) {
+		this._disabled = value;
+		if (value) {
+			this.keyMap.clear();
+		}
+	}
 
 	public moveX: number = 0;
 	public moveY: number = 0;
@@ -87,6 +98,11 @@ export class GameInput {
 	}
 
 	private onKeyDown(event: KeyboardEvent) {
+		if (event.type === 'keyup') {
+			this.keyMap.set(event.code, -1);
+			return;
+		}
+
 		if (this.disabled) return;
 
 		if (this.prevent) {
@@ -96,10 +112,8 @@ export class GameInput {
 
 		const value = this.keyMap.get(event.code);
 
-		if (event.type === 'keydown' && (value == null || value === -1)) {
+		if (value == null || value === -1) {
 			this.keyMap.set(event.code, 0);
-		} else if (event.type === 'keyup') {
-			this.keyMap.set(event.code, -1);
 		}
 	}
 
