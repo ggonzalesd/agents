@@ -11,6 +11,7 @@ import { UIClientEcs } from '../scripts/uiClient.ecs';
 import type { useGameState } from '@/hooks/useGameState.svelte';
 import { SkyboxEcs } from '../scripts/skybox.ecs';
 import { SeasonManagerEcs } from '../scripts/seasonManager.ecs';
+import { VFXManagerEcs } from '../scripts/common/vfx-manager.ecs';
 import type { useMessageHistory } from '@/hooks';
 
 type WorldPrefabProps = {
@@ -49,4 +50,5 @@ export const worldPrefab = ({
 		[ClientManagerEcs.name]: new ClientManagerEcs(),
 		[SkyboxEcs.name]: new SkyboxEcs(),
 		[SeasonManagerEcs.name]: new SeasonManagerEcs(),
+		[VFXManagerEcs.name]: new VFXManagerEcs(),
 	});

@@ -28,15 +28,18 @@ export class MovementServerEcs extends ComponentEcs {
 	public direction: IVec3 = { x: 0, y: 0, z: 0 };
 	public clientDirection: IVec2 = { x: 0, y: 0 };
 
+	private serverData: ServerDataEcs = null!;
+
 	constructor(public movementState: MovementState) {
 		super();
 	}
 
 	onStart(): void {
-		this.physic = this.world
+		this.serverData = this.world
 			.get(ServerDataEcs)
-			.pick('worldPhysic')
-			.unwrap('RAPIER World not found');
+			.unwrap('ServerDataEcs not found');
+
+		this.physic = this.serverData.worldPhysic;
 
 		this.character = this.world
 			.getEntity(this.parent)
@@ -73,6 +76,10 @@ export class MovementServerEcs extends ComponentEcs {
 		if (this.movementState.isJumping && isGround) {
 			this.movementState.isJumping = false;
 			this.character.body.applyImpulse(vec3ToRapier(vec3Up(10)), true);
+
+			this.serverData.room.broadcast('agent:jump', {
+				id: this.parent,
+			});
 		}
 	}
 
