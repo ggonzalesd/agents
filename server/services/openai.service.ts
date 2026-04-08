@@ -8,14 +8,16 @@ export const ask: LLMPort.ModelAskPort = async (
 	_question,
 	_instructions,
 	_model,
+	_temperature,
 ) =>
 	openaiCli.responses
 		.create({
 			model: _model ?? 'gpt-4.1-mini',
 			instructions:
 				_instructions ??
-				'You are an NPC in a game world making decisions based on context, response with JSON format.',
+				'You are an autonomous NPC in a game world. Act in character, respond ONLY with JSON actions.',
 			input: _question,
+			temperature: _temperature ?? 0.9,
 		})
 		.then((output) => output.output_text);
 
