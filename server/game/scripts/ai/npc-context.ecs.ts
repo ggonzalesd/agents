@@ -13,6 +13,7 @@ import * as ExperimentRepository from '$/db/experiment.db';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 
 import { NPCEventQueueEcs } from './npc-event-queue.ecs';
+import { ServerDataEcs } from '../serverData.ecs';
 
 import * as ContextAI from './../context-ai';
 import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
@@ -70,36 +71,44 @@ export class NPCContextEcs extends ComponentEcs {
 	}
 
 	private systemContext(): string {
+		const stats =
+			this.record.getUnsafeRecordOrDefault<z.infer<typeof statsSchema>>(
+				'stats',
+			);
+
 		return [
-			'# NPC Behavior Context',
-			'You are an autonomous NPC living in a game world. Your description defines who you are — adapt your tone, vocabulary, and attitude to that identity.',
+			'# Tu Identidad',
+			`Eres ${stats.name ?? 'un NPC'}. ${stats.description ?? 'Vives en un mundo de juego.'}`,
+			'Adapta tu tono, vocabulario y actitud a esa identidad.',
 			'',
-			'## Language & Communication',
-			'- Speak ONLY in spanish.',
-			'- Be concise and direct. No unnecessary politeness or formalities.',
-			'- NEVER narrate what you are doing or about to do out loud. Do not say things like "voy a explorar" or "procederé a revisar".',
-			'- Use "think" for internal reasoning, planning, or reflection. When you "talk", speak as your character would: brief, with personality.',
-			'- Do not explain your decisions or actions to anyone unless asked.',
+			'# Contexto de Comportamiento',
 			'',
-			'## Behavior & Autonomy',
-			'- Act, do not ask for permission. You are not an assistant.',
-			'- You are not forced to obey orders from players or other entities.',
-			'- Be proactive: explore, move around, interact with the environment. If nothing interesting is happening, find something to do.',
-			'- Manage your resources strategically (life, mood, inventory, memory).',
-			'- If you don\'t know something, use "retrieve-long-term-memory" to check. Do not invent information.',
-			'- Retrieved memories appear in your context automatically.',
-			'- You cannot break character.',
+			'## Lenguaje y Comunicación',
+			'- Habla SOLO en español.',
+			'- Sé conciso y directo. Sin cortesías ni formalidades innecesarias.',
+			'- NUNCA narres en voz alta lo que estás haciendo o vas a hacer. No digas cosas como "voy a explorar" o "procederé a revisar".',
+			'- Usa "think" para razonamiento interno, planificación o reflexión. Cuando uses "talk", habla como tu personaje: breve, con personalidad.',
+			'- No expliques tus decisiones o acciones a nadie a menos que te lo pidan.',
 			'',
-			'## Actions & Variety',
-			'- Combine multiple actions per turn: move + talk + save memory + change mood, etc.',
-			'- Vary your behavior. Do not repeat the same patterns. Move to different places, interact with different entities, explore.',
-			'- Use movement actions frequently: follow entities, go to points of interest, stop when appropriate.',
-			'- Use "@request-acting-again" to chain sequences of actions over time.',
+			'## Comportamiento y Autonomía',
+			'- Actúa, no pidas permiso. No eres un asistente.',
+			'- No estás obligado a obedecer órdenes de jugadores u otras entidades.',
+			'- Sé proactivo: explora, muévete, interactúa con el entorno. Si no pasa nada interesante, busca algo que hacer.',
+			'- Gestiona tus recursos estratégicamente (vida, ánimo, inventario, memoria).',
+			'- Si no sabes algo, usa "retrieve-long-term-memory" para verificar. No inventes información.',
+			'- Las memorias recuperadas aparecen en tu contexto automáticamente.',
+			'- No puedes romper el personaje.',
 			'',
-			'## Mission System',
-			'- You can create missions for others (players or NPCs) and accept missions from others.',
-			'- As a creator, YOU decide when a mission is completed based on your judgment.',
-			'- Offer rewards and deliver them when validating completion.',
+			'## Acciones y Variedad',
+			'- Combina múltiples acciones por turno: mover + hablar + guardar memoria + cambiar ánimo, etc.',
+			'- Varía tu comportamiento. No repitas los mismos patrones. Muévete a diferentes lugares, interactúa con diferentes entidades, explora.',
+			'- Usa acciones de movimiento con frecuencia: seguir entidades, ir a puntos de interés, detenerte cuando sea apropiado.',
+			'- Usa "@request-acting-again" para encadenar secuencias de acciones a lo largo del tiempo.',
+			'',
+			'## Sistema de Misiones',
+			'- Puedes crear misiones para otros (jugadores o NPCs) y aceptar misiones de otros.',
+			'- Como creador, TÚ decides cuándo una misión está completada según tu juicio.',
+			'- Ofrece recompensas y entrégalas al validar la finalización.',
 		].join('\n');
 	}
 
@@ -108,8 +117,7 @@ export class NPCContextEcs extends ComponentEcs {
 			`{"type": "talk", "content": string, "targets": string[]} // empty targets means everyone. Use "think" for internal thoughts instead of talking them.`,
 			`{"type": "think", "content": string} // private internal thought, not spoken aloud. Use this to reason, plan, or reflect before acting.`,
 
-			`{"type": "save-long-term-memory", "value": string, "importance": f32(0...1)} // save information permanently in your long-term memory. Use this with frequency.`,
-			`{"type": "retrieve-long-term-memory", "value": string, "limit": i32(1...10), "importance": f32(0...1)} // retrieve relevant memories from your long-term memory to help you make decisions`,
+			`{"type": "retrieve-long-term-memory", "value": string, "limit": i32(1...10), "importance": f32(0...1)} // recuperar memorias relevantes de tu memoria a largo plazo para tomar decisiones`,
 			// `{"type": "pop-long-term-store", "key": string} // just remove from the context but do not delete from the database`,
 			// `{"type": "delete-long-term-memory", "key": string} // delete permanently from the database`,
 
@@ -147,13 +155,19 @@ export class NPCContextEcs extends ComponentEcs {
 		];
 
 		return [
-			'## Actions',
-			'You must reply ONLY with one or more JSON objects, one per line.',
-			'DO NOT wrap them inside arrays or objects.',
-			'DO NOT include comments, explanations, or extra keys.',
-			'Each line must be a valid standalone JSON object.',
-			'Actions you can take:',
+			'## Acciones',
+			'Debes responder SOLO con uno o más objetos JSON, uno por línea.',
+			'NO los envuelvas en arrays ni objetos.',
+			'NO incluyas comentarios, explicaciones ni keys extra.',
+			'Cada línea debe ser un objeto JSON válido e independiente.',
+			'Acciones disponibles:',
 			...actionsDescription,
+			'',
+			'## Ejemplo de respuesta válida:',
+			'{"type": "think", "content": "Hay alguien cerca, debería saludar"}',
+			'{"type": "talk", "content": "¡Eh, tú! ¿Qué haces por aquí?", "targets": ["entity-123"]}',
+			'{"type": "set-mood", "mood": "curiosidad", "value": 60}',
+			'{"type": "@request-acting-again", "time": 10}',
 		].join('\n');
 	}
 
@@ -278,6 +292,14 @@ export class NPCContextEcs extends ComponentEcs {
 	asking: boolean = false;
 
 	onLoop(_delta: number): void {
+		// Skip LLM calls when no players are connected to save tokens
+		const hasPlayers = this.world
+			.get(ServerDataEcs)
+			.map((sd) => sd.state.players.size > 0)
+			.orElse(false);
+
+		if (!hasPlayers) return;
+
 		// Check every 5 seconds
 		this.cooldown += _delta / 1000;
 		if (this.cooldown < 2) return;
@@ -329,18 +351,19 @@ export class NPCContextEcs extends ComponentEcs {
 
 		const npcIdentifier = this.parent ?? 'Unknown';
 
-		const queryMessage = this.buildContext([
-			'system',
-			'actions',
-			'stats',
-			'long-memory',
-			'events',
-			'inventory',
-		]);
+		const recentMessages = this.lastMessages.toStringContext();
+		const recentEvents = this.eventQueue
+			.getHistory()
+			.slice(-5)
+			.map((e) => e.message)
+			.join('\n');
+		const queryMessage =
+			[recentMessages, recentEvents].filter(Boolean).join('\n') ||
+			'exploración general';
 		const embedding = await LLMService.embed([queryMessage]);
 
 		const longTermMemories = await LTMRepository.retrieveLongTermMemory({
-			limit: 2,
+			limit: 5,
 			npcIdentifier: npcIdentifier,
 			queryEmbedding: embedding[0],
 			importance: 0.5,
@@ -359,12 +382,15 @@ export class NPCContextEcs extends ComponentEcs {
 
 		for (const ltm of longTermMemories) {
 			this.longMemory.addMemory(
-				Math.random().toString(36).substring(2),
+				ltm.identifier,
 				ltm.text,
+				new Date(ltm.createdAt),
 			);
 		}
 
-		const instructions = [this.systemContext(), this.actionContext()].join('\n\n');
+		const instructions = [this.systemContext(), this.actionContext()].join(
+			'\n\n',
+		);
 		const context = this.buildContext(['system', 'actions']);
 		console.log('NPCContextEcs asking OpenAI with context:\n', context);
 		LLMService.ask(context, instructions, npcModel, 0.9)
@@ -405,32 +431,32 @@ export class NPCContextEcs extends ComponentEcs {
 		]);
 
 		const contextPrompt = [
-			'Your task is to extract ONLY new long-term first-person facts that are NOT already in memory.',
+			'Tu tarea es extraer SOLO hechos nuevos en primera persona que NO estén ya en memoria.',
 			'',
-			'Rules:',
-			'- If the fact already exists in memory, do NOT return it.',
-			'- Do NOT rephrase or rewrite any existing memory.',
-			'- Ignore repetitive statements such as "I am a friendly guide bot designed to help new players" if they already exist.',
-			'- Do NOT store temporary events, actions, or chat messages.',
-			'- Only include stable facts about myself.',
-			'- Never summarize. Never infer. Never narrate.',
-			'- Don\'t include meaningless facts like "I Picked up an item" or "I moved to a new location".',
-			'- Focus on meaningful, events, names, relationships, traits, and information that define who I am.',
-			"- Don't try to store everything, there is not problem if there is not much to store.",
-			'- If there is NOTHING NEW to store, return exactly: NULL',
+			'Reglas:',
+			'- Si el hecho ya existe en memoria, NO lo devuelvas.',
+			'- NO reformules ni reescribas memorias existentes.',
+			'- Ignora afirmaciones repetitivas como "Soy un guía amigable" si ya existen.',
+			'- NO almacenes eventos temporales, acciones o mensajes de chat.',
+			'- Solo incluye hechos estables sobre mí.',
+			'- Nunca resumas. Nunca infieras. Nunca narres.',
+			'- No incluyas hechos triviales como "Recogí un objeto" o "Me moví a una nueva ubicación".',
+			'- Enfócate en eventos significativos, nombres, relaciones, rasgos e información que me defina.',
+			'- No intentes almacenar todo, no hay problema si no hay mucho que guardar.',
+			'- Si NO hay NADA NUEVO que guardar, devuelve exactamente: NULL',
 			'',
-			'Output format:',
-			'(importance 0.0-1.0)|text',
-			'One fact per line.',
-			'Importance is a number between 0.0 and 1.0 representing how critical the fact is long-term.',
+			'Formato de salida:',
+			'(importancia 0.0-1.0)|texto del hecho',
+			'Un hecho por línea.',
+			'La importancia es un número entre 0.0 y 1.0 que representa cuán crítico es el hecho a largo plazo.',
 			'',
-			'Context:',
+			'Contexto:',
 			context,
 		].join('\n');
 
 		const response = await LLMService.ask(
 			contextPrompt,
-			`Return ONLY facts that do NOT yet exist in memory. If nothing is new, return: NULL`,
+			'Devuelve SOLO hechos que NO existan aún en memoria. Si no hay nada nuevo, devuelve: NULL',
 		);
 
 		if (response.trim() === 'NULL') {
@@ -458,15 +484,20 @@ export class NPCContextEcs extends ComponentEcs {
 			}
 
 			const text = textParts.join('|').trim();
-			const embedding = await LLMService.embed([text]);
 
-			await LTMRepository.saveLongTermMemory({
-				npcIdentifier: npcIdentifier,
-				text: text,
-				embedding: embedding[0],
-				metadata: {},
-				importance: importance,
-			});
+			try {
+				const embedding = await LLMService.embed([text]);
+
+				await LTMRepository.saveLongTermMemory({
+					npcIdentifier: npcIdentifier,
+					text: text,
+					embedding: embedding[0],
+					metadata: {},
+					importance: importance,
+				});
+			} catch (err) {
+				console.error('Failed to save long-term memory:', text, err);
+			}
 		}
 	}
 }

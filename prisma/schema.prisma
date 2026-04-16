@@ -30,6 +30,9 @@ model User {
   skin      String?   @db.Text
   role      Role      @default(USER)
   Profile   Profile[]
+
+  redeemTokens  RedeemToken[]
+  refreshTokens RefreshToken[]
 }
 
 model Agent {
@@ -173,6 +176,41 @@ model ExperimentHallucinationResults {
  * NPC NPC @relation(fields: [npcId], references: [id])
  * }
  */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Redeem Token System - One-time tokens for temporary access
+// ─────────────────────────────────────────────────────────────────────────────
+
+model RedeemToken {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  token      String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String   @db.Uuid
+  validFrom  DateTime @db.Timestamptz(6)
+  validUntil DateTime @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Refresh Token System - Long-lived tokens for credential-based sessions
+// ─────────────────────────────────────────────────────────────────────────────
+
+model RefreshToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  token     String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  expiresAt DateTime @db.Timestamptz(6)
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Mission System - Agnostic for Users and NPCs

@@ -10,6 +10,8 @@ import {
 	loginRequestSchema,
 	registerRequestSchema,
 	revokeRequestSchema,
+	redeemTokenLoginRequestSchema,
+	createRedeemTokenRequestSchema,
 } from '#/schema/auth.schema';
 
 const router = Router();
@@ -18,12 +20,24 @@ router.get('/', async (_, res) => {
 	res.json({ message: 'Auth route works' });
 });
 
+// ─── Credential login ────────────────────────────────────────────────────────
 router.post(
 	'/login',
 	ParseMiddleware.parseWithSchema(loginRequestSchema, 'body'),
 	AuthController.authLoginController,
 );
 
+// ─── Redeem token login ──────────────────────────────────────────────────────
+router.post(
+	'/login/redeem',
+	ParseMiddleware.parseWithSchema(redeemTokenLoginRequestSchema, 'body'),
+	AuthController.authRedeemLoginController,
+);
+
+// ─── Refresh token ───────────────────────────────────────────────────────────
+router.post('/refresh', AuthController.refreshTokenController);
+
+// ─── Register (admin) ────────────────────────────────────────────────────────
 router.post(
 	'/register',
 	AuthMiddleware.validateJwtToken(),
@@ -32,6 +46,7 @@ router.post(
 	AuthController.authRegisterController,
 );
 
+// ─── Revoke (admin) ──────────────────────────────────────────────────────────
 router.post(
 	'/revoke',
 	AuthMiddleware.validateJwtToken(),
@@ -40,15 +55,37 @@ router.post(
 	AuthController.revokeTokensController,
 );
 
+// ─── Profile ─────────────────────────────────────────────────────────────────
 router.get(
 	'/profile',
 	AuthMiddleware.validateJwtToken(),
 	AuthController.profileAuthController,
 );
 
-router.post('/logout', (_, res) => {
-	res.clearCookie('token');
-	res.json({ message: 'Logged out successfully' });
-});
+// ─── Logout ──────────────────────────────────────────────────────────────────
+router.post('/logout', AuthController.logoutController);
+
+// ─── Redeem Token CRUD (admin) ───────────────────────────────────────────────
+router.post(
+	'/redeem-token',
+	AuthMiddleware.validateJwtToken(),
+	RoleMiddleware.withRoles('ADMIN'),
+	ParseMiddleware.parseWithSchema(createRedeemTokenRequestSchema, 'body'),
+	AuthController.createRedeemTokenController,
+);
+
+router.get(
+	'/redeem-token',
+	AuthMiddleware.validateJwtToken(),
+	RoleMiddleware.withRoles('ADMIN'),
+	AuthController.listRedeemTokensController,
+);
+
+router.delete(
+	'/redeem-token/:id',
+	AuthMiddleware.validateJwtToken(),
+	RoleMiddleware.withRoles('ADMIN'),
+	AuthController.deleteRedeemTokenController,
+);
 
 export default router;

@@ -190,34 +190,22 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				});
 			}
 
-			if (action.type === 'save-long-term-memory') {
-				LLMService.embed([action.value]).then((embeddings) => {
-					LTMRepository.saveLongTermMemory({
-						embedding: embeddings[0],
-						metadata: {},
-						npcIdentifier: this.entityParent.name,
-						text: action.value,
-						importance: action.importance,
-					}).then(({ embedding, ...ltm }) => {
-						console.log('Saved LongTermMemory:', {
-							...ltm,
-							embeddingLength: embedding.length,
-						});
-					});
-				});
-			}
-
 			if (action.type === 'retrieve-long-term-memory') {
-				LLMService.embed([action.value]).then((embeddings) => {
-					LTMRepository.retrieveLongTermMemory({
-						npcIdentifier: this.entityParent.name,
-						queryEmbedding: embeddings[0],
-						limit: action.limit,
-						importance: action.importance,
-					}).then((ltms) => {
+				LLMService.embed([action.value])
+					.then((embeddings) =>
+						LTMRepository.retrieveLongTermMemory({
+							npcIdentifier: this.entityParent.name,
+							queryEmbedding: embeddings[0],
+							limit: action.limit,
+							importance: action.importance,
+						}),
+					)
+					.then((ltms) => {
 						this.npcContextEcs.longMemory.loadLongTermMemories(ltms);
+					})
+					.catch((err) => {
+						console.error('Failed to retrieve long-term memory:', err);
 					});
-				});
 			}
 
 			if (action.type === 'pick-item') {

@@ -63,12 +63,6 @@ const actionRemoveShortMemorySchema = z.object({
 
 // (💽) Long-term memory action schema
 
-const actionSaveLongTermMemorySchema = z.object({
-	type: z.literal('save-long-term-memory'),
-	value: z.string(),
-	importance: z.number().min(0).max(1),
-});
-
 const actionRetrieveLongTermMemorySchema = z.object({
 	type: z.literal('retrieve-long-term-memory'),
 	value: z.string(),
@@ -144,7 +138,7 @@ const actionCancelMissionSchema = z.object({
 // (🎬) MetaActions for npc control
 const actionRequestActingAgainSchema = z.object({
 	type: z.literal('@request-acting-again'),
-	time: z.number().min(0),
+	time: z.number().min(3).max(120),
 });
 
 export const actionsSchema = z.union([
@@ -162,7 +156,6 @@ export const actionsSchema = z.union([
 	actionSetMoodSchema,
 	actionRemoveMoodSchema,
 
-	actionSaveLongTermMemorySchema,
 	actionRetrieveLongTermMemorySchema,
 
 	actionPickItemSchema,

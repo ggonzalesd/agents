@@ -6,6 +6,9 @@ import {
 	loginResSchema,
 	profileResSchema,
 	uploadSkinResSchema,
+	redeemTokenResSchema,
+	redeemTokenListResSchema,
+	refreshResSchema,
 } from '#/schema/api.schema';
 
 import {
@@ -379,6 +382,79 @@ export const cancelMissionService = async (
 	try {
 		const response = await httpService.delete(`/mission/${missionId}`);
 		const body = completeMissionResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Redeem Token Services
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const redeemLoginService = async (payload: {
+	token: string;
+}): Promise<
+	OkResponse<z.infer<typeof loginResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.post('/auth/login/redeem', payload);
+		const body = loginResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const createRedeemTokenService = async (payload: {
+	userId: string;
+	validFrom: string;
+	validUntil: string;
+}): Promise<
+	OkResponse<z.infer<typeof redeemTokenResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.post('/auth/redeem-token', payload);
+		const body = redeemTokenResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const listRedeemTokensService = async (): Promise<
+	OkResponse<z.infer<typeof redeemTokenListResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.get('/auth/redeem-token');
+		const body = redeemTokenListResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const deleteRedeemTokenService = async (
+	tokenId: string,
+): Promise<OkResponse<null> | ErrorResponse> => {
+	try {
+		await httpService.delete(`/auth/redeem-token/${tokenId}`);
+		return { ok: true, message: 'Token deleted', data: null };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Refresh Token Service
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const refreshTokenService = async (): Promise<
+	OkResponse<z.infer<typeof refreshResSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.post('/auth/refresh');
+		const body = refreshResSchema.parse(response.data);
 		return { ok: true, message: body.message, data: body.data };
 	} catch (error) {
 		return dispatchError(error);

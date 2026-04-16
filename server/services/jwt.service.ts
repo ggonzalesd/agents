@@ -6,9 +6,11 @@ import { authPayloadSchema } from '#/schema/auth.schema';
 import envConfig from '$/config/env.config';
 import type { AuthPayload } from '$/models/Payload.model';
 
+const ACCESS_TOKEN_EXPIRY = '1h';
+
 export const signToken = (payload: AuthPayload) => {
 	return jsonwebtoken.sign(payload, envConfig.JWT_SECRET, {
-		expiresIn: '1d',
+		expiresIn: ACCESS_TOKEN_EXPIRY,
 	});
 };
 

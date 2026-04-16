@@ -2,6 +2,7 @@ import { EntityEcs } from '#/ecs/Entity.ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import type { WorldEcs } from '#/ecs/World.ecs';
 import type { NPCState } from '#/state/game.state';
+import { HealthBarRenderEcs } from '../scripts/common/health-bar-render.ecs';
 import { MessageRenderEcs } from '../scripts/common/message-render.ecs';
 import { VFXListenerEcs } from '../scripts/common/vfx-listener.ecs';
 import { Character3DEcs } from '../scripts/player/character3D.ecs';
@@ -18,6 +19,7 @@ export const npcClientFactoryGenerator =
 					state.movement,
 					'user',
 				),
+				[HealthBarRenderEcs.name]: new HealthBarRenderEcs(state.character),
 				[MessageRenderEcs.name]: new MessageRenderEcs(),
 				[VFXListenerEcs.name]: new VFXListenerEcs(state.movement),
 			},

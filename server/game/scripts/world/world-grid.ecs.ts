@@ -9,7 +9,7 @@ import {
 	getWorkerFile,
 	WorkerType,
 } from '$/utils/workers.utils';
-import { defaultMap } from '#/maps/default.map';
+import { defaultMap, PATHFINDING_SOLID } from '#/maps/default.map';
 
 type WorkerInput = {
 	grid: number[][];
@@ -25,6 +25,8 @@ export class WorldPathfinderEcs extends ComponentEcs {
 	private worker: Piscina<WorkerInput, WorkerOutput>;
 	public map = defaultMap;
 
+	private pathGrid: number[][];
+
 	constructor() {
 		super();
 
@@ -33,10 +35,14 @@ export class WorldPathfinderEcs extends ComponentEcs {
 			execArgv: getExecutionArgs(),
 			maxThreads: envConfig.WORKER_THREADS,
 		});
+
+		this.pathGrid = defaultMap.grid.map((row) =>
+			row.map((cell) => (PATHFINDING_SOLID.has(cell) ? 1 : 0)),
+		);
 	}
 
 	public async getPathFromAtoB(start: [number, number], end: [number, number]) {
-		const grid = defaultMap.grid;
+		const grid = this.pathGrid;
 
 		// Validate inputs
 		if (grid.length < start[1] || grid[0].length < start[0]) {

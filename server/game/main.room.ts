@@ -10,6 +10,8 @@ import * as RAPIER from '@dimforge/rapier3d-compat';
 
 import { GameState } from '#/state/game.state';
 import type { WorldEcs } from '#/ecs/World.ecs';
+import { LOGIN_TYPE } from '#/schema/auth.schema';
+import type { AuthPayload } from '$/models/Payload.model';
 
 import * as JwtService from '$/services/jwt.service';
 import * as ProfileService from '$/services/profile.service';
@@ -26,6 +28,8 @@ export class MainRoom extends Room<GameState> {
 	playerServerFactory: ReturnType<
 		typeof PlayerPrefab.playerServerFactoryGenerator
 	> = null!;
+
+	private expulsionTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
 	onCreate(options: any): void | Promise<void> {
 		if (!['1', '2', 'main-room'].includes(options.id)) {
@@ -78,6 +82,11 @@ export class MainRoom extends Room<GameState> {
 	}
 
 	onDispose(): void {
+		for (const timer of this.expulsionTimers.values()) {
+			clearTimeout(timer);
+		}
+		this.expulsionTimers.clear();
+
 		this.worldEcs.onDelete();
 		console.log('MainRoom disposed');
 	}
@@ -94,6 +103,13 @@ export class MainRoom extends Room<GameState> {
 		}
 
 		const payload = payloadOp.unwrap();
+
+		if (
+			payload.loginType === LOGIN_TYPE.REDEEM_TOKEN &&
+			new Date() > new Date(payload.validUntil)
+		) {
+			return false;
+		}
 
 		const userInfo = await ProfileService.getUserInfo(payload.username);
 
@@ -125,7 +141,7 @@ export class MainRoom extends Room<GameState> {
 			return;
 		}
 
-		const payload = client.userData.payload as { username: string };
+		const payload = client.userData.payload as AuthPayload;
 		const userInfo = client.userData.userInfo as Awaited<
 			ReturnType<typeof ProfileService.getUserInfo>
 		>;
@@ -145,20 +161,32 @@ export class MainRoom extends Room<GameState> {
 				},
 			}),
 		);
+
+		if (payload.loginType === LOGIN_TYPE.REDEEM_TOKEN) {
+			this.scheduleExpulsion(client, payload);
+		}
 	}
 
 	async onLeave(client: Client<any, any>, _consented?: boolean): Promise<any> {
+		this.clearExpulsionTimer(client.sessionId);
+
 		const userInfo = client.userData?.userInfo as Awaited<
 			ReturnType<typeof ProfileService.getUserInfo>
-		>;
+		> | undefined;
 
-		const entity = this.worldEcs
-			.getEntity(userInfo.agent.identifier)
-			.unwrap('Entity not found on disconnect');
+		if (!userInfo) return;
 
-		const characterBody = entity
-			.get(CharacterBodyServerEcs)
-			.unwrap('CharacterBodyServerEcs not found on disconnect');
+		const entityOp = this.worldEcs.getEntity(userInfo.agent.identifier);
+
+		if (entityOp.isNone()) return;
+
+		const entity = entityOp.unwrap();
+
+		const characterBodyOp = entity.get(CharacterBodyServerEcs);
+
+		if (characterBodyOp.isNone()) return;
+
+		const characterBody = characterBodyOp.unwrap();
 
 		const position = characterBody.body.translation();
 
@@ -181,5 +209,31 @@ export class MainRoom extends Room<GameState> {
 
 	onUncaughtException(error: RoomException<this>, methodName: string): void {
 		console.error(`${methodName} ${error.name}`, error);
+	}
+
+	private scheduleExpulsion(client: Client, payload: AuthPayload): void {
+		const validUntil = new Date(payload.validUntil).getTime();
+		const now = Date.now();
+		const timeRemaining = validUntil - now;
+
+		if (timeRemaining <= 0) {
+			client.leave(4001);
+			return;
+		}
+
+		const timer = setTimeout(() => {
+			this.expulsionTimers.delete(client.sessionId);
+			client.leave(4001);
+		}, timeRemaining);
+
+		this.expulsionTimers.set(client.sessionId, timer);
+	}
+
+	private clearExpulsionTimer(sessionId: string): void {
+		const timer = this.expulsionTimers.get(sessionId);
+		if (timer) {
+			clearTimeout(timer);
+			this.expulsionTimers.delete(sessionId);
+		}
 	}
 }

@@ -10,7 +10,8 @@ export class ShortMemoryContextAI implements IContextAI {
 
 	addMemory(value: string) {
 		if (this.memory.size >= this.maxMemoryItems) {
-			return;
+			const oldestKey = this.memory.keys().next().value;
+			if (oldestKey) this.memory.delete(oldestKey);
 		}
 
 		// Sanitize input to remove special characters
@@ -19,7 +20,7 @@ export class ShortMemoryContextAI implements IContextAI {
 			key = Math.random().toString(36).substring(2, 6).toUpperCase();
 		} while (this.memory.has(key));
 
-		this.memory.set(key, value.replace(/[^\p{L}\p{N}, _-]+/gu, '').trim());
+		this.memory.set(key, value.replace(/\p{Cc}/gu, '').trim());
 	}
 
 	deleteMemory(key: string) {

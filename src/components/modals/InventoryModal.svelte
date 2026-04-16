@@ -17,6 +17,7 @@
 	import seedsSvgSrc from '@/assets/items/seeds.svg';
 	import swordSvgSrc from '@/assets/items/sword.svg';
 	import coinSvgSrc from '@/assets/items/coin.svg';
+	import { ITEM_REGISTRY } from '#/state/item-registry';
 
 	let worldOp = getContext<Option<WorldEcs>>(WorldEcs.name);
 
@@ -153,6 +154,15 @@
 		});
 	}
 
+	function handleContextMenu(e: MouseEvent, slotId: string) {
+		e.preventDefault();
+		const item = itemState.get(slotId);
+		if (!item) return;
+		const def = ITEM_REGISTRY[item.type];
+		if (!def?.consumable) return;
+		sendAction({ type: 'consume-item', slot: Number(slotId) });
+	}
+
 	const itemDropHandler = (id: string) => (itemDiv: HTMLDivElement) => {
 		const world = worldOp.raw();
 		if (!world) {
@@ -218,6 +228,7 @@
 		ondragleave={handleDragLeave}
 		ondrop={() => handleDrop(slotId)}
 		onclick={(e: MouseEvent) => handleSlotClick(e, slotId)}
+		oncontextmenu={(e: MouseEvent) => handleContextMenu(e, slotId)}
 		onkeydown={(e: KeyboardEvent) => { if (e.key === 'Enter') handleSlotClick(e as unknown as MouseEvent, slotId); }}
 	>
 		{#if item}

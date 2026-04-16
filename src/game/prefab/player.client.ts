@@ -2,6 +2,7 @@ import { EntityEcs } from '#/ecs/Entity.ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import type { WorldEcs } from '#/ecs/World.ecs';
 import type { PlayerState } from '#/state/player.state';
+import { HealthBarRenderEcs } from '../scripts/common/health-bar-render.ecs';
 import { MessageRenderEcs } from '../scripts/common/message-render.ecs';
 import { VFXListenerEcs } from '../scripts/common/vfx-listener.ecs';
 
@@ -23,6 +24,7 @@ export const playerClientFactoryGenerator =
 					state.movement,
 					state.skin,
 				),
+				[HealthBarRenderEcs.name]: new HealthBarRenderEcs(state.character),
 				[MessageRenderEcs.name]: new MessageRenderEcs(),
 				[VFXListenerEcs.name]: new VFXListenerEcs(state.movement),
 				[PlayerCameraFollowEcs.name]: new PlayerCameraFollowEcs(),

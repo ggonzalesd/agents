@@ -69,6 +69,15 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		});
 
 		if (this.characterState.life <= 0) {
+			this.world.getEntity(this.parent).ifSome((entity) => {
+				entity.get(NPCEventQueueEcs).ifSome((queue) => {
+					queue.pushEvent(
+						`You just died and respawned! You were killed.`,
+						{ cause: 'death' },
+						60,
+					);
+				});
+			});
 			this.respawn();
 		}
 	}

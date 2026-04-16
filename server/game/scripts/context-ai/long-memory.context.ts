@@ -35,7 +35,7 @@ export class LongMemoryContextAI implements IContextAI {
 		}
 
 		this.memory.set(key, {
-			value: value.replace(/[^\p{L}\p{N}, _-]+/gu, '').trim(),
+			value: value.replace(/\p{Cc}/gu, '').trim(),
 			date,
 		});
 	}

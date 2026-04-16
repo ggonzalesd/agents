@@ -6,7 +6,7 @@ import { itemServerFactory } from '../prefab/item.server';
 import { npcServerFactoryGenerator } from '../prefab/npc.server';
 
 import * as NPCRepository from '$/db/npc.db';
-import { defaultMap } from '#/maps/default.map';
+import { defaultMap, PHYSICS_SOLID } from '#/maps/default.map';
 
 export class ServerManagerEcs extends ComponentEcs {
 	onStart(): void {
@@ -24,7 +24,7 @@ export class ServerManagerEcs extends ComponentEcs {
 
 		defaultMap.grid.forEach((row, z) => {
 			row.forEach((cell, x) => {
-				if (cell === 1 || cell === 2 || cell === 3 || cell === 8) {
+				if (PHYSICS_SOLID.has(cell)) {
 					const wallBodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(
 						x + defaultMap.offsetX + 0.5,
 						0,

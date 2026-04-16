@@ -24,6 +24,10 @@ export class HttpError extends Error {
 		return new HttpError(403, message, data);
 	}
 
+	static conflict(message: string, data?: unknown) {
+		return new HttpError(409, message, data);
+	}
+
 	static server(message: string, data?: unknown) {
 		return new HttpError(500, message, data);
 	}

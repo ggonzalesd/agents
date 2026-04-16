@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { loginTypeSchema, redeemTokenDtoSchema } from '#/schema/auth.schema';
+
 const userDtoSchema = z.object({
 	id: z.string(),
 	username: z.string(),
@@ -24,6 +26,9 @@ export const loginResSchema = apiResSchema.extend({
 			username: z.string(),
 			hash: z.string(),
 			role: z.enum(['ADMIN', 'USER', 'MODERATOR']).optional(),
+			loginType: loginTypeSchema,
+			validFrom: z.string(),
+			validUntil: z.string(),
 		}),
 		user: userDtoSchema,
 	}),
@@ -39,5 +44,27 @@ export const uploadSkinResSchema = apiResSchema.extend({
 	data: z.object({
 		url: z.url(),
 		signedUrl: z.url(),
+	}),
+});
+
+export const redeemTokenResSchema = apiResSchema.extend({
+	data: redeemTokenDtoSchema,
+});
+
+export const redeemTokenListResSchema = apiResSchema.extend({
+	data: z.array(
+		redeemTokenDtoSchema.extend({
+			user: z.object({
+				id: z.string(),
+				username: z.string(),
+				display: z.string().nullable(),
+			}),
+		}),
+	),
+});
+
+export const refreshResSchema = apiResSchema.extend({
+	data: z.object({
+		token: z.string(),
 	}),
 });

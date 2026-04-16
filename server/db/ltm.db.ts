@@ -21,10 +21,15 @@ export const retrieveLongTermMemory = async ({
 		WHERE "npcId" = (
 			SELECT id FROM "Agent" WHERE identifier = ${npcIdentifier}
 		) AND importance >= ${importance}
-		ORDER BY embedding <=> ${vectorStr}::vector(3072)
+		ORDER BY
+			(1.0 - (embedding <=> ${vectorStr}::vector(3072))) * 0.7
+			+ (1.0 / (1.0 + EXTRACT(EPOCH FROM (NOW() - "createdAt")) / 86400.0)) * 0.3
+		DESC
 		LIMIT ${limit}
 	`;
 };
+
+const DEDUP_SIMILARITY_THRESHOLD = 0.92;
 
 export const saveLongTermMemory = async ({
 	npcIdentifier,
@@ -38,8 +43,36 @@ export const saveLongTermMemory = async ({
 	metadata: object;
 	embedding: number[];
 	importance: number;
-}): Promise<LongTermMemoryDB> => {
+}): Promise<LongTermMemoryDB | null> => {
 	return prisma.$transaction(async (tx) => {
+		const vectorStr = `[${embedding.join(',')}]`;
+
+		// Check for semantically similar existing memories
+		const duplicates = await tx.$queryRaw<
+			{ id: string; importance: number }[]
+		>`
+			SELECT id, importance
+			FROM "LongTermMemory"
+			WHERE "npcId" = (
+				SELECT id FROM "Agent" WHERE identifier = ${npcIdentifier}
+			)
+			AND (1.0 - (embedding <=> ${vectorStr}::vector(3072))) > ${DEDUP_SIMILARITY_THRESHOLD}
+			LIMIT 1
+		`;
+
+		if (duplicates.length > 0) {
+			// Update importance if the new one is higher
+			const existing = duplicates[0];
+			if (importance > existing.importance) {
+				await tx.$queryRaw`
+					UPDATE "LongTermMemory"
+					SET importance = ${importance}
+					WHERE id = ${existing.id}::uuid
+				`;
+			}
+			return null;
+		}
+
 		let identifier: string;
 		let count = 0;
 		let existingCount: number;
@@ -64,7 +97,6 @@ export const saveLongTermMemory = async ({
 			throw new Error(`NPC with identifier ${npcIdentifier} not found`);
 		}
 
-		const vectorStr = `[${embedding.join(',')}]`;
 		const metadataJson = JSON.stringify(metadata);
 
 		const results = await tx.$queryRaw<LongTermMemoryDB[]>`

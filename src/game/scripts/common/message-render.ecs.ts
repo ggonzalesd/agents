@@ -135,7 +135,7 @@ export class MessageRenderEcs extends ComponentEcs {
 	}
 
 	private recalculatePositions() {
-		let bottomY = 1.3;
+		let bottomY = 1.5;
 		for (let i = this.messages.length - 1; i >= 0; i--) {
 			const msg = this.messages[i];
 			msg.plane.position.y = bottomY + msg.height / 2;
