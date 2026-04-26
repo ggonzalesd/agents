@@ -16,6 +16,8 @@ import * as MissionService from '$/services/mission.service';
 import {
 	notifyEntity,
 	notifyEntityById,
+	consumeRewardFromInventory,
+	giveRewardToAgent,
 } from '../missions/mission-action.handler';
 import { StopMovementOption } from '../entity/follow-path/stop-movement.class';
 import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
@@ -23,6 +25,18 @@ import { FollowPositionOption } from '../entity/follow-path/follow-position.clas
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 
 export class NPCActionProcessEcs extends ComponentEcs {
+	private static readonly CLOSE_TO_ENTITY_DISTANCE = 1.5;
+	private static readonly ATTACK_RANGE = 2;
+	private attackUntilResolvedTimers = new Set<ReturnType<typeof setTimeout>>();
+
+	private pushNpcEvent(
+		message: string,
+		data: Record<string, unknown>,
+		weight = 10,
+	): void {
+		this.npcContextEcs.eventQueue.pushEvent(message, data, weight);
+	}
+
 	serverData: ServerDataEcs = null!;
 
 	npcContextEcs: NPCContextEcs = null!;
@@ -43,6 +57,167 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			.unwrap('ServerDataEcs not found');
 
 		this.entityParent = parent;
+
+		this.callOnDelete(() => {
+			for (const timer of this.attackUntilResolvedTimers) {
+				clearTimeout(timer);
+			}
+			this.attackUntilResolvedTimers.clear();
+		});
+	}
+
+	private scheduleAttackUntilResolvedAttempt(
+		attempt: () => void,
+		delayMs: number,
+	): void {
+		const timer = setTimeout(() => {
+			this.attackUntilResolvedTimers.delete(timer);
+			attempt();
+		}, delayMs);
+
+		this.attackUntilResolvedTimers.add(timer);
+	}
+
+	private isTargetResolved(entityId: string):
+		| { resolved: true; outcome: 'gone' | 'dead' }
+		| { resolved: false } {
+		const target = this.world.getEntity(entityId).raw();
+		if (!target) {
+			return { resolved: true, outcome: 'gone' };
+		}
+
+		const body = target.get(CharacterBodyServerEcs).raw();
+		if (body?.isDead) {
+			return { resolved: true, outcome: 'dead' };
+		}
+
+		return { resolved: false };
+	}
+
+	private attackTargetEntity(entityId: string): boolean {
+		return Option.zip({
+			self: this.entityParent.get(CharacterBodyServerEcs),
+			target: this.world
+				.getEntity(entityId)
+				.map((e) => e.get(CharacterBodyServerEcs))
+				.collapse(),
+		})
+			.map(({ self, target }) => {
+				const myPos = self.body.translation();
+				const targetPos = target.body.translation();
+				const dx = targetPos.x - myPos.x;
+				const dz = targetPos.z - myPos.z;
+				self.characterState.rotationY = -Math.atan2(dz, dx);
+				self.attack(entityId);
+				return true;
+			})
+			.orElse(false);
+	}
+
+	private runAttackUntilResolved(props: {
+		entityId: string;
+		remainingAttacks: number;
+		retryDelayMs: number;
+		maxAttacks: number;
+	}): void {
+		const resolved = this.isTargetResolved(props.entityId);
+		if (resolved.resolved) {
+			this.pushNpcEvent(
+				`Se resolvió ${props.entityId}.`,
+				{
+					type: 'attack:resolved',
+					entityId: props.entityId,
+					outcome: resolved.outcome,
+					attemptsUsed: props.maxAttacks - props.remainingAttacks,
+				},
+			);
+			return;
+		}
+
+		if (props.remainingAttacks <= 0) {
+			this.pushNpcEvent(
+				`No se logró acabar con ${props.entityId}.`,
+				{
+					type: 'attack:failed',
+					entityId: props.entityId,
+					reason: 'max-attacks-reached',
+					attemptsUsed: props.maxAttacks,
+				},
+			);
+			return;
+		}
+
+		const self = this.entityParent.get(CharacterBodyServerEcs).raw();
+		const targetEntity = this.world.getEntity(props.entityId).raw();
+		const targetBody = targetEntity?.get(CharacterBodyServerEcs).raw();
+
+		if (!self || !targetEntity || !targetBody) {
+			this.pushNpcEvent(
+				`No se pudo atacar a ${props.entityId}.`,
+				{
+					type: 'attack:failed',
+					entityId: props.entityId,
+					reason: 'target-unavailable',
+				},
+			);
+			return;
+		}
+
+		const myPos = self.body.translation();
+		const targetPos = targetBody.body.translation();
+		const distance = Math.hypot(targetPos.x - myPos.x, targetPos.z - myPos.z);
+
+		if (distance > NPCActionProcessEcs.ATTACK_RANGE) {
+			Option.zip({
+				target: this.world.getEntity(props.entityId),
+				followPath: this.entityParent.get(FollowPathEcs),
+				pathfinder: this.world.get(WorldPathfinderEcs),
+			}).ifSome((zipped) => {
+				zipped.followPath.option = new FollowEntityOption({
+					...zipped,
+					entity: this.entityParent,
+					stoppingDistance: NPCActionProcessEcs.CLOSE_TO_ENTITY_DISTANCE,
+					onComplete: () => {
+						this.scheduleAttackUntilResolvedAttempt(
+							() => this.runAttackUntilResolved(props),
+							props.retryDelayMs,
+						);
+					},
+					onFail: () => {
+						this.pushNpcEvent(
+							`No se pudo llegar hasta ${props.entityId} para atacarlo.`,
+							{
+								type: 'attack:failed',
+								entityId: props.entityId,
+								reason: 'unreachable',
+							},
+						);
+					},
+				});
+			});
+			return;
+		}
+
+		if (!this.attackTargetEntity(props.entityId)) {
+			this.pushNpcEvent(
+				`No se pudo atacar a ${props.entityId}.`,
+				{
+					type: 'attack:failed',
+					entityId: props.entityId,
+					reason: 'attack-unavailable',
+				},
+			);
+			return;
+		}
+
+		this.scheduleAttackUntilResolvedAttempt(
+			() =>
+				this.runAttackUntilResolved({
+					...props,
+					remainingAttacks: props.remainingAttacks - 1,
+				}),
+			props.retryDelayMs,
+		);
 	}
 
 	onLoop(_delta: number): void {
@@ -113,11 +288,62 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				);
 			}
 
-			if (action.type === 'attack') {
-				this.entityParent.get(CharacterBodyServerEcs).ifSome((character) => {
-					character.attack();
-				});
-			}
+		if (action.type === 'attack') {
+			this.entityParent.get(CharacterBodyServerEcs).ifSome((character) => {
+				character.attack(action.entityId);
+			});
+		}
+
+		if (action.type === 'attack-entity') {
+			Option.zip({
+				self: this.entityParent.get(CharacterBodyServerEcs),
+				target: this.world
+					.getEntity(action.entityId)
+					.map((e) => e.get(CharacterBodyServerEcs))
+					.collapse(),
+			}).ifSome(({ self, target }) => {
+				const myPos = self.body.translation();
+				const targetPos = target.body.translation();
+				const dx = targetPos.x - myPos.x;
+				const dz = targetPos.z - myPos.z;
+				self.characterState.rotationY = -Math.atan2(dz, dx);
+				self.attack(action.entityId);
+			});
+		}
+
+		if (action.type === 'attack-until-resolved') {
+			this.runAttackUntilResolved({
+				entityId: action.entityId,
+				remainingAttacks: action.maxAttacks,
+				retryDelayMs: Math.round(action.retryDelaySec * 1000),
+				maxAttacks: action.maxAttacks,
+			});
+		}
+
+		if (action.type === 'look-at-position') {
+			this.entityParent.get(CharacterBodyServerEcs).ifSome((character) => {
+				const myPos = character.body.translation();
+				const dx = action.x - myPos.x;
+				const dz = action.z - myPos.z;
+				character.characterState.rotationY = -Math.atan2(dz, dx);
+			});
+		}
+
+		if (action.type === 'look-at-entity') {
+			Option.zip({
+				self: this.entityParent.get(CharacterBodyServerEcs),
+				target: this.world
+					.getEntity(action.entityId)
+					.map((e) => e.get(CharacterBodyServerEcs))
+					.collapse(),
+			}).ifSome(({ self, target }) => {
+				const myPos = self.body.translation();
+				const targetPos = target.body.translation();
+				const dx = targetPos.x - myPos.x;
+				const dz = targetPos.z - myPos.z;
+				self.characterState.rotationY = -Math.atan2(dz, dx);
+			});
+		}
 
 			if (action.type === 'set-short-memory') {
 				this.npcContextEcs.shortMemory.addMemory(action.value);
@@ -127,18 +353,94 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				this.npcContextEcs.shortMemory.deleteMemory(action.key);
 			}
 
-			if (action.type === 'move-follow-entity') {
-				Option.zip({
-					target: this.world.getEntity(action.entityId),
-					followPath: this.entityParent.get(FollowPathEcs),
-					pathfinder: this.world.get(WorldPathfinderEcs),
-				}).ifSome((zipped) => {
-					zipped.followPath.option = new FollowEntityOption({
-						...zipped,
-						entity: this.entityParent,
-					});
+		if (action.type === 'move-follow-entity') {
+			Option.zip({
+				target: this.world.getEntity(action.entityId),
+				followPath: this.entityParent.get(FollowPathEcs),
+				pathfinder: this.world.get(WorldPathfinderEcs),
+			}).ifSome((zipped) => {
+				zipped.followPath.option = new FollowEntityOption({
+					...zipped,
+					entity: this.entityParent,
 				});
+			});
+		}
+
+		if (action.type === 'move-close-to-entity') {
+			const target = this.world.getEntity(action.entityId);
+			if (target.isNone()) {
+				this.pushNpcEvent(
+					`No se pudo llegar hasta ${action.entityId}.`,
+					{ type: 'movement:failed-close', entityId: action.entityId },
+				);
+				continue;
 			}
+
+			Option.zip({
+				target,
+				followPath: this.entityParent.get(FollowPathEcs),
+				pathfinder: this.world.get(WorldPathfinderEcs),
+			}).ifSome((zipped) => {
+				const onComplete = () => {
+					this.pushNpcEvent(
+						`Te acercaste a ${zipped.target.name}.`,
+						{
+							type: 'movement:arrived-close',
+							entityId: zipped.target.name,
+						},
+					);
+				};
+
+				zipped.followPath.option = new FollowEntityOption({
+					...zipped,
+					entity: this.entityParent,
+					stoppingDistance: NPCActionProcessEcs.CLOSE_TO_ENTITY_DISTANCE,
+					onComplete,
+					onFail: () => {
+						this.pushNpcEvent(
+							`No se pudo llegar hasta ${action.entityId}.`,
+							{ type: 'movement:failed-close', entityId: action.entityId },
+						);
+					},
+				});
+			});
+		}
+
+		if (action.type === 'move-away-from-entity') {
+			const target = this.world.getEntity(action.entityId);
+			if (target.isNone()) {
+				this.pushNpcEvent(
+					`No se pudo huir de ${action.entityId}.`,
+					{ type: 'movement:failed-away', entityId: action.entityId },
+				);
+				continue;
+			}
+
+			Option.zip({
+				target,
+				followPath: this.entityParent.get(FollowPathEcs),
+				pathfinder: this.world.get(WorldPathfinderEcs),
+			}).ifSome((zipped) => {
+				zipped.followPath.option = new FollowEntityOption({
+					...zipped,
+					entity: this.entityParent,
+					stoppingDistance: action.distance,
+					flee: true,
+					onComplete: () => {
+						this.pushNpcEvent(
+							`Ya te alejaste lo suficiente de ${zipped.target.name}.`,
+							{ type: 'movement:arrived-away', entityId: zipped.target.name },
+						);
+					},
+					onFail: () => {
+						this.pushNpcEvent(
+							`No se pudo huir de ${action.entityId}.`,
+							{ type: 'movement:failed-away', entityId: action.entityId },
+						);
+					},
+				});
+			});
+		}
 
 			if (action.type === 'move-to-point') {
 				this.world
@@ -150,6 +452,18 @@ export class NPCActionProcessEcs extends ComponentEcs {
 							followPath: f,
 							position: { x: action.x, z: action.z },
 							entity: this.entityParent,
+							onComplete: () => {
+								this.pushNpcEvent(
+									'Ya llegaste al punto solicitado.',
+									{ type: 'movement:arrived-point', x: action.x, z: action.z },
+								);
+							},
+							onFail: () => {
+								this.pushNpcEvent(
+									'No se pudo llegar al punto solicitado.',
+									{ type: 'movement:failed-point', x: action.x, z: action.z },
+								);
+							},
 						});
 					});
 			}
@@ -241,7 +555,12 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			if (action.type === 'consume-item') {
 				this.entityParent.get(InventoryServerEcs).ifSome((inventory) => {
 					const result = inventory.consumeItem(action.slot);
-					if (!result.success) {
+					if (result.success) {
+						this.serverData.room.broadcast('agent:consume', {
+							id: this.parent,
+							itemType: result.itemType,
+						});
+					} else {
 						this.serverData.room.broadcast('agent:consume-error', {
 							id: this.parent,
 							message: result.message,
@@ -252,13 +571,35 @@ export class NPCActionProcessEcs extends ComponentEcs {
 
 			// Mission actions
 			if (action.type === 'create-mission') {
+				const parsedRewardQty = action.rewardItemQty
+					? Number(action.rewardItemQty)
+					: null;
+
+				if (action.rewardItemType && parsedRewardQty && parsedRewardQty > 0) {
+					const inventory = this.entityParent.getUnsafe(InventoryServerEcs);
+					if (inventory) {
+						const consumed = consumeRewardFromInventory(
+							inventory,
+							action.rewardItemType,
+							parsedRewardQty,
+						);
+						if (!consumed) {
+							console.error(
+								'NPC does not have the required item for mission reward',
+							);
+							return;
+						}
+					}
+				}
+
 				MissionService.createMission({
 					creatorId: npcId,
 					creatorType: 'NPC',
 					payload: {
 						title: action.title,
 						description: action.description,
-						reward: action.reward ?? null,
+						rewardItemType: action.rewardItemType ?? null,
+						rewardItemQty: parsedRewardQty,
 					},
 				})
 					.then((mission) => {
@@ -326,6 +667,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 					creatorType: 'NPC',
 				})
 					.then((mission) => {
+						giveRewardToAgent(this.world, action.acceptorId, mission);
 						this.npcContextEcs.missionsContext.removeMission(action.missionId);
 						this.serverData.room.broadcast('mission:completed', {
 							mission,

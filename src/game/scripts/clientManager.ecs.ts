@@ -1,5 +1,6 @@
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { Option } from '#/utils/Option';
+import { boxClientFactoryGenerator } from '../prefab/box.client';
 import { itemClientFactoryGenerator } from '../prefab/item.client';
 import { npcClientFactoryGenerator } from '../prefab/npc.client';
 
@@ -14,6 +15,8 @@ export class ClientManagerEcs extends ComponentEcs {
 	private playerClientFactory: ReturnType<typeof playerClientFactoryGenerator> =
 		null!;
 	private itemClientFactory: ReturnType<typeof itemClientFactoryGenerator> =
+		null!;
+	private boxClientFactory: ReturnType<typeof boxClientFactoryGenerator> =
 		null!;
 
 	private npcClientFactory: ReturnType<typeof npcClientFactoryGenerator> =
@@ -58,9 +61,22 @@ export class ClientManagerEcs extends ComponentEcs {
 			this.world.deleteEntityById(index);
 		});
 
+		proxy(room.state).boxes.onAdd((state, index) => {
+			const box = this.boxClientFactory(index, state);
+			this.world.addEntity(box);
+		});
+
+		proxy(room.state).boxes.onRemove((_state, index) => {
+			this.world.deleteEntityById(index);
+		});
+
 		proxy(room.state).npcs.onAdd((state, index) => {
 			const npc = this.npcClientFactory(index, state);
 			this.world.addEntity(npc);
+		});
+
+		proxy(room.state).npcs.onRemove((_state, index) => {
+			this.world.deleteEntityById(index);
 		});
 
 		room.onMessage('message', (message) => {
@@ -76,6 +92,7 @@ export class ClientManagerEcs extends ComponentEcs {
 	onStart(): void {
 		this.playerClientFactory = playerClientFactoryGenerator(this.world);
 		this.itemClientFactory = itemClientFactoryGenerator(this.world);
+		this.boxClientFactory = boxClientFactoryGenerator(this.world);
 		this.npcClientFactory = npcClientFactoryGenerator(this.world);
 
 		this.world.get(UIClientEcs).giveTo(this.uiClient);
@@ -110,6 +127,20 @@ export class ClientManagerEcs extends ComponentEcs {
 
 	onLoop(_delta: number): void {
 		this.uiClient.ifSome((uc) => {
+			if (uc.input.down('KeyP')) {
+				const visible = uc.game.toggleNpcPaths();
+				uc.debug.add(
+					visible
+						? 'Rutas de NPC visibles.'
+						: 'Rutas de NPC ocultas.',
+					{
+						isCode: false,
+						type: 'info',
+						deleteOn: 2000,
+					},
+				);
+			}
+
 			if (Math.random() < 0.1)
 				uc.debug.updateMessage(this.idMessage, `D: ${Math.random()}`);
 

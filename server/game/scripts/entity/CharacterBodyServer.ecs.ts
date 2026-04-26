@@ -2,11 +2,27 @@ import * as RAPIER from '@dimforge/rapier3d-compat';
 
 import { ComponentEcs } from '#/ecs';
 import { vec3Flatten, vec3Set } from '#/utils/math.util';
+import type { IVec3 } from '#/utils/math.util';
 
 import { ServerDataEcs } from '../serverData.ecs';
 import type { CharacterBodyState } from '#/state/character-body.state';
 import { MovementServerEcs } from './MovementServer.ecs';
 import { NPCEventQueueEcs } from '../ai/npc-event-queue.ecs';
+import { TreeServerBehavior } from '../tree/treeServerBehavior.ecs';
+import { BoxServerBehavior } from '../box/boxServerBehavior.ecs';
+import { AnimalStateEcs } from '../animal/animal-state.ecs';
+
+interface CharacterBodyConfig {
+	bodyType?: 'dynamic' | 'fixed';
+	cuboidHalfExtents?: IVec3;
+	capsuleRadius?: number;
+	capsuleHalfHeight?: number;
+	respawnPoint?: IVec3;
+}
+
+interface DamageContext {
+	attackerId?: string;
+}
 
 export class CharacterBodyServerEcs extends ComponentEcs {
 	public physic: RAPIER.World = null!;
@@ -17,6 +33,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 	constructor(
 		public characterState: CharacterBodyState,
 		private configShape: 'capsule' | 'cuboid' = 'capsule',
+		private readonly config: CharacterBodyConfig = {},
 	) {
 		super();
 	}
@@ -31,20 +48,35 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 			.map(({ worldPhysic }) => worldPhysic)
 			.unwrap('RAPIER World not found');
 
-		const bodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(
-			...vec3Flatten(this.characterState.position),
-		);
+		const bodyDesc =
+			this.config.bodyType === 'fixed'
+				? RAPIER.RigidBodyDesc.fixed()
+				: RAPIER.RigidBodyDesc.dynamic();
+		bodyDesc.setTranslation(...vec3Flatten(this.characterState.position));
 		this.body = this.physic.createRigidBody(bodyDesc);
 
+		const cuboidHalfExtents = this.config.cuboidHalfExtents ?? {
+			x: 0.25,
+			y: 0.25,
+			z: 0.25,
+		};
+		const capsuleRadius = this.config.capsuleRadius ?? 0.5;
+		const capsuleHalfHeight = this.config.capsuleHalfHeight ?? 0.5;
 		const colliderDesc =
 			this.configShape === 'capsule'
-				? RAPIER.ColliderDesc.capsule(0.5, 0.5)
-				: RAPIER.ColliderDesc.cuboid(0.25, 0.25, 0.25).setFriction(2.0);
+				? RAPIER.ColliderDesc.capsule(capsuleHalfHeight, capsuleRadius)
+				: RAPIER.ColliderDesc.cuboid(
+						cuboidHalfExtents.x,
+						cuboidHalfExtents.y,
+						cuboidHalfExtents.z,
+					).setFriction(2.0);
 		this.collider = this.physic.createCollider(colliderDesc, this.body);
 
 		this.collider.setRestitution(0.5);
 
-		this.body.lockRotations(true, true);
+		if (this.config.bodyType !== 'fixed') {
+			this.body.lockRotations(true, true);
+		}
 
 		this.callOnDelete(() => {
 			this.physic.removeCollider(this.collider, true);
@@ -58,17 +90,39 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 
 	private static readonly SPAWN_POINT = { x: 0, y: 2, z: 0 };
 	private static readonly ATTACK_DAMAGE = 10;
+	private static readonly DEATH_ANIMATION_MS = 600;
 
-	public takeDamage(amount: number): void {
+	public isDead = false;
+
+	public takeDamage(amount: number, context: DamageContext = {}): void {
+		if (this.isDead) return;
+
 		this.characterState.life = Math.max(0, this.characterState.life - amount);
 
 		this.serverData.room.broadcast('agent:damaged', {
 			id: this.parent,
 			amount,
 			newLife: this.characterState.life,
+			attackerId: context.attackerId,
 		});
 
+		if (context.attackerId) {
+			this.world.getEntity(this.parent).ifSome((entity) => {
+				entity.get(AnimalStateEcs).ifSome((animalState) => {
+					animalState.lastAttackerId = context.attackerId ?? null;
+					animalState.lastAttackedAt = Date.now();
+					animalState.lastThreatAt = Date.now();
+					animalState.threatEntityId = context.attackerId ?? null;
+				});
+			});
+		}
+
 		if (this.characterState.life <= 0) {
+			this.isDead = true;
+			this.serverData.room.broadcast('agent:died', {
+				id: this.parent,
+			});
+
 			this.world.getEntity(this.parent).ifSome((entity) => {
 				entity.get(NPCEventQueueEcs).ifSome((queue) => {
 					queue.pushEvent(
@@ -78,7 +132,14 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 					);
 				});
 			});
-			this.respawn();
+
+			this.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+
+			setTimeout(() => {
+				if (!this.isDead) return;
+				this.respawn();
+				this.isDead = false;
+			}, CharacterBodyServerEcs.DEATH_ANIMATION_MS);
 		}
 	}
 
@@ -100,7 +161,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 	}
 
 	private respawn(): void {
-		const sp = CharacterBodyServerEcs.SPAWN_POINT;
+		const sp = this.config.respawnPoint ?? CharacterBodyServerEcs.SPAWN_POINT;
 		this.body.setTranslation({ x: sp.x, y: sp.y, z: sp.z }, true);
 		this.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
 		this.characterState.life = this.characterState.maxLife;
@@ -110,7 +171,8 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		});
 	}
 
-	public attack(): void {
+	public attack(targetId?: string): void {
+		if (this.isDead) return;
 		const position = this.body.translation();
 		const rotation = this.characterState.rotationY;
 		const rotationY = rotation;
@@ -127,14 +189,11 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 			id: this.parent,
 		});
 
-		this.world
-			// Get all entities with CharacterBodyServerEcs and MovementServerEcs
-			// INFO: MovementServerEcs is just to ensure we are targeting characters
-			.getEntityLike({ body: CharacterBodyServerEcs, MovementServerEcs })
-			// Exclude self
+		const candidates = this.world
+			.getFromEntitiesWith(CharacterBodyServerEcs)
 			.filter(({ entity }) => entity.name !== this.parent)
-			// Calculate distance to offset position
-			.map(({ entity, components: { body } }) => {
+			.filter(({ entity }) => (targetId ? entity.name === targetId : true))
+			.map(({ entity, component: body }) => {
 				const { x, y, z } = body.body.translation();
 				const [dx, dy, dz] = [x - offsetX, y - offsetY, z - offsetZ];
 
@@ -144,34 +203,51 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 					distance: Math.sqrt(dx * dx + dy * dy + dz * dz),
 				};
 			})
-			// Filter entities within attack range
 			.filter(({ distance }) => distance <= attackRange)
-			// Apply attack effects
-			.forEach(({ entity, body }) => {
-				console.log(`Entity ${entity.name} attacked by ${this.parent}!`);
+			.toSorted((a, b) => a.distance - b.distance);
 
-				body.body.applyImpulse(
-					{
-						x: Math.cos(rotationY) * 5,
-						y: 2,
-						z: -Math.sin(rotationY) * 5,
-					},
-					true,
-				);
+		for (const { entity, body } of candidates) {
+			const box = entity.get(BoxServerBehavior).raw();
+			if (box) {
+				box.onHit(CharacterBodyServerEcs.ATTACK_DAMAGE);
+				break;
+			}
 
-				body.takeDamage(CharacterBodyServerEcs.ATTACK_DAMAGE);
+			const tree = entity.get(TreeServerBehavior).raw();
+			if (tree) {
+				tree.onHit(this.parent ?? 'unknown');
+				break;
+			}
 
-				this.serverData.room.broadcast('agent:attacked', {
-					id: entity.name,
+			if (!entity.getUnsafe(MovementServerEcs)) continue;
+
+			console.log(`Entity ${entity.name} attacked by ${this.parent}!`);
+
+			body.body.applyImpulse(
+				{
+					x: Math.cos(rotationY) * 5,
+					y: 2,
+					z: -Math.sin(rotationY) * 5,
+				},
+				true,
+			);
+
+				body.takeDamage(CharacterBodyServerEcs.ATTACK_DAMAGE, {
+					attackerId: this.parent ?? undefined,
 				});
 
-				entity.get(NPCEventQueueEcs).ifSome((queue) => {
-					queue.pushEvent(
-						`You have been attacked! by ${this.parent ?? 'Unknown'}`,
-						{ attacker: this.parent },
-						15,
-					);
-				});
+			this.serverData.room.broadcast('agent:attacked', {
+				id: entity.name,
 			});
+
+			entity.get(NPCEventQueueEcs).ifSome((queue) => {
+				queue.pushEvent(
+					`You have been attacked! by ${this.parent ?? 'Unknown'}`,
+					{ attacker: this.parent },
+					15,
+				);
+			});
+			break;
+		}
 	}
 }

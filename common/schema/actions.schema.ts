@@ -22,6 +22,17 @@ const actionMoveFollowEntitySchema = z.object({
 	entityId: z.string(),
 });
 
+const actionMoveCloseToEntitySchema = z.object({
+	type: z.literal('move-close-to-entity'),
+	entityId: z.string(),
+});
+
+const actionMoveAwayFromEntitySchema = z.object({
+	type: z.literal('move-away-from-entity'),
+	entityId: z.string(),
+	distance: z.number().min(0.5).max(50),
+});
+
 const actionMoveStopSchema = z.object({
 	type: z.literal('move-stop'),
 });
@@ -100,6 +111,32 @@ const actionAttackSchema = z.object({
 	entityId: z.string(),
 });
 
+// (🎯) Attack-entity: aims at the target then attacks
+const actionAttackEntitySchema = z.object({
+	type: z.literal('attack-entity'),
+	entityId: z.string(),
+});
+
+const actionAttackUntilResolvedSchema = z.object({
+	type: z.literal('attack-until-resolved'),
+	entityId: z.string(),
+	maxAttacks: z.number().int().min(1).max(20).default(6),
+	retryDelaySec: z.number().min(0.2).max(10).default(1),
+});
+
+// (👁️) Look-at action schemas
+
+const actionLookAtPositionSchema = z.object({
+	type: z.literal('look-at-position'),
+	x: z.number(),
+	z: z.number(),
+});
+
+const actionLookAtEntitySchema = z.object({
+	type: z.literal('look-at-entity'),
+	entityId: z.string(),
+});
+
 // (🍎) Consume item action schema
 const actionConsumeItemSchema = z.object({
 	type: z.literal('consume-item'),
@@ -111,7 +148,8 @@ const actionCreateMissionSchema = z.object({
 	type: z.literal('create-mission'),
 	title: z.string().min(3).max(255),
 	description: z.string().min(10).max(2000),
-	reward: z.string().max(500).optional(),
+	rewardItemType: z.string().max(50).optional(),
+	rewardItemQty: z.number().int().min(1).optional(),
 });
 
 const actionAcceptMissionSchema = z.object({
@@ -148,6 +186,8 @@ export const actionsSchema = z.union([
 	actionMoveFollowEntitySchema,
 	actionMoveStopSchema,
 	actionMoveToPointSchema,
+	actionMoveCloseToEntitySchema,
+	actionMoveAwayFromEntitySchema,
 	actionJumpSchema,
 
 	actionSetShortMemorySchema,
@@ -163,7 +203,11 @@ export const actionsSchema = z.union([
 	actionMoveItemSchema,
 	actionSplitItemSchema,
 	actionAttackSchema,
+	actionAttackEntitySchema,
+	actionAttackUntilResolvedSchema,
 	actionConsumeItemSchema,
+	actionLookAtPositionSchema,
+	actionLookAtEntitySchema,
 
 	actionCreateMissionSchema,
 	actionAcceptMissionSchema,

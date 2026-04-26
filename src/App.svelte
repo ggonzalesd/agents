@@ -43,7 +43,8 @@
 
 	function preloadResources() {
 		return Promise.all([
-			preloadGLB('/3d/SkinModel.glb'),
+			preloadGLB('/3d/SkinModel2.glb'),
+			preloadGLB('/3d/deer.glb'),
 
 			...models.bareTrees.values.map((p) =>
 				preloadGLB(`${models.bareTrees.path}${p}`),
@@ -103,7 +104,7 @@
 		</Router>
 
 		<Router route="/profile">
-			{#await Promise.all( [waitFor(Number(import.meta.env.VITE_WAIT_TIME) || 0), preloadGLB('/3d/SkinModel.glb')], )}
+			{#await Promise.all( [waitFor(Number(import.meta.env.VITE_WAIT_TIME) || 0), preloadGLB('/3d/SkinModel2.glb')], )}
 				<Loading />
 			{:then _}
 				<ProfileView />

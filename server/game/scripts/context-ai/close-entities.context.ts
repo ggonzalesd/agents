@@ -24,17 +24,20 @@ export class CloseEntitiesContextAI implements IContextAI {
 		const closeEntities = this.world
 			.getFromEntitiesWith(CharacterBodyServerEcs)
 			.filter(({ entity }) => entity.name !== this.parentId)
-			.map((other) => {
-				const record = other.entity.get(RecordEcs);
+		.map((other) => {
+			const record = other.entity.get(RecordEcs);
 
-				return {
-					...other,
-					// Get display name from record stats or use entity name
-					display: record
-						.map((r) => r.getUnsafeRecord<{ type: string }>('stats')?.type)
-						.orElse(other.entity.name),
-				};
-			})
+			return {
+				...other,
+				// Get display name from record stats or use entity name
+				display: record
+					.map((r) => r.getUnsafeRecord<{ type: string }>('stats')?.type)
+					.orElse(other.entity.name),
+				description: record
+					.map((r) => r.getUnsafeRecord<{ description: string }>('stats')?.description ?? null)
+					.raw() ?? null,
+			};
+		})
 			.map((other) => {
 				const myPosition = this.character.body.translation();
 				const otherPosition = other.component.body.translation();
@@ -56,15 +59,16 @@ export class CloseEntitiesContextAI implements IContextAI {
 			.filter(({ distance }) => distance < 10)
 			.toSorted((a, b) => a.distance - b.distance)
 			.slice(0, 5)
-			.map(
-				({ entity, distance, position, display }, index) =>
-					`(${index + 1}) ${entity
-						.get(RecordEcs)
-						.map((r) => r.getUnsafeRecord<{ name: string }>('stats')?.name)
-						.orElse(
-							entity.name,
-						)}: ID=${entity.name}, Display=${display}, Distance=${distance}, Position=${JSON.stringify(position)}`,
-			);
+		.map(
+			({ entity, distance, position, display, description }, index) => {
+				const name = entity
+					.get(RecordEcs)
+					.map((r) => r.getUnsafeRecord<{ name: string }>('stats')?.name)
+					.orElse(entity.name);
+				const base = `(${index + 1}) ${name}: ID=${entity.name}, Display=${display}, Distance=${distance}, Position=${JSON.stringify(position)}`;
+				return description != null ? `${base}, Info=${description}` : base;
+			},
+		);
 		const entitiesContext = ['## Nearby Entities', ...closeEntities].join('\n');
 		return entitiesContext;
 	}

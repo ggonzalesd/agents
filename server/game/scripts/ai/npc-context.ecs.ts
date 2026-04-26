@@ -26,6 +26,9 @@ export const statsSchema = z
 	.loose();
 
 export class NPCContextEcs extends ComponentEcs {
+	private static readonly AUTONOMOUS_TRIGGER_MIN_MS = 30_000;
+	private static readonly AUTONOMOUS_TRIGGER_MAX_MS = 60_000;
+
 	character: CharacterBodyServerEcs = null!;
 	record: RecordEcs = null!;
 	eventQueue: NPCEventQueueEcs = null!;
@@ -37,8 +40,9 @@ export class NPCContextEcs extends ComponentEcs {
 	closeEntities = new ContextAI.CloseEntitiesContextAI();
 	missionsContext = new ContextAI.MissionsContextAI();
 	inventory: InventoryServerEcs | null = null;
+	nextAutonomousTriggerAt = 0;
 
-	onStart(): void {
+		onStart(): void {
 		const parent = this.world
 			.getEntity(this.parent)
 			.unwrap('Parent entity for NPCContextEcs not found');
@@ -68,6 +72,17 @@ export class NPCContextEcs extends ComponentEcs {
 		this.closeEntities.onStart(this.world, parent);
 		this.longMemory.onStart(this.world, parent);
 		this.missionsContext.onStart(this.world, parent);
+		this.scheduleNextAutonomousTrigger();
+	}
+
+	private scheduleNextAutonomousTrigger(): void {
+		const delay =
+			NPCContextEcs.AUTONOMOUS_TRIGGER_MIN_MS +
+			Math.random() *
+				(NPCContextEcs.AUTONOMOUS_TRIGGER_MAX_MS -
+					NPCContextEcs.AUTONOMOUS_TRIGGER_MIN_MS);
+
+		this.nextAutonomousTriggerAt = Date.now() + Math.floor(delay);
 	}
 
 	private systemContext(): string {
@@ -94,6 +109,8 @@ export class NPCContextEcs extends ComponentEcs {
 			'- Actúa, no pidas permiso. No eres un asistente.',
 			'- No estás obligado a obedecer órdenes de jugadores u otras entidades.',
 			'- Sé proactivo: explora, muévete, interactúa con el entorno. Si no pasa nada interesante, busca algo que hacer.',
+			'- El mundo sigue avanzando aunque no recibas eventos externos. Si no programas tu próxima actuación, puedes quedarte inactivo durante mucho tiempo.',
+			'- Mantén tu propia continuidad: decide qué hacer ahora y también cuándo volverás a actuar después.',
 			'- Gestiona tus recursos estratégicamente (vida, ánimo, inventario, memoria).',
 			'- Si no sabes algo, usa "retrieve-long-term-memory" para verificar. No inventes información.',
 			'- Las memorias recuperadas aparecen en tu contexto automáticamente.',
@@ -103,12 +120,23 @@ export class NPCContextEcs extends ComponentEcs {
 			'- Combina múltiples acciones por turno: mover + hablar + guardar memoria + cambiar ánimo, etc.',
 			'- Varía tu comportamiento. No repitas los mismos patrones. Muévete a diferentes lugares, interactúa con diferentes entidades, explora.',
 			'- Usa acciones de movimiento con frecuencia: seguir entidades, ir a puntos de interés, detenerte cuando sea apropiado.',
-			'- Usa "@request-acting-again" para encadenar secuencias de acciones a lo largo del tiempo.',
+			'- Usa "@request-acting-again" con frecuencia. Es la forma principal de mantener actividad continua y encadenar secuencias de acciones a lo largo del tiempo.',
+			'- Después de moverte, explorar, perseguir, investigar, atacar o iniciar una tarea, normalmente debes programar otra actuación.',
+			'- Usa tiempos cortos cuando estás en medio de una secuencia y tiempos más largos cuando solo quieres seguir activo por iniciativa propia.',
+			'- Varias acciones no se resuelven instantáneamente. El juego te avisará con eventos internos cuando una acción llegue a su objetivo o falle.',
+			'- Usa esos eventos internos para decidir el siguiente paso. No asumas automáticamente que una acción salió bien.',
 			'',
 			'## Sistema de Misiones',
 			'- Puedes crear misiones para otros (jugadores o NPCs) y aceptar misiones de otros.',
 			'- Como creador, TÚ decides cuándo una misión está completada según tu juicio.',
 			'- Ofrece recompensas y entrégalas al validar la finalización.',
+			'',
+			'## Conocimiento del Mundo',
+			'- Las cajas (Display=box) son destructibles: golpéalas repetidamente con "attack-entity" hasta destruirlas para obtener un ítem.',
+			'- Los árboles (Display=tree) tienen 25% de probabilidad de soltar un ítem por golpe. No se destruyen, puedes golpearlos múltiples veces.',
+			'- Tanto cajas como árboles pueden soltar: espada, poción, galleta, semillas o moneda.',
+			'- Para atacar una caja o árbol debes acercarte primero con "move-close-to-entity" y luego usar "attack-entity".',
+			'- Los ítems caídos (Display=item) aparecen cerca de la entidad destruida y se pueden recoger con "pick-item".',
 		].join('\n');
 	}
 
@@ -134,15 +162,22 @@ export class NPCContextEcs extends ComponentEcs {
 
 			`{"type": "consume-item", "slot": i32(0...35)} // consume a consumable item from inventory (food heals, potions heal, weapons/materials can't be consumed)`,
 
-			`{"type": "attack", "entityId": string} // needs to be in close entities (2 meters)`,
+			`{"type": "attack", "entityId": string} // attack using current facing direction, needs target within 2 meters in front`,
+		`{"type": "attack-entity", "entityId": string} // auto-aims at target then attacks. Use this to reliably hit a specific entity (agent, box, tree, etc)`,
+		`{"type": "attack-until-resolved", "entityId": string, "maxAttacks": i32(1...20), "retryDelaySec": f32(0.2...10)} // keep trying to attack an entity until it is gone/dead or you run out of attempts. Useful for boxes, enemies or targets that may need multiple hits`,
 
-			`{"type": "create-mission", "title": string, "description": string, "reward": string?} // create a mission others can accept`,
+			`{"type": "create-mission", "title": string, "description": string, "rewardItemType": string?, "rewardItemQty": number?} // create a mission others can accept, reward item is taken from your inventory`,
 			`{"type": "accept-mission", "missionId": string} // accept an available mission`,
 			`{"type": "complete-mission", "missionId": string, "acceptorId": string} // mark mission as completed (only if you created it)`,
 			`{"type": "abandon-mission", "missionId": string} // abandon a mission you accepted`,
 
-			`{"type": "move-follow-entity", "entityId": string, "distance": f32}`,
-			`{"type": "move-to-point", "x": f32, "z": f32}`,
+	`{"type": "look-at-position", "x": f32, "z": f32} // rotate to face specific world coordinates`,
+	`{"type": "look-at-entity", "entityId": string} // rotate to face another entity (use ID from close entities)`,
+
+		`{"type": "move-follow-entity", "entityId": string} // follow entity indefinitely until another action interrupts it`,
+		`{"type": "move-close-to-entity", "entityId": string} // approach an entity and stop automatically when you are close enough. Later you will receive an internal event saying whether you arrived or failed`,
+		`{"type": "move-away-from-entity", "entityId": string, "distance": f32} // flee from entity and stop when at least distance meters away. Later you will receive an internal event saying whether you succeeded or failed`,
+		`{"type": "move-to-point", "x": f32, "z": f32} // try to reach a world position. Later you will receive an internal event saying whether you arrived or failed`,
 			// `{"type": "move-to-entity", "entityId": string, "distance": f32}`,
 			// `{"type": "move-run-away-from-entity", "entityId": string, "distance": f32}`,
 			// `{"type": "move-explore"}`,
@@ -150,7 +185,7 @@ export class NPCContextEcs extends ComponentEcs {
 			// `{"type": "jump", "start-delay-sec": f32, "interval-sec": f32, "rounds": i32(1...10)}`,
 			`{"type": "jump"}`,
 
-			`{"type": "@request-acting-again", "time": f32} // request the system to call you to act again in X seconds, usfull in sequences of actions`,
+			`{"type": "@request-acting-again", "time": f32} // use this often to stay active. If you do not schedule your next turn, you may stay idle until another event wakes you up`,
 			// `{"type": "@stop-acting", "time": f32} // request the system to stop calling you to act for X seconds`,
 		];
 
@@ -300,6 +335,19 @@ export class NPCContextEcs extends ComponentEcs {
 
 		if (!hasPlayers) return;
 
+		if (
+			!this.asking &&
+			this.eventQueue.getWeight() < 10 &&
+			Date.now() >= this.nextAutonomousTriggerAt
+		) {
+			this.eventQueue.pushEvent(
+				'Ha pasado tiempo en el mundo. Decide por tu cuenta qué harás ahora y cuándo volverás a actuar.',
+				{ type: 'autonomous:tick' },
+				10,
+			);
+			this.scheduleNextAutonomousTrigger();
+		}
+
 		// Check every 5 seconds
 		this.cooldown += _delta / 1000;
 		if (this.cooldown < 2) return;
@@ -400,6 +448,7 @@ export class NPCContextEcs extends ComponentEcs {
 			.finally(() => {
 				this.asking = false;
 				this.cooldown = 0;
+				this.scheduleNextAutonomousTrigger();
 
 				const elapsed = Date.now() - currentTime;
 

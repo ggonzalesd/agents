@@ -16,7 +16,8 @@ export const createMission = async ({
 		creatorType,
 		title: payload.title,
 		description: payload.description,
-		reward: payload.reward ?? null,
+		rewardItemType: payload.rewardItemType ?? null,
+		rewardItemQty: payload.rewardItemQty ?? null,
 	});
 
 	return mission;

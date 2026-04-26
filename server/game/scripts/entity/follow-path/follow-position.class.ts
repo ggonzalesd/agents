@@ -7,11 +7,14 @@ import type { FollowPathEcs } from './follow-path.ecs';
 
 export class FollowPositionOption implements IFollowOption {
 	done: boolean = false;
+	private settled = false;
 
 	pathfinder: WorldPathfinderEcs;
 	followPath: FollowPathEcs;
 	position: { x: number; z: number };
 	pivotPosition?: { x: number; z: number } | null;
+	private onComplete?: () => void;
+	private onFail?: (reason: string) => void;
 
 	character: CharacterBodyServerEcs = null!;
 
@@ -21,11 +24,15 @@ export class FollowPositionOption implements IFollowOption {
 		position: { x: number; z: number };
 		entity: EntityEcs;
 		pivotPosition?: { x: number; z: number } | null;
+		onComplete?: () => void;
+		onFail?: (reason: string) => void;
 	}) {
 		this.pathfinder = props.pathfinder;
 		this.followPath = props.followPath;
 		this.position = props.position;
 		this.pivotPosition = props.pivotPosition;
+		this.onComplete = props.onComplete;
+		this.onFail = props.onFail;
 
 		this.character = props.entity
 			.get(CharacterBodyServerEcs)
@@ -33,6 +40,24 @@ export class FollowPositionOption implements IFollowOption {
 	}
 
 	private canRecalculatePath = true;
+
+	private complete(): void {
+		if (this.settled) {
+			return;
+		}
+
+		this.settled = true;
+		this.onComplete?.();
+	}
+
+	private fail(reason: string): void {
+		if (this.settled) {
+			return;
+		}
+
+		this.settled = true;
+		this.onFail?.(reason);
+	}
 
 	loop(_: number): void {
 		if (this.done) return;
@@ -84,6 +109,15 @@ export class FollowPositionOption implements IFollowOption {
 				.getPathFromAtoB(currentGridPos, targetGridPos)
 				// .set the new path
 				.then(({ result }) => {
+					if (result.length === 0) {
+						this.fail(
+							`No path available to point (${this.position.x}, ${this.position.z}).`,
+						);
+						this.done = true;
+						this.followPath.path = [];
+						return;
+					}
+
 					this.followPath.path = result;
 				})
 				// on finally allow path recalculation again
@@ -94,6 +128,7 @@ export class FollowPositionOption implements IFollowOption {
 			this.canRecalculatePath = false;
 		} else {
 			this.done = true;
+			this.complete();
 		}
 	}
 

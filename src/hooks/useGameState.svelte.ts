@@ -5,6 +5,7 @@ import { Publisher } from '#/utils/Publisher';
 
 type GameType = {
 	paused: boolean;
+	showNpcPaths: boolean;
 	view:
 		| 'MENU'
 		| 'MESSAGE'
@@ -17,9 +18,20 @@ type GameType = {
 	selectedEntityId: string | null;
 };
 
+const NPC_PATHS_STORAGE_KEY = 'x-show-npc-paths';
+
+const getInitialShowNpcPaths = () => {
+	if (typeof window === 'undefined') {
+		return true;
+	}
+
+	return localStorage.getItem(NPC_PATHS_STORAGE_KEY) !== '0';
+};
+
 export const useGameState = () => {
 	const { subscribe, update } = writable<GameType>({
 		paused: false,
+		showNpcPaths: getInitialShowNpcPaths(),
 		view: 'MENU',
 		username: '',
 		selectedEntityId: null,
@@ -58,12 +70,44 @@ export const useGameState = () => {
 		});
 	};
 
+	const setShowNpcPaths = (showNpcPaths: boolean) => {
+		if (typeof window !== 'undefined') {
+			localStorage.setItem(NPC_PATHS_STORAGE_KEY, showNpcPaths ? '1' : '0');
+		}
+
+		update((state) => {
+			const newValue = { ...state, showNpcPaths };
+			publisher.publish('game:npc-paths', newValue);
+			return newValue;
+		});
+
+		return showNpcPaths;
+	};
+
+	const toggleNpcPaths = () => {
+		let nextValue = true;
+		update((state) => {
+			nextValue = !state.showNpcPaths;
+			if (typeof window !== 'undefined') {
+				localStorage.setItem(NPC_PATHS_STORAGE_KEY, nextValue ? '1' : '0');
+			}
+
+			const newValue = { ...state, showNpcPaths: nextValue };
+			publisher.publish('game:npc-paths', newValue);
+			return newValue;
+		});
+
+		return nextValue;
+	};
+
 	return {
 		subscribe,
 		setPause,
 		continueGame,
 		setUsername,
 		setSelectedEntity,
+		setShowNpcPaths,
+		toggleNpcPaths,
 		publisher: { subscribe: publisher.subscribe },
 	};
 };

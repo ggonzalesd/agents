@@ -4,6 +4,7 @@ import type { WorldEcs } from '#/ecs/World.ecs';
 import type { NPCState } from '#/state/game.state';
 import { HealthBarRenderEcs } from '../scripts/common/health-bar-render.ecs';
 import { MessageRenderEcs } from '../scripts/common/message-render.ecs';
+import { NpcPathRenderEcs } from '../scripts/common/npc-path-render.ecs';
 import { VFXListenerEcs } from '../scripts/common/vfx-listener.ecs';
 import { Character3DEcs } from '../scripts/player/character3D.ecs';
 
@@ -17,10 +18,11 @@ export const npcClientFactoryGenerator =
 				[Character3DEcs.name]: new Character3DEcs(
 					state.character,
 					state.movement,
-					'user',
+					state.skin === 'deer' ? 'deer' : 'user',
 				),
 				[HealthBarRenderEcs.name]: new HealthBarRenderEcs(state.character),
 				[MessageRenderEcs.name]: new MessageRenderEcs(),
+				[NpcPathRenderEcs.name]: new NpcPathRenderEcs(state),
 				[VFXListenerEcs.name]: new VFXListenerEcs(state.movement),
 			},
 		});

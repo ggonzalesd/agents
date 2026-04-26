@@ -8,6 +8,7 @@ import { NPCEventQueueEcs } from '../scripts/ai/npc-event-queue.ecs';
 
 import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';
 import { FollowPathEcs } from '../scripts/entity/follow-path/follow-path.ecs';
+import { NpcPathDebugSyncEcs } from '../scripts/entity/follow-path/npc-path-debug-sync.ecs';
 import { InventoryServerEcs } from '../scripts/entity/InventoryServer.ecs';
 import { MovementServerEcs } from '../scripts/entity/MovementServer.ecs';
 import { NpcServerBehavior } from '../scripts/npc/npcServerBehavior.ecs';
@@ -21,6 +22,7 @@ export const npcServerFactoryGenerator =
 		description,
 		id,
 		model,
+		skin,
 	}: {
 		name: string;
 		display: string;
@@ -28,8 +30,9 @@ export const npcServerFactoryGenerator =
 		description: string;
 		id: string;
 		model: string;
+		skin?: string;
 	}) => {
-		const state = new NPCState(pos, name);
+		const state = new NPCState(pos, skin ?? name);
 
 		return new EntityEcs({
 			name,
@@ -59,6 +62,7 @@ export const npcServerFactoryGenerator =
 				),
 				[MovementServerEcs.name]: new MovementServerEcs(state.movement),
 				[FollowPathEcs.name]: new FollowPathEcs(),
+				[NpcPathDebugSyncEcs.name]: new NpcPathDebugSyncEcs(state),
 				[InventoryServerEcs.name]: new InventoryServerEcs(state.inventory),
 
 				// NPC specific AI components

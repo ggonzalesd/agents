@@ -15,11 +15,15 @@ import type { AuthPayload } from '$/models/Payload.model';
 
 import * as JwtService from '$/services/jwt.service';
 import * as ProfileService from '$/services/profile.service';
+import * as InventoryRepository from '$/db/inventory.db';
 
 import * as PlayerPrefab from './prefab/player.server';
 import * as WorldPrefab from './prefab/world.server';
 
+import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { CharacterBodyServerEcs } from './scripts/entity/CharacterBodyServer.ecs';
+import { InventoryServerEcs } from './scripts/entity/InventoryServer.ecs';
+import { ItemState } from '#/state/inventory.state';
 
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
@@ -81,11 +85,38 @@ export class MainRoom extends Room<GameState> {
 		this.worldPhy.step();
 	}
 
-	onDispose(): void {
+	async onDispose(): Promise<void> {
 		for (const timer of this.expulsionTimers.values()) {
 			clearTimeout(timer);
 		}
 		this.expulsionTimers.clear();
+
+		const entitiesWithInventory = this.worldEcs.getEntityLike({
+			inventory: InventoryServerEcs,
+			record: RecordEcs,
+		});
+
+		const savePromises = entitiesWithInventory.map(({ components }) => {
+			const dbRecord = components.record.getRecord<{ id: string }>('db');
+			if (dbRecord.isNone()) return Promise.resolve();
+
+			const entityId = dbRecord.unwrap().id;
+			const inventoryEcs = components.inventory;
+
+			const items = Array.from(inventoryEcs.inventoryState.items.entries()).map(
+				([slot, item]) => {
+					const metadata: Record<string, string> = {};
+					item.metadata.forEach((value, key) => {
+						metadata[key] = value;
+					});
+					return { slot, type: item.type, quantity: item.quantity, metadata };
+				},
+			);
+
+			return InventoryRepository.saveInventory({ entityId, items });
+		});
+
+		await Promise.all(savePromises);
 
 		this.worldEcs.onDelete();
 		console.log('MainRoom disposed');
@@ -146,21 +177,36 @@ export class MainRoom extends Room<GameState> {
 			ReturnType<typeof ProfileService.getUserInfo>
 		>;
 
-		this.worldEcs.addEntity(
-			this.playerServerFactory({
-				sessionId: client.sessionId,
-				name: userInfo.agent.identifier,
-				username: payload.username,
+		const playerEntity = this.playerServerFactory({
+			sessionId: client.sessionId,
+			name: userInfo.agent.identifier,
+			username: payload.username,
+			entityId: userInfo.entity.id,
+			life: userInfo.entity.life,
+			maxLife: userInfo.entity.maxLife,
+			pos: {
+				x: userInfo.agent.positionX,
+				y: userInfo.agent.positionY,
+				z: userInfo.agent.positionZ,
+			},
+		});
+
+		const inventoryOp = playerEntity.get(InventoryServerEcs);
+		if (inventoryOp.isSome()) {
+			const inventoryEcs = inventoryOp.unwrap();
+			const savedItems = await InventoryRepository.getItemsByEntityId({
 				entityId: userInfo.entity.id,
-				life: userInfo.entity.life,
-				maxLife: userInfo.entity.maxLife,
-				pos: {
-					x: userInfo.agent.positionX,
-					y: userInfo.agent.positionY,
-					z: userInfo.agent.positionZ,
-				},
-			}),
-		);
+			});
+			for (const item of savedItems) {
+				const metadata = (item.metadata ?? {}) as Record<string, string>;
+				inventoryEcs.inventoryState.items.set(
+					item.slot,
+					new ItemState(item.type, item.quantity, metadata),
+				);
+			}
+		}
+
+		this.worldEcs.addEntity(playerEntity);
 
 		if (payload.loginType === LOGIN_TYPE.REDEEM_TOKEN) {
 			this.scheduleExpulsion(client, payload);
@@ -170,9 +216,9 @@ export class MainRoom extends Room<GameState> {
 	async onLeave(client: Client<any, any>, _consented?: boolean): Promise<any> {
 		this.clearExpulsionTimer(client.sessionId);
 
-		const userInfo = client.userData?.userInfo as Awaited<
-			ReturnType<typeof ProfileService.getUserInfo>
-		> | undefined;
+		const userInfo = client.userData?.userInfo as
+			| Awaited<ReturnType<typeof ProfileService.getUserInfo>>
+			| undefined;
 
 		if (!userInfo) return;
 
@@ -203,6 +249,25 @@ export class MainRoom extends Room<GameState> {
 				saturation: 100,
 			},
 		});
+
+		const inventoryOp = entity.get(InventoryServerEcs);
+		if (inventoryOp.isSome()) {
+			const inventoryEcs = inventoryOp.unwrap();
+			const items = Array.from(inventoryEcs.inventoryState.items.entries()).map(
+				([slot, item]) => {
+					const metadata: Record<string, string> = {};
+					item.metadata.forEach((value, key) => {
+						metadata[key] = value;
+					});
+					return { slot, type: item.type, quantity: item.quantity, metadata };
+				},
+			);
+
+			await InventoryRepository.saveInventory({
+				entityId: userInfo.entity.id,
+				items,
+			});
+		}
 
 		this.worldEcs.deleteEntityById(userInfo.agent.identifier);
 	}

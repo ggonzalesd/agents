@@ -13,6 +13,7 @@ export enum VFXEffectType {
 	Running = 'running',
 	Healed = 'healed',
 	Respawn = 'respawn',
+	TreeHit = 'tree-hit',
 }
 
 export interface VFXEffectConfig {
@@ -88,5 +89,15 @@ export const VFX_EFFECTS: Record<VFXEffectType, VFXEffectConfig> = {
 		color: 0xffffff,
 		spread: VFXSpread.Upward,
 		opacity: [1, 0],
+	},
+	[VFXEffectType.TreeHit]: {
+		texture: '/vite.svg',
+		count: 10,
+		duration: 450,
+		scale: [0.08, 0.18],
+		speed: [1.5, 3.5],
+		color: 0xb9824a,
+		spread: VFXSpread.Radial,
+		opacity: [0.9, 0],
 	},
 };

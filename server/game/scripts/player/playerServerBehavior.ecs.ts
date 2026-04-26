@@ -16,6 +16,9 @@ import {
 	notifyNpcs,
 	notifyEntity,
 	notifyEntityById,
+	consumeRewardFromInventory,
+	giveRewardToAgent,
+	returnRewardToCreator,
 } from '../missions/mission-action.handler';
 
 const sessionSchema = z
@@ -124,8 +127,12 @@ export class PlayerServerBehavior extends ComponentEcs {
 			case 'attack': {
 				console.log('ATTACK ACTION', message);
 
-				// Get Offset Position
-				this.character.attack();
+				const entityId =
+					'entityId' in message && typeof message.entityId === 'string'
+						? message.entityId
+						: undefined;
+
+				this.character.attack(entityId);
 
 				break;
 			}
@@ -164,7 +171,12 @@ export class PlayerServerBehavior extends ComponentEcs {
 
 				if (slot != null) {
 					const result = this.inventory.consumeItem(slot);
-					if (!result.success) {
+					if (result.success) {
+						this.serverData.room.broadcast('agent:consume', {
+							id: this.parent,
+							itemType: result.itemType,
+						});
+					} else {
 						this.serverData.room.broadcast('agent:consume-error', {
 							id: this.parent,
 							message: result.message,
@@ -205,19 +217,48 @@ export class PlayerServerBehavior extends ComponentEcs {
 				const createMsg = message as unknown as {
 					title: string;
 					description: string;
-					reward?: string;
+					rewardItemType?: string;
+					rewardItemQty?: string | number;
 				};
 				const dbCreate =
 					this.record.getUnsafeRecord<z.infer<typeof dbSchema>>('db');
 				const sessionCreate =
 					this.record.getUnsafeRecord<z.infer<typeof sessionSchema>>('session');
+
+				const parsedRewardQty = createMsg.rewardItemQty
+					? Number(createMsg.rewardItemQty)
+					: null;
+
+				if (
+					createMsg.rewardItemType &&
+					parsedRewardQty &&
+					parsedRewardQty > 0
+				) {
+					const consumed = consumeRewardFromInventory(
+						this.inventory,
+						createMsg.rewardItemType,
+						parsedRewardQty,
+					);
+					if (!consumed) {
+						const client = this.serverData.room.clients.find(
+							(c) => c.sessionId === sessionCreate.id,
+						);
+						client?.send('mission:result', {
+							success: false,
+							error: 'No tienes el item requerido en tu inventario',
+						});
+						break;
+					}
+				}
+
 				MissionService.createMission({
 					creatorId: dbCreate.id,
 					creatorType: 'USER',
 					payload: {
 						title: createMsg.title,
 						description: createMsg.description,
-						reward: createMsg.reward ?? null,
+						rewardItemType: createMsg.rewardItemType ?? null,
+						rewardItemQty: parsedRewardQty,
 					},
 				})
 					.then((mission) => {
@@ -325,6 +366,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 					creatorType: 'USER',
 				})
 					.then((mission) => {
+						giveRewardToAgent(this.world, completeMsg.acceptorId, mission);
 						this.serverData.room.broadcast('mission:completed', {
 							mission,
 							acceptorId: completeMsg.acceptorId,
@@ -426,6 +468,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 					creatorType: 'USER',
 				})
 					.then((mission) => {
+						returnRewardToCreator(this.world, mission);
 						this.serverData.room.broadcast('mission:cancelled', {
 							mission,
 							creatorName: this.parent,

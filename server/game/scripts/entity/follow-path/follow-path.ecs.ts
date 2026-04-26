@@ -37,9 +37,19 @@ export class FollowPathEcs extends ComponentEcs {
 	}
 
 	timeSinceLast = 0;
+
+	private stopMovement(): void {
+		this.movement.movementState.isMoving = false;
+		this.movement.clientDirection.x = 0;
+		this.movement.clientDirection.y = 0;
+	}
+
 	followPath(_delta: number) {
 		this.timeSinceLast += _delta / 1000;
-		if (this.path.length === 0) return;
+		if (this.path.length === 0) {
+			this.stopMovement();
+			return;
+		}
 
 		const nextGridPoint = this.path[0];
 		const nextRealPoint = posGridToReal(
@@ -60,7 +70,11 @@ export class FollowPathEcs extends ComponentEcs {
 		if (distance < 1) {
 			this.timeSinceLast = 0;
 			this.path.shift();
-			this.movement.movementState.isMoving = false;
+			if (this.path.length === 0) {
+				this.stopMovement();
+			} else {
+				this.movement.movementState.isMoving = false;
+			}
 			return;
 		}
 

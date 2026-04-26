@@ -19,7 +19,8 @@ export const acceptanceStatusSchema = z.enum([
 export const createMissionSchema = z.object({
 	title: z.string().min(3).max(255),
 	description: z.string().min(10).max(2000),
-	reward: z.string().max(500).nullable().optional(),
+	rewardItemType: z.string().max(50).nullable().optional(),
+	rewardItemQty: z.number().int().min(1).nullable().optional(),
 });
 
 export const acceptMissionSchema = z.object({
@@ -41,7 +42,8 @@ export const missionResponseSchema = z.object({
 	creatorType: entityTypeSchema,
 	title: z.string(),
 	description: z.string(),
-	reward: z.string().nullable(),
+	rewardItemType: z.string().nullable(),
+	rewardItemQty: z.number().int().nullable(),
 	status: missionStatusSchema,
 	createdAt: z.coerce.date(),
 	completedAt: z.coerce.date().nullable(),

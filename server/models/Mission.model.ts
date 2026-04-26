@@ -10,7 +10,8 @@ export interface MissionDB {
 	creatorType: EntityType;
 	title: string;
 	description: string;
-	reward: string | null;
+	rewardItemType: string | null;
+	rewardItemQty: number | null;
 	status: MissionStatus;
 	createdAt: Date;
 	completedAt: Date | null;

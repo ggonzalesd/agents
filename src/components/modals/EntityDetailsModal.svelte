@@ -10,6 +10,7 @@
 	import type { NPCState } from '#/state/game.state';
 	import * as THREE from 'three';
 	import { cloneMesh, loadGLB, loadTexture } from '@/utils/assets.utils';
+	import { CharacterAnimation } from '#/state/character-animation';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { getMissionsByEntityIdService, acceptMissionService } from '@/services/api.service';
 	import type { MissionResponse } from '#/schema/mission.schema';
@@ -86,10 +87,12 @@
 			map: texture,
 			transparent: true,
 		});
-		const { mesh, mixer } = cloneMesh(loadGLB('/3d/SkinModel.glb'), material, [
-			'IDLE',
-			'WALK',
-		]);
+		const { mesh, mixer, actions } = cloneMesh(
+			loadGLB('/3d/SkinModel2.glb'),
+			material,
+			[CharacterAnimation.IDLE, CharacterAnimation.WALK],
+		);
+		actions[CharacterAnimation.IDLE]?.play();
 		const spot = new THREE.Object3D();
 		spot.add(mesh);
 		scene.add(spot);
@@ -216,8 +219,8 @@
 										<span class="text-xs px-2 py-0.5 rounded bg-green-600">{mission.status}</span>
 									</div>
 									<p class="text-gray-300 text-xs mb-2">{mission.description}</p>
-									{#if mission.reward}
-										<div class="text-xs text-amber-400 mb-2">🏆 {mission.reward}</div>
+									{#if mission.rewardItemType}
+										<div class="text-xs text-amber-400 mb-2">{mission.rewardItemType} x{mission.rewardItemQty ?? 1}</div>
 									{/if}
 									<Button
 										type="button"

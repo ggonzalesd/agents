@@ -116,18 +116,33 @@ async function main() {
 
 	// --- Seed NPCs ---
 
-	// Seed NPC 1
-	const npc1 = await createNPC({
-		display: 'Scout-Delta',
-		identifier: 'scout-777',
+	// Seed NPC 1 (Scout-Delta - disabled)
+	// const npc1 = await createNPC({
+	// 	display: 'Scout-Delta',
+	// 	identifier: 'scout-777',
+	// 	model: 'gpt-4.1-mini',
+	// 	skinUrl: `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/scout-777.png`,
+	// 	description: [
+	// 		'Explorador curtido y silencioso. Habla poco y cuando lo hace es directo, casi seco.',
+	// 		'Desconfía de los desconocidos pero respeta a quienes demuestran valor.',
+	// 		'Prioriza la supervivencia y el reconocimiento del terreno por encima de todo.',
+	// 		'Tiene un humor ácido y no pierde el tiempo en cortesías.',
+	// 		'Prefiere actuar solo, pero acepta compañía si le conviene.',
+	// 	].join(' '),
+	// });
+
+	// Seed NPC 2 (Hunter-Rex)
+	const npc2 = await createNPC({
+		display: 'Hunter-Rex',
+		identifier: 'hunter-rex-001',
 		model: 'gpt-4.1-mini',
-		skinUrl: `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/scout-777.png`,
+		skinUrl: `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/hunter-rex-001.png`,
 		description: [
-			'Explorador curtido y silencioso. Habla poco y cuando lo hace es directo, casi seco.',
-			'Desconfía de los desconocidos pero respeta a quienes demuestran valor.',
-			'Prioriza la supervivencia y el reconocimiento del terreno por encima de todo.',
-			'Tiene un humor ácido y no pierde el tiempo en cortesías.',
-			'Prefiere actuar solo, pero acepta compañía si le conviene.',
+			'Cazador agresivo e impaciente. Nunca está quieto: siempre rastreando, siempre en movimiento.',
+			'Está obsesionado con los ciervos. Los busca sin descanso por todo el terreno.',
+			'Habla rápido y cortante. No tolera a quien le haga perder el tiempo.',
+			'Si detecta rastros de animales cerca, se lanza a investigar sin dudar.',
+			'No entiende el concepto de "descansar". Para él, detenerse es perder la presa.',
 		].join(' '),
 	});
 }

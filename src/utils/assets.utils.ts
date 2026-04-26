@@ -46,24 +46,43 @@ export const preloadTextures = async (
 
 export const cloneMesh = <T extends string>(
 	glb: GLTF,
-	material: THREE.Material,
+	material?: THREE.Material,
 	animations: T[] = [],
 ) => {
 	const clone = SkeletonUtils.clone(glb.scene);
 
-	clone.traverse((child) => {
-		if (child instanceof THREE.SkinnedMesh) {
-			child.material = material;
-		}
-	});
+	if (material) {
+		clone.traverse((child) => {
+			if (child instanceof THREE.SkinnedMesh) {
+				child.material = material;
+			}
+		});
+	} else {
+		clone.traverse((child) => {
+			if (!(child instanceof THREE.Mesh)) return;
+
+			child.material = Array.isArray(child.material)
+				? child.material.map((oneMaterial) => oneMaterial.clone())
+				: child.material.clone();
+		});
+	}
 
 	const mixer = new THREE.AnimationMixer(clone);
-	const actions: Record<T, THREE.AnimationAction> = {} as any;
+	const actions: Record<T, THREE.AnimationAction> = {} as Record<
+		T,
+		THREE.AnimationAction
+	>;
 
-	animations.forEach((name, index) => {
-		const clip = glb.animations[index]!;
+	for (const name of animations) {
+		const clip = THREE.AnimationClip.findByName(glb.animations, name);
+		if (!clip) {
+			console.warn(
+				`[cloneMesh] AnimationClip "${name}" no encontrado. Disponibles: ${glb.animations.map((c) => c.name).join(', ')}`,
+			);
+			continue;
+		}
 		actions[name] = mixer.clipAction(clip);
-	});
+	}
 
 	return {
 		mesh: clone,

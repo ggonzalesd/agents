@@ -15,6 +15,20 @@
 	import type { Room } from 'colyseus.js';
 	import type { GameState } from '#/state/game.state';
 
+	import cookieSvgSrc from '@/assets/items/cookie.svg';
+	import potionSvgSrc from '@/assets/items/potion.svg';
+	import seedsSvgSrc from '@/assets/items/seeds.svg';
+	import swordSvgSrc from '@/assets/items/sword.svg';
+	import coinSvgSrc from '@/assets/items/coin.svg';
+
+	const ITEM_ICONS: Record<string, string> = {
+		cookie: cookieSvgSrc,
+		potion: potionSvgSrc,
+		seeds: seedsSvgSrc,
+		sword: swordSvgSrc,
+		coin: coinSvgSrc,
+	};
+
 	type Tab = 'open' | 'created' | 'accepted';
 	let activeTab = $state<Tab>('open');
 
@@ -127,9 +141,12 @@
 
 		<p class="text-gray-300 text-sm mb-3">{mission.description}</p>
 
-		{#if mission.reward}
-			<div class="text-sm text-amber-400 mb-2">
-				🏆 Recompensa: {mission.reward}
+		{#if mission.rewardItemType}
+			<div class="text-sm text-amber-400 mb-2 flex items-center gap-1">
+				{#if ITEM_ICONS[mission.rewardItemType]}
+					<img src={ITEM_ICONS[mission.rewardItemType]} alt={mission.rewardItemType} class="h-5 w-5 inline" />
+				{/if}
+				Recompensa: {mission.rewardItemType} x{mission.rewardItemQty ?? 1}
 			</div>
 		{/if}
 
@@ -163,9 +180,12 @@
 
 		<p class="text-gray-300 text-sm mb-3">{mission.description}</p>
 
-		{#if mission.reward}
-			<div class="text-sm text-amber-400 mb-2">
-				🏆 Recompensa: {mission.reward}
+		{#if mission.rewardItemType}
+			<div class="text-sm text-amber-400 mb-2 flex items-center gap-1">
+				{#if ITEM_ICONS[mission.rewardItemType]}
+					<img src={ITEM_ICONS[mission.rewardItemType]} alt={mission.rewardItemType} class="h-5 w-5 inline" />
+				{/if}
+				Recompensa: {mission.rewardItemType} x{mission.rewardItemQty ?? 1}
 			</div>
 		{/if}
 
@@ -223,9 +243,12 @@
 
 		<p class="text-gray-300 text-sm mb-3">{mission.description}</p>
 
-		{#if mission.reward}
-			<div class="text-sm text-amber-400 mb-2">
-				🏆 Recompensa: {mission.reward}
+		{#if mission.rewardItemType}
+			<div class="text-sm text-amber-400 mb-2 flex items-center gap-1">
+				{#if ITEM_ICONS[mission.rewardItemType]}
+					<img src={ITEM_ICONS[mission.rewardItemType]} alt={mission.rewardItemType} class="h-5 w-5 inline" />
+				{/if}
+				Recompensa: {mission.rewardItemType} x{mission.rewardItemQty ?? 1}
 			</div>
 		{/if}
 

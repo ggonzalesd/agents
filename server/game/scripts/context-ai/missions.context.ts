@@ -119,7 +119,7 @@ export class MissionsContextAI implements IContextAI {
 					'acceptances' in m
 						? (m as MissionWithAcceptances).acceptances.length
 						: 0;
-				return `- [${m.id}] "${m.title}" (${m.status}, ${acceptances} accepted)${m.reward ? ` | Reward: ${m.reward}` : ''}`;
+				return `- [${m.id}] "${m.title}" (${m.status}, ${acceptances} accepted)${m.rewardItemType ? ` | Reward: ${m.rewardItemType} x${m.rewardItemQty ?? 1}` : ''}`;
 			});
 			sections.push(
 				`### Missions You Created (${this.missions.created.length})`,
@@ -131,7 +131,7 @@ export class MissionsContextAI implements IContextAI {
 		if (this.missions.accepted.length > 0) {
 			const acceptedLines = this.missions.accepted.map((m) => {
 				const acceptance = m.acceptances[0];
-				return `- [${m.id}] "${m.title}" by ${m.creatorType}:${m.creatorId.slice(0, 8)} (Your status: ${acceptance?.status ?? 'unknown'})${m.reward ? ` | Reward: ${m.reward}` : ''}`;
+				return `- [${m.id}] "${m.title}" by ${m.creatorType}:${m.creatorId.slice(0, 8)} (Your status: ${acceptance?.status ?? 'unknown'})${m.rewardItemType ? ` | Reward: ${m.rewardItemType} x${m.rewardItemQty ?? 1}` : ''}`;
 			});
 			sections.push(
 				`### Missions You Accepted (${this.missions.accepted.length})`,
@@ -143,7 +143,7 @@ export class MissionsContextAI implements IContextAI {
 		if (this.missions.available.length > 0) {
 			const availableLines = this.missions.available.map(
 				(m) =>
-					`- [${m.id}] "${m.title}" by ${m.creatorType}:${m.creatorId.slice(0, 8)}${m.reward ? ` | Reward: ${m.reward}` : ''}`,
+					`- [${m.id}] "${m.title}" by ${m.creatorType}:${m.creatorId.slice(0, 8)}${m.rewardItemType ? ` | Reward: ${m.rewardItemType} x${m.rewardItemQty ?? 1}` : ''}`,
 			);
 			sections.push(
 				`### Available Missions (${this.missions.available.length})`,

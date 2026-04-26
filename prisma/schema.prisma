@@ -59,8 +59,9 @@ model Entity {
 
   agent Agent @relation(fields: [id], references: [id])
 
-  Profile Profile[]
-  NPC     NPC[]
+  Profile        Profile[]
+  NPC            NPC[]
+  inventoryItems InventoryItem[]
 }
 
 model Profile {
@@ -72,6 +73,20 @@ model Profile {
   Entity Entity @relation(fields: [entityId], references: [id])
 
   @@id([entityId, userId])
+}
+
+model InventoryItem {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  entityId String @db.Uuid
+  slot     String @db.VarChar(50)
+  type     String @db.VarChar(100)
+  quantity Int    @default(1)
+  metadata Json   @default("{}") @db.JsonB
+
+  entity Entity @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@unique([entityId, slot])
+  @@index([entityId])
 }
 
 model NPC {
@@ -239,10 +254,11 @@ model Mission {
   id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   creatorId   String        @db.Uuid
   creatorType EntityType
-  title       String        @db.VarChar(255)
-  description String        @db.Text
-  reward      String?       @db.Text
-  status      MissionStatus @default(OPEN)
+  title          String        @db.VarChar(255)
+  description    String        @db.Text
+  rewardItemType String?       @db.VarChar(50)
+  rewardItemQty  Int?          @default(1)
+  status         MissionStatus @default(OPEN)
   createdAt   DateTime      @default(now()) @db.Timestamptz(6)
   completedAt DateTime?     @db.Timestamptz(6)
 

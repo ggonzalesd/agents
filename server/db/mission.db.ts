@@ -22,13 +22,15 @@ export const createMission = async ({
 	creatorType,
 	title,
 	description,
-	reward,
+	rewardItemType,
+	rewardItemQty,
 }: {
 	creatorId: string;
 	creatorType: EntityType;
 	title: string;
 	description: string;
-	reward?: string | null;
+	rewardItemType?: string | null;
+	rewardItemQty?: number | null;
 }): Promise<MissionDB> => {
 	const mission = await prisma.mission.create({
 		data: {
@@ -36,7 +38,8 @@ export const createMission = async ({
 			creatorType: creatorType as PrismaEntityType,
 			title,
 			description,
-			reward: reward ?? null,
+			rewardItemType: rewardItemType ?? null,
+			rewardItemQty: rewardItemQty ?? null,
 		},
 	});
 	return mission as unknown as MissionDB;

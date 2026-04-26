@@ -2,13 +2,14 @@ import * as THREE from 'three';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { RenderClientEcs } from '../renderClient.ecs';
+import { ColyseusClientEcs } from '../colyseus-client.ecs';
 import { loadTexture } from '@/utils/assets.utils';
 import {
 	VFX_EFFECTS,
 	VFX_POOL_LIMIT,
 	VFXSpread,
 	type VFXEffectConfig,
-	type VFXEffectType,
+	VFXEffectType,
 } from './vfx.config';
 
 interface VFXParticle {
@@ -22,15 +23,62 @@ interface VFXParticle {
 	active: boolean;
 }
 
+interface TreeHitMessage {
+	x: number;
+	y: number;
+	z: number;
+}
+
+interface BoxBreakMessage {
+	x: number;
+	y: number;
+	z: number;
+}
+
 export class VFXManagerEcs extends ComponentEcs {
 	private renderClient: RenderClientEcs = null!;
 	private pool: VFXParticle[] = [];
 	private textureCache = new Map<string, THREE.Texture>();
+	private boundRoomId: string | null = null;
+
+	private bindRoomListeners(): void {
+		const room = this.world
+			.get(ColyseusClientEcs)
+			.pick('connection')
+			.collapse()
+			.pick('room')
+			.raw();
+
+		if (!room) return;
+		if (this.boundRoomId === room.roomId) return;
+
+		this.boundRoomId = room.roomId;
+		room.onMessage('tree:hit', (message: TreeHitMessage) => {
+			this.spawn(
+				VFXEffectType.TreeHit,
+				new THREE.Vector3(message.x, message.y, message.z),
+			);
+		});
+
+		room.onMessage('box:break', (message: BoxBreakMessage) => {
+			this.spawn(
+				VFXEffectType.TreeHit,
+				new THREE.Vector3(message.x, message.y, message.z),
+			);
+		});
+	}
 
 	onStart(): void {
 		this.renderClient = this.world
 			.get(RenderClientEcs)
 			.unwrap('RenderClientEcs not found');
+
+		this.world.get(ColyseusClientEcs).ifSome((client) => {
+			this.callOnDelete(
+				client.alarm.subscribe(this.bindRoomListeners.bind(this)),
+			);
+		});
+		this.bindRoomListeners();
 
 		for (let i = 0; i < VFX_POOL_LIMIT; i++) {
 			const material = new THREE.SpriteMaterial({

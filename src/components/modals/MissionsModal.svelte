@@ -15,8 +15,18 @@
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
 	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
+	import { RecordEcs } from '#/ecs/lib/Record.ecs';
 	import type { Room } from 'colyseus.js';
 	import type { GameState } from '#/state/game.state';
+	import type { PlayerState } from '#/state/player.state';
+	import type { MapSchema } from '@colyseus/schema';
+	import { SvelteMap } from 'svelte/reactivity';
+
+	import cookieSvgSrc from '@/assets/items/cookie.svg';
+	import potionSvgSrc from '@/assets/items/potion.svg';
+	import seedsSvgSrc from '@/assets/items/seeds.svg';
+	import swordSvgSrc from '@/assets/items/sword.svg';
+	import coinSvgSrc from '@/assets/items/coin.svg';
 
 	type Tab = 'open' | 'created' | 'accepted';
 	type View = 'list' | 'create';
@@ -56,7 +66,9 @@
 					currentView = 'list';
 					form.title = '';
 					form.description = '';
-					form.reward = null;
+					form.rewardItemType = null;
+					form.rewardItemQty = null;
+					rewardItem = null;
 				}
 			} else {
 				formError = msg.error ?? 'Error en la acción';
@@ -72,6 +84,45 @@
 				queryClient.invalidateQueries({ queryKey: ['missions'] });
 			});
 		}
+
+		const world = worldEcsContext.raw();
+		if (!world) return;
+
+		const colyseusClient = world.get(ColyseusClientEcs).raw();
+		if (!colyseusClient) return;
+
+		const connection = colyseusClient.connection.collapse().raw();
+		if (!connection) return;
+
+		const { proxy } = connection;
+
+		const state = world
+			.getEntity(colyseusClient.entityId)
+			.map((e) => e.getUnsafe(RecordEcs)?.getRecord('state'))
+			.collapse()
+			.raw() as PlayerState | undefined;
+
+		if (!state) return;
+
+		const inventoryProxy = proxy(state.inventory).items;
+
+		const detachAdd = inventoryProxy.onAdd((item, key) => {
+			itemState.set(key, { type: item.type, quantity: item.quantity, metadata: item.metadata });
+		}, true);
+
+		const detachRemove = inventoryProxy.onRemove((_item, key) => {
+			itemState.delete(key);
+		});
+
+		const detachChange = inventoryProxy.onChange((item, key) => {
+			itemState.set(key, { type: item.type, quantity: item.quantity, metadata: item.metadata });
+		});
+
+		return () => {
+			detachAdd();
+			detachRemove();
+			detachChange();
+		};
 	});
 
 	const queryOpen = createQuery(() => ({
@@ -95,9 +146,61 @@
 	const form = $state<CreateMissionInput>({
 		title: '',
 		description: '',
-		reward: null,
+		rewardItemType: null,
+		rewardItemQty: null,
 	});
 	let formError = $state<string | null>(null);
+
+	type InventoryItem = {
+		type: string;
+		quantity: number;
+		metadata?: MapSchema<string> | Record<string, unknown>;
+	};
+
+	let itemState = new SvelteMap<string, InventoryItem>();
+	let rewardItem = $state<{ type: string; qty: number } | null>(null);
+	let dragOverReward = $state(false);
+
+	const ITEM_ICONS: Record<string, string> = {
+		cookie: cookieSvgSrc,
+		potion: potionSvgSrc,
+		seeds: seedsSvgSrc,
+		sword: swordSvgSrc,
+		coin: coinSvgSrc,
+	};
+
+	function handleInventoryDragStart(e: DragEvent, slotId: string) {
+		e.dataTransfer?.setData('text/plain', slotId);
+	}
+
+	function handleRewardDragOver(e: DragEvent) {
+		e.preventDefault();
+		dragOverReward = true;
+	}
+
+	function handleRewardDragLeave() {
+		dragOverReward = false;
+	}
+
+	function handleRewardDrop(e: DragEvent) {
+		e.preventDefault();
+		dragOverReward = false;
+		const slotId = e.dataTransfer?.getData('text/plain');
+		if (!slotId) return;
+
+		const item = itemState.get(slotId);
+		if (!item) return;
+
+		rewardItem = { type: item.type, qty: item.quantity };
+		form.rewardItemType = item.type;
+		form.rewardItemQty = item.quantity;
+	}
+
+	function clearReward() {
+		rewardItem = null;
+		form.rewardItemType = null;
+		form.rewardItemQty = null;
+	}
 
 	function handleSubmit(e: Event) {
 		e.preventDefault();
@@ -113,7 +216,7 @@
 		sendAction('create-mission', {
 			title: form.title,
 			description: form.description,
-			...(form.reward ? { reward: form.reward } : {}),
+			...(form.rewardItemType ? { rewardItemType: form.rewardItemType, rewardItemQty: String(form.rewardItemQty ?? 1) } : {}),
 		});
 	}
 
@@ -151,8 +254,8 @@
 			<span class="text-xs px-2 py-0.5 rounded {getStatusBadge(mission.status)}">{mission.status}</span>
 		</div>
 		<p class="text-gray-300 text-xs mb-2">{mission.description}</p>
-		{#if mission.reward}
-			<div class="text-xs text-amber-400 mb-2">🏆 {mission.reward}</div>
+		{#if mission.rewardItemType}
+			<div class="text-xs text-amber-400 mb-2">{mission.rewardItemType} x{mission.rewardItemQty ?? 1}</div>
 		{/if}
 		{#if mission.status === 'OPEN'}
 			<Button type="button" class="h-7 px-2 text-xs" onclick={() => sendAction('accept-mission', { missionId: mission.id })} disabled={pendingAction === 'accept-mission'}>
@@ -305,10 +408,52 @@
 					class="w-full h-24 bg-zinc-700 border border-zinc-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"></textarea>
 			</div>
 			<div>
-				<label class="block text-xs text-gray-400 mb-1" for="reward">Recompensa</label>
-				<input id="reward" type="text" placeholder="Opcional" value={form.reward ?? ''}
-					onchange={(e) => form.reward = e.currentTarget.value || null}
-					class="w-full bg-zinc-700 border border-zinc-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500" />
+				<label class="block text-xs text-gray-400 mb-1">Recompensa (arrastra un item)</label>
+				<!-- svelte-ignore a11y_no_static_element_interactions -->
+				<div
+					class="flex items-center gap-2 p-2 rounded border-2 border-dashed min-h-12 transition-colors {dragOverReward ? 'border-blue-500 bg-blue-900/20' : 'border-zinc-600 bg-zinc-700'}"
+					ondragover={handleRewardDragOver}
+					ondragleave={handleRewardDragLeave}
+					ondrop={handleRewardDrop}
+				>
+					{#if rewardItem}
+						<div class="flex items-center gap-2">
+							{#if ITEM_ICONS[rewardItem.type]}
+								<img src={ITEM_ICONS[rewardItem.type]} alt={rewardItem.type} class="h-6 w-6" />
+							{:else}
+								<span class="text-xs text-gray-300">{rewardItem.type}</span>
+							{/if}
+							<span class="text-white text-xs">{rewardItem.type} x{rewardItem.qty}</span>
+							<button type="button" class="text-red-400 hover:text-red-300 text-xs ml-1" onclick={clearReward}>
+								Quitar
+							</button>
+						</div>
+					{:else}
+						<span class="text-gray-500 text-xs">Arrastra un item aquí</span>
+					{/if}
+				</div>
+				<div class="mt-2">
+					<span class="text-[10px] text-gray-500 block mb-1">Tu inventario:</span>
+					<div class="grid grid-cols-9 gap-1">
+						{#each Array.from(itemState.entries()) as [slotId, item]}
+							<!-- svelte-ignore a11y_no_static_element_interactions -->
+							<div
+								class="border border-zinc-600 bg-zinc-700 rounded flex flex-col items-center justify-center aspect-square cursor-grab hover:border-blue-500 transition-colors p-0.5"
+								draggable="true"
+								ondragstart={(e: DragEvent) => handleInventoryDragStart(e, slotId)}
+							>
+								{#if ITEM_ICONS[item.type]}
+									<img src={ITEM_ICONS[item.type]} alt={item.type} class="h-5 w-5" />
+								{:else}
+									<span class="text-[8px] text-gray-300">{item.type}</span>
+								{/if}
+								{#if item.quantity > 1}
+									<span class="text-[8px] text-gray-400">{item.quantity}</span>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</div>
 			</div>
 			{#if formError}
 				<div class="bg-red-900/50 border border-red-600 rounded p-2 text-red-400 text-xs">{formError}</div>

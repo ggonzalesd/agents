@@ -4,6 +4,7 @@
 	import { get } from 'svelte/store';
 
 	import { loadTexture, preloadGLB } from '@/utils/assets.utils';
+	import { CharacterAnimation } from '#/state/character-animation';
 	import Loading from '@/views/Loading.svelte';
 	import { uploadSkinService } from '@/services/api.service';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
@@ -87,7 +88,7 @@
 
 		const loader = new GLTFLoader();
 		loader.load(
-			'/3d/SkinModel.glb',
+			'/3d/SkinModel2.glb',
 			(gltf) => {
 				modelSpot.add(gltf.scene);
 				gltf.scene.rotation.y = (3 * Math.PI) / 2; // Rotate model to face camera
@@ -98,10 +99,13 @@
 					}
 				});
 
-				if (gltf.animations && gltf.animations.length) {
+				const walkClip = THREE.AnimationClip.findByName(
+					gltf.animations,
+					CharacterAnimation.WALK,
+				);
+				if (walkClip) {
 					mixer = new THREE.AnimationMixer(gltf.scene);
-					const action = mixer.clipAction(gltf.animations[1]);
-					action.play();
+					mixer.clipAction(walkClip).play();
 				}
 			},
 			undefined,
@@ -159,7 +163,7 @@
 </script>
 
 {#key retry}
-	{#await preloadGLB('/3d/SkinModel.glb')}
+	{#await preloadGLB('/3d/SkinModel2.glb')}
 		<Loading />
 	{:then models}
 		<div class="relative flex h-full justify-center">

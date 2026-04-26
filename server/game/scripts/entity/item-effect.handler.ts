@@ -6,6 +6,7 @@ import { CharacterBodyServerEcs } from './CharacterBodyServer.ecs';
 export interface ConsumeResult {
 	success: boolean;
 	message: string;
+	itemType?: string;
 }
 
 export function applyItemEffects(
@@ -38,5 +39,9 @@ export function applyItemEffects(
 		}
 	}
 
-	return { success: true, message: `Consumed ${item.type}` };
+	return {
+		success: true,
+		message: `Consumed ${item.type}`,
+		itemType: item.type,
+	};
 }

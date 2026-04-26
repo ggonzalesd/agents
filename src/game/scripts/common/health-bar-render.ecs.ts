@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { Character3DEcs } from '../player/character3D.ecs';
+import { Box3DEcs } from '../box/box3d.ecs';
 import { RenderClientEcs } from '../renderClient.ecs';
 import { createBarTexture } from '@/utils/bar.utils';
 import type { CharacterBodyState } from '#/state/character-body.state';
@@ -28,19 +29,23 @@ export class HealthBarRenderEcs extends ComponentEcs {
 			.get(RenderClientEcs)
 			.unwrap('RenderClient not found!');
 
-		const character3D = this.world
+		const parentEntity = this.world
 			.getEntity(this.parent)
-			.map((entity) => entity.get(Character3DEcs))
-			.collapse()
-			.unwrap('Character3D not found!');
+			.unwrap('Parent entity not found!');
 
-		character3D.object3D.add(this.spot);
+		const object3D =
+			parentEntity.get(Character3DEcs).raw()?.object3D ??
+			parentEntity.get(Box3DEcs).raw()?.object3D;
+
+		if (!object3D) throw new Error('No 3D component found for HealthBar!');
+
+		object3D.add(this.spot);
 
 		this.rebuildBar();
 
 		this.callOnDelete(() => {
 			this.disposeBar();
-			character3D.object3D.remove(this.spot);
+			object3D.remove(this.spot);
 		});
 	}
 
@@ -69,7 +74,10 @@ export class HealthBarRenderEcs extends ComponentEcs {
 		});
 
 		this.barMesh = new THREE.Mesh(
-			new THREE.PlaneGeometry(size.width / SCALE_FACTOR, size.height / SCALE_FACTOR),
+			new THREE.PlaneGeometry(
+				size.width / SCALE_FACTOR,
+				size.height / SCALE_FACTOR,
+			),
 			this.barMaterial,
 		);
 
