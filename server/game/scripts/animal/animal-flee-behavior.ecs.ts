@@ -7,6 +7,7 @@ import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { PlayerServerBehavior } from '../player/playerServerBehavior.ecs';
 import { AnimalProfileEcs } from './animal-profile.ecs';
 import { AnimalStateEcs } from './animal-state.ecs';
+import { MovementServerEcs } from '../entity/MovementServer.ecs';
 
 export class AnimalFleeBehaviorEcs extends ComponentEcs {
 	private pathfinder: WorldPathfinderEcs = null!;
@@ -15,6 +16,7 @@ export class AnimalFleeBehaviorEcs extends ComponentEcs {
 	private followPath: FollowPathEcs = null!;
 	private profile: AnimalProfileEcs = null!;
 	private animalState: AnimalStateEcs = null!;
+	private movement: MovementServerEcs = null!;
 	private lastFleeCommandAt = 0;
 
 	onStart(): void {
@@ -41,9 +43,15 @@ export class AnimalFleeBehaviorEcs extends ComponentEcs {
 		this.animalState = this.entityParent
 			.get(AnimalStateEcs)
 			.unwrap('AnimalStateEcs not found');
+
+		this.movement = this.entityParent
+			.get(MovementServerEcs)
+			.unwrap('MovementServerEcs not found');
 	}
 
 	onLoop(_delta: number): void {
+		if (!this.profile.profile.canFlee) return;
+
 		const now = Date.now();
 		const myPosition = this.character.body.translation();
 		const panicActive = now < this.animalState.panicUntil;
@@ -81,6 +89,7 @@ export class AnimalFleeBehaviorEcs extends ComponentEcs {
 			this.animalState.mode = 'flee';
 			this.animalState.lastThreatAt = now;
 			this.animalState.threatEntityId = threatEntity?.name ?? this.animalState.threatEntityId;
+			this.movement.movementState.isRunning = true;
 
 			if (
 				threatEntity &&
@@ -109,6 +118,7 @@ export class AnimalFleeBehaviorEcs extends ComponentEcs {
 			this.animalState.threatEntityId = null;
 			this.animalState.lastAttackerId = null;
 			this.animalState.nextDecisionAt = now + this.profile.profile.minIdleMs;
+			this.movement.movementState.isRunning = false;
 			this.followPath.option = new StopMovementOption();
 		}
 	}

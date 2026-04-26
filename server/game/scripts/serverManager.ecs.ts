@@ -34,6 +34,27 @@ const DEER_SPAWNS: { name: string; display: string; pos: IVec3 }[] = [
 	{ name: 'deer-3', display: 'Venado 3', pos: { x: 6, y: 0, z: 9 } },
 ];
 
+const SIERVO_SPAWNS: { name: string; display: string; pos: IVec3 }[] = [
+	{ name: 'siervo-1', display: 'Siervo 1', pos: { x: -8, y: 0, z: 6 } },
+	{ name: 'siervo-2', display: 'Siervo 2', pos: { x: -10, y: 0, z: 8 } },
+];
+
+const DONKEY_SPAWNS: { name: string; display: string; pos: IVec3 }[] = [
+	{ name: 'donkey-1', display: 'Burro 1', pos: { x: 3, y: 0, z: -10 } },
+	{ name: 'donkey-2', display: 'Burro 2', pos: { x: -3, y: 0, z: -12 } },
+];
+
+const WOLF_SPAWNS: { name: string; display: string; pos: IVec3 }[] = [
+	{ name: 'wolf-1', display: 'Lobo 1', pos: { x: 15, y: 0, z: 0 } },
+	{ name: 'wolf-2', display: 'Lobo 2', pos: { x: -15, y: 0, z: 3 } },
+];
+
+const BULL_SPAWNS: { name: string; display: string; pos: IVec3; skin: 'bull-brown' | 'bull-black' }[] = [
+	{ name: 'bull-brown-1', display: 'Toro Marrón 1', pos: { x: 0, y: 0, z: 18 }, skin: 'bull-brown' },
+	{ name: 'bull-brown-2', display: 'Toro Marrón 2', pos: { x: 4, y: 0, z: 20 }, skin: 'bull-brown' },
+	{ name: 'bull-black-1', display: 'Toro Negro 1', pos: { x: -12, y: 0, z: -15 }, skin: 'bull-black' },
+];
+
 export class ServerManagerEcs extends ComponentEcs {
 	onStart(): void {
 		const physics = this.world
@@ -153,6 +174,9 @@ export class ServerManagerEcs extends ComponentEcs {
 				maxLife: 60,
 				profile: {
 					species: 'deer',
+					attackDamage: 10,
+					canFlee: true,
+					canCounterAttack: true,
 					homeRadius: 10,
 					threatRadius: 7,
 					fleeDistance: 12,
@@ -164,8 +188,127 @@ export class ServerManagerEcs extends ComponentEcs {
 					stareAfterAttackMs: 900,
 				},
 			});
-
 			this.world.addEntity(deer);
+		});
+
+		SIERVO_SPAWNS.forEach(({ name, display, pos }) => {
+			const siervo = animalServerFactory({
+				name,
+				display,
+				pos,
+				skin: 'siervo',
+				life: 50,
+				maxLife: 50,
+				profile: {
+					species: 'siervo',
+					attackDamage: 8,
+					canFlee: true,
+					canCounterAttack: false,
+					homeRadius: 12,
+					threatRadius: 9,
+					fleeDistance: 15,
+					minIdleMs: 1000,
+					maxIdleMs: 3000,
+					fleeRecoverMs: 2000,
+					panicDurationMs: 6000,
+					counterAttackRadius: 0,
+					stareAfterAttackMs: 0,
+				},
+			});
+			this.world.addEntity(siervo);
+		});
+
+		DONKEY_SPAWNS.forEach(({ name, display, pos }) => {
+			const donkey = animalServerFactory({
+				name,
+				display,
+				pos,
+				skin: 'donkey',
+				life: 80,
+				maxLife: 80,
+				profile: {
+					species: 'donkey',
+					attackDamage: 12,
+					canFlee: false,
+					canCounterAttack: true,
+					homeRadius: 8,
+					threatRadius: 0,
+					fleeDistance: 0,
+					minIdleMs: 2000,
+					maxIdleMs: 6000,
+					fleeRecoverMs: 0,
+					panicDurationMs: 3000,
+					counterAttackRadius: 2.5,
+					stareAfterAttackMs: 600,
+				},
+			});
+			this.world.addEntity(donkey);
+		});
+
+		WOLF_SPAWNS.forEach(({ name, display, pos }) => {
+			const wolf = animalServerFactory({
+				name,
+				display,
+				pos,
+				skin: 'wolf',
+				life: 100,
+				maxLife: 100,
+				profile: {
+					species: 'wolf',
+					attackDamage: 18,
+					canFlee: false,
+					canCounterAttack: true,
+					homeRadius: 18,
+					threatRadius: 0,
+					fleeDistance: 0,
+					minIdleMs: 1000,
+					maxIdleMs: 2500,
+					fleeRecoverMs: 0,
+					panicDurationMs: 2000,
+					counterAttackRadius: 2.0,
+					stareAfterAttackMs: 400,
+					hunt: {
+						huntRadius: 15,
+						huntCooldownMs: 800,
+						preySpecies: ['deer', 'siervo', 'donkey'],
+						huntPlayers: true,
+						huntNpcs: true,
+					},
+				},
+			});
+			this.world.addEntity(wolf);
+		});
+
+		BULL_SPAWNS.forEach(({ name, display, pos, skin }) => {
+			const isBullBlack = skin === 'bull-black';
+			const bull = animalServerFactory({
+				name,
+				display,
+				pos,
+				skin,
+				life: isBullBlack ? 160 : 120,
+				maxLife: isBullBlack ? 160 : 120,
+				profile: {
+					species: skin,
+					attackDamage: isBullBlack ? 25 : 20,
+					canFlee: false,
+					canCounterAttack: true,
+					homeRadius: isBullBlack ? 14 : 10,
+					threatRadius: 0,
+					fleeDistance: 0,
+					minIdleMs: 2000,
+					maxIdleMs: 5000,
+					fleeRecoverMs: 0,
+					panicDurationMs: 1000,
+					counterAttackRadius: 2.75,
+					stareAfterAttackMs: 500,
+					charge: {
+						chargeRadius: isBullBlack ? 12 : 8,
+						chargeRecoverMs: 3000,
+					},
+				},
+			});
+			this.world.addEntity(bull);
 		});
 
 		this.callOnDelete(() => {

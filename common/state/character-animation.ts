@@ -1,6 +1,7 @@
 export enum CharacterAnimation {
 	IDLE = 'Idle',
 	WALK = 'Walk',
+	RUN = 'Run',
 	ATTACK = 'Attack',
 	CONSUME = 'Consume',
 	JUMP = 'Jump',

@@ -137,6 +137,13 @@ export class NPCContextEcs extends ComponentEcs {
 			'- Tanto cajas como árboles pueden soltar: espada, poción, galleta, semillas o moneda.',
 			'- Para atacar una caja o árbol debes acercarte primero con "move-close-to-entity" y luego usar "attack-entity".',
 			'- Los ítems caídos (Display=item) aparecen cerca de la entidad destruida y se pueden recoger con "pick-item".',
+			'',
+			'## Sistema de Inventario y Equipamiento',
+			'- El inventario tiene slots numerados del 0 al 35.',
+			'- El slot 0 es el arma equipada: el ítem en ese slot se usa al atacar y aumenta el daño causado.',
+			'- Si el slot 0 está vacío, atacas con el daño base (sin bonificación).',
+			'- Usa "move-item" para mover ítems entre slots. Por ejemplo, para equipar una espada que está en slot 3, muévela al slot 0.',
+			'- Las armas (sword) aumentan el daño al atacar. Los consumibles (potion, galleta) curan vida al usarlos con "consume-item".',
 		].join('\n');
 	}
 
@@ -159,6 +166,7 @@ export class NPCContextEcs extends ComponentEcs {
 
 			`{"type": "pick-item", "itemId": string, "slot": i32(0...35)} // needs to be in close entities (2 meters)`,
 			`{"type": "drop-item", "slot": i32(0...9)}`,
+			`{"type": "move-item", "fromSlot": i32(0...35), "toSlot": i32(0...35)} // move or swap items between slots. Slot 0 is the equipped weapon slot`,
 
 			`{"type": "consume-item", "slot": i32(0...35)} // consume a consumable item from inventory (food heals, potions heal, weapons/materials can't be consumed)`,
 

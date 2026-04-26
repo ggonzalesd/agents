@@ -89,7 +89,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 	}
 
 	private static readonly SPAWN_POINT = { x: 0, y: 2, z: 0 };
-	private static readonly ATTACK_DAMAGE = 10;
+	public static readonly ATTACK_DAMAGE = 10;
 	private static readonly DEATH_ANIMATION_MS = 600;
 
 	public isDead = false;
@@ -171,7 +171,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		});
 	}
 
-	public attack(targetId?: string): void {
+	public attack(targetId?: string, damage: number = CharacterBodyServerEcs.ATTACK_DAMAGE): void {
 		if (this.isDead) return;
 		const position = this.body.translation();
 		const rotation = this.characterState.rotationY;
@@ -209,7 +209,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		for (const { entity, body } of candidates) {
 			const box = entity.get(BoxServerBehavior).raw();
 			if (box) {
-				box.onHit(CharacterBodyServerEcs.ATTACK_DAMAGE);
+				box.onHit(damage);
 				break;
 			}
 
@@ -232,7 +232,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 				true,
 			);
 
-				body.takeDamage(CharacterBodyServerEcs.ATTACK_DAMAGE, {
+				body.takeDamage(damage, {
 					attackerId: this.parent ?? undefined,
 				});
 

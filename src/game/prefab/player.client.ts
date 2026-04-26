@@ -23,6 +23,7 @@ export const playerClientFactoryGenerator =
 					state.character,
 					state.movement,
 					state.skin,
+					state.inventory,
 				),
 				[HealthBarRenderEcs.name]: new HealthBarRenderEcs(state.character),
 				[MessageRenderEcs.name]: new MessageRenderEcs(),

@@ -19,6 +19,7 @@ export interface ItemDefinition {
 	category: ItemCategory;
 	consumable: boolean;
 	effects: ItemEffect[];
+	damage?: number;
 }
 
 export const ITEM_REGISTRY: Readonly<Record<string, ItemDefinition>> = {
@@ -36,6 +37,7 @@ export const ITEM_REGISTRY: Readonly<Record<string, ItemDefinition>> = {
 		category: ItemCategory.WEAPON,
 		consumable: false,
 		effects: [],
+		damage: 25,
 	},
 	seeds: {
 		category: ItemCategory.MATERIAL,

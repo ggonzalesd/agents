@@ -24,6 +24,7 @@ import { getItemModel } from '@/game/item-models.registry';
 import { ClientAuthoritative } from './clientAuthoritative.ecs';
 import type { CharacterBodyState } from '#/state/character-body.state';
 import type { MovementState } from '#/state/movement.state';
+import type { InventoryState } from '#/state/inventory.state';
 
 const CROSSFADE_SECONDS = 0.15;
 
@@ -45,6 +46,7 @@ export class Character3DEcs extends ComponentEcs {
 	private weaponBone: THREE.Bone | null = null;
 	private handItem: THREE.Object3D | null = null;
 	private handItemRequestId = 0;
+	private lastEquipped = '';
 
 	public damageEffect = 0;
 	public healEffect = 0;
@@ -54,6 +56,7 @@ export class Character3DEcs extends ComponentEcs {
 		private characterState: CharacterBodyState,
 		private movementState: MovementState,
 		private skin: string,
+		private inventory: InventoryState | null = null,
 	) {
 		super();
 
@@ -94,37 +97,40 @@ export class Character3DEcs extends ComponentEcs {
 		}
 
 		{
-			const { mesh, mixer, actions } = cloneMesh(
-				loadGLB(modelConfig.path),
-				material ?? undefined,
-				[
-					getCharacterAnimationClipName(this.skin, CharacterAnimation.IDLE),
-					getCharacterAnimationClipName(this.skin, CharacterAnimation.WALK),
-					getCharacterAnimationClipName(this.skin, CharacterAnimation.ATTACK),
-					getCharacterAnimationClipName(this.skin, CharacterAnimation.CONSUME),
-					getCharacterAnimationClipName(this.skin, CharacterAnimation.JUMP),
-					getCharacterAnimationClipName(this.skin, CharacterAnimation.DIE),
-				],
-			);
+		const { mesh, mixer, actions } = cloneMesh(
+			loadGLB(modelConfig.path),
+			material ?? undefined,
+			[
+				getCharacterAnimationClipName(this.skin, CharacterAnimation.IDLE),
+				getCharacterAnimationClipName(this.skin, CharacterAnimation.WALK),
+				getCharacterAnimationClipName(this.skin, CharacterAnimation.RUN),
+				getCharacterAnimationClipName(this.skin, CharacterAnimation.ATTACK),
+				getCharacterAnimationClipName(this.skin, CharacterAnimation.CONSUME),
+				getCharacterAnimationClipName(this.skin, CharacterAnimation.JUMP),
+				getCharacterAnimationClipName(this.skin, CharacterAnimation.DIE),
+			],
+		);
 
-			this.actions = {
-				[CharacterAnimation.IDLE]:
-					actions[getCharacterAnimationClipName(this.skin, CharacterAnimation.IDLE)],
-				[CharacterAnimation.WALK]:
-					actions[getCharacterAnimationClipName(this.skin, CharacterAnimation.WALK)],
-				[CharacterAnimation.ATTACK]:
-					actions[
-						getCharacterAnimationClipName(this.skin, CharacterAnimation.ATTACK)
-					],
-				[CharacterAnimation.CONSUME]:
-					actions[
-						getCharacterAnimationClipName(this.skin, CharacterAnimation.CONSUME)
-					],
-				[CharacterAnimation.JUMP]:
-					actions[getCharacterAnimationClipName(this.skin, CharacterAnimation.JUMP)],
-				[CharacterAnimation.DIE]:
-					actions[getCharacterAnimationClipName(this.skin, CharacterAnimation.DIE)],
-			};
+		this.actions = {
+			[CharacterAnimation.IDLE]:
+				actions[getCharacterAnimationClipName(this.skin, CharacterAnimation.IDLE)],
+			[CharacterAnimation.WALK]:
+				actions[getCharacterAnimationClipName(this.skin, CharacterAnimation.WALK)],
+			[CharacterAnimation.RUN]:
+				actions[getCharacterAnimationClipName(this.skin, CharacterAnimation.RUN)],
+			[CharacterAnimation.ATTACK]:
+				actions[
+					getCharacterAnimationClipName(this.skin, CharacterAnimation.ATTACK)
+				],
+			[CharacterAnimation.CONSUME]:
+				actions[
+					getCharacterAnimationClipName(this.skin, CharacterAnimation.CONSUME)
+				],
+			[CharacterAnimation.JUMP]:
+				actions[getCharacterAnimationClipName(this.skin, CharacterAnimation.JUMP)],
+			[CharacterAnimation.DIE]:
+				actions[getCharacterAnimationClipName(this.skin, CharacterAnimation.DIE)],
+		};
 			this.mixer = mixer;
 
 			if (!material) {
@@ -332,7 +338,8 @@ export class Character3DEcs extends ComponentEcs {
 		this.mixer.addEventListener('finished', (event) => {
 			const finishedAction = (event as unknown as { action: THREE.AnimationAction }).action;
 			if (finishedAction === this.actions[CharacterAnimation.CONSUME]) {
-				this.clearHandItem();
+				const equipped = this.inventory?.items.get('0')?.type ?? '';
+				equipped ? this.attachHandItem(equipped) : this.clearHandItem();
 			}
 			if (
 				finishedAction === this.oneShotAction &&
@@ -350,12 +357,6 @@ export class Character3DEcs extends ComponentEcs {
 			.unwrap('No RenderClientEcs found');
 
 		// Colyseus Components
-		this.world
-			.get(ColyseusClientEcs)
-			.pick('connection')
-			.collapse()
-			.unwrap('No Connection found');
-
 		// Render Config
 		// Propagate userData to all mesh children so raycaster hits carry the flags
 		this.object3D.traverse((child) => {
@@ -410,8 +411,20 @@ export class Character3DEcs extends ComponentEcs {
 
 		if (this.isDead) return;
 
+		const equipped = this.inventory?.items.get('0')?.type ?? '';
+		if (equipped !== this.lastEquipped) {
+			this.lastEquipped = equipped;
+			equipped ? this.attachHandItem(equipped) : this.clearHandItem();
+		}
+
 		const isMoving =
 			this.clientAuth?.state.isMoving || this.movementState.isMoving;
-		this.setLoop(isMoving ? CharacterAnimation.WALK : CharacterAnimation.IDLE);
+		const isRunning = this.movementState.isRunning;
+		const loopAnim = isRunning
+			? CharacterAnimation.RUN
+			: isMoving
+				? CharacterAnimation.WALK
+				: CharacterAnimation.IDLE;
+		this.setLoop(loopAnim);
 	}
 }

@@ -15,11 +15,12 @@ export const npcClientFactoryGenerator =
 			world,
 			components: {
 				[RecordEcs.name]: new RecordEcs({ state }),
-				[Character3DEcs.name]: new Character3DEcs(
-					state.character,
-					state.movement,
-					state.skin === 'deer' ? 'deer' : 'user',
-				),
+			[Character3DEcs.name]: new Character3DEcs(
+				state.character,
+				state.movement,
+				state.skin,
+				null,
+			),
 				[HealthBarRenderEcs.name]: new HealthBarRenderEcs(state.character),
 				[MessageRenderEcs.name]: new MessageRenderEcs(),
 				[NpcPathRenderEcs.name]: new NpcPathRenderEcs(state),

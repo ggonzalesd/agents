@@ -23,6 +23,7 @@ import { StopMovementOption } from '../entity/follow-path/stop-movement.class';
 import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
 import { FollowPositionOption } from '../entity/follow-path/follow-position.class';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
+import { ITEM_REGISTRY } from '#/state/item-registry';
 
 export class NPCActionProcessEcs extends ComponentEcs {
 	private static readonly CLOSE_TO_ENTITY_DISTANCE = 1.5;
@@ -94,6 +95,15 @@ export class NPCActionProcessEcs extends ComponentEcs {
 		return { resolved: false };
 	}
 
+	private getEquippedDamage(): number {
+		const item = this.entityParent
+			.get(InventoryServerEcs)
+			.map((inv) => inv.inventoryState.items.get('0'))
+			.raw();
+		const def = item ? ITEM_REGISTRY[item.type] : undefined;
+		return CharacterBodyServerEcs.ATTACK_DAMAGE + (def?.damage ?? 0);
+	}
+
 	private attackTargetEntity(entityId: string): boolean {
 		return Option.zip({
 			self: this.entityParent.get(CharacterBodyServerEcs),
@@ -108,7 +118,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				const dx = targetPos.x - myPos.x;
 				const dz = targetPos.z - myPos.z;
 				self.characterState.rotationY = -Math.atan2(dz, dx);
-				self.attack(entityId);
+				self.attack(entityId, this.getEquippedDamage());
 				return true;
 			})
 			.orElse(false);
@@ -290,7 +300,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 
 		if (action.type === 'attack') {
 			this.entityParent.get(CharacterBodyServerEcs).ifSome((character) => {
-				character.attack(action.entityId);
+				character.attack(action.entityId, this.getEquippedDamage());
 			});
 		}
 
@@ -307,7 +317,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				const dx = targetPos.x - myPos.x;
 				const dz = targetPos.z - myPos.z;
 				self.characterState.rotationY = -Math.atan2(dz, dx);
-				self.attack(action.entityId);
+				self.attack(action.entityId, this.getEquippedDamage());
 			});
 		}
 

@@ -43,8 +43,13 @@
 
 	function preloadResources() {
 		return Promise.all([
-			preloadGLB('/3d/SkinModel2.glb'),
-			preloadGLB('/3d/deer.glb'),
+		preloadGLB('/3d/SkinModel2.glb'),
+		preloadGLB('/3d/deer.glb'),
+		preloadGLB('/3d/siervo.glb'),
+		preloadGLB('/3d/burro.glb'),
+		preloadGLB('/3d/lobo.glb'),
+		preloadGLB('/3d/toro-marron.glb'),
+		preloadGLB('/3d/toro-negro.glb'),
 
 			...models.bareTrees.values.map((p) =>
 				preloadGLB(`${models.bareTrees.path}${p}`),

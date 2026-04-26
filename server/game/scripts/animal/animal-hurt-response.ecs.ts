@@ -52,7 +52,7 @@ export class AnimalHurtResponseEcs extends ComponentEcs {
 			}
 
 			if (now >= this.animalState.stareUntil) {
-				this.animalState.mode = 'flee';
+				this.animalState.mode = this.profile.profile.canFlee ? 'flee' : 'idle';
 			}
 
 			return;
@@ -63,7 +63,6 @@ export class AnimalHurtResponseEcs extends ComponentEcs {
 		}
 
 		this.animalState.lastHandledAttackAt = this.animalState.lastAttackedAt;
-		this.animalState.mode = 'threatened';
 		this.animalState.panicUntil = now + this.profile.profile.panicDurationMs;
 		this.animalState.counterAttackDone = false;
 
@@ -72,13 +71,13 @@ export class AnimalHurtResponseEcs extends ComponentEcs {
 			: null;
 
 		if (!attacker) {
-			this.animalState.mode = 'flee';
+			this.animalState.mode = this.profile.profile.canFlee ? 'flee' : 'idle';
 			return;
 		}
 
 		const attackerBody = attacker.get(CharacterBodyServerEcs).raw();
 		if (!attackerBody) {
-			this.animalState.mode = 'flee';
+			this.animalState.mode = this.profile.profile.canFlee ? 'flee' : 'idle';
 			return;
 		}
 
@@ -88,17 +87,19 @@ export class AnimalHurtResponseEcs extends ComponentEcs {
 		const dz = targetPos.z - myPos.z;
 		const distance = Math.hypot(dx, dz);
 
-		if (distance <= this.profile.profile.counterAttackRadius) {
+		const { canCounterAttack, counterAttackRadius, stareAfterAttackMs, attackDamage } =
+			this.profile.profile;
+
+		if (canCounterAttack && distance <= counterAttackRadius) {
 			this.followPath.option = new StopMovementOption();
 			this.character.characterState.rotationY = -Math.atan2(dz, dx);
-			this.character.attack(attacker.name);
+			this.character.attack(attacker.name, attackDamage);
 			this.animalState.counterAttackDone = true;
 			this.animalState.mode = 'stare';
-			this.animalState.stareUntil =
-				now + this.profile.profile.stareAfterAttackMs;
+			this.animalState.stareUntil = now + stareAfterAttackMs;
 			return;
 		}
 
-		this.animalState.mode = 'flee';
+		this.animalState.mode = this.profile.profile.canFlee ? 'flee' : 'threatened';
 	}
 }

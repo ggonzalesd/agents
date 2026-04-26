@@ -5,4 +5,6 @@ export class MovementState extends Schema {
 	public isMoving = false;
 	@type('boolean')
 	public isJumping = false;
+	@type('boolean')
+	public isRunning = false;
 }

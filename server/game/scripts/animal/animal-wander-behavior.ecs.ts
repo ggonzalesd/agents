@@ -42,7 +42,9 @@ export class AnimalWanderBehaviorEcs extends ComponentEcs {
 		if (
 			this.animalState.mode === 'flee' ||
 			this.animalState.mode === 'threatened' ||
-			this.animalState.mode === 'stare'
+			this.animalState.mode === 'stare' ||
+			this.animalState.mode === 'hunt' ||
+			this.animalState.mode === 'charge'
 		) {
 			return;
 		}

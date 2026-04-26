@@ -1,7 +1,7 @@
 import { ComponentEcs } from '#/ecs';
 import type { IVec3 } from '#/utils/math.util';
 
-export type AnimalMode = 'idle' | 'wander' | 'threatened' | 'stare' | 'flee';
+export type AnimalMode = 'idle' | 'wander' | 'threatened' | 'stare' | 'flee' | 'hunt' | 'charge';
 
 export class AnimalStateEcs extends ComponentEcs {
 	public mode: AnimalMode = 'idle';
@@ -14,6 +14,7 @@ export class AnimalStateEcs extends ComponentEcs {
 	public panicUntil = 0;
 	public counterAttackDone = false;
 	public stareUntil = 0;
+	public huntTargetId: string | null = null;
 
 	constructor(public readonly homePosition: IVec3) {
 		super();

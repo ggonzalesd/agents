@@ -17,10 +17,12 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 
 	public toStringContext(): string {
 		const itemsList = Array.from(this.inventoryState.items.entries())
-			.map(([id, item]) => `Slot ${id}: ${item.type}`)
+			.map(([id, item]) => {
+				const label = id === '0' ? `Slot ${id}: ${item.type} [EQUIPPED]` : `Slot ${id}: ${item.type}`;
+				return label;
+			})
 			.join(', ');
 
-		// return `- Inventory (Capacity: ${this.inventoryState.capacity}, Items: { ${itemsList} })`;
 		return [
 			`- Inventory:`,
 			`   Capacity: ${this.inventoryState.capacity}`,

@@ -27,6 +27,92 @@ const DEER_MODEL_CONFIG: CharacterModelConfig = {
 	animations: {
 		[CharacterAnimation.IDLE]: 'Idle',
 		[CharacterAnimation.WALK]: 'Walk',
+		[CharacterAnimation.RUN]: 'Gallop',
+		[CharacterAnimation.ATTACK]: 'Attack_Headbutt',
+		[CharacterAnimation.CONSUME]: 'Eating',
+		[CharacterAnimation.JUMP]: 'Gallop_Jump',
+		[CharacterAnimation.DIE]: 'Death',
+	},
+};
+
+const SIERVO_MODEL_CONFIG: CharacterModelConfig = {
+	path: '/3d/siervo.glb',
+	scale: 0.425,
+	rotationY: Math.PI / 2,
+	positionY: -0.3,
+	useSkinTexture: false,
+	animations: {
+		[CharacterAnimation.IDLE]: 'Idle',
+		[CharacterAnimation.WALK]: 'Walk',
+		[CharacterAnimation.RUN]: 'Gallop',
+		[CharacterAnimation.ATTACK]: 'Attack_Headbutt',
+		[CharacterAnimation.CONSUME]: 'Eating',
+		[CharacterAnimation.JUMP]: 'Gallop_Jump',
+		[CharacterAnimation.DIE]: 'Death',
+	},
+};
+
+const DONKEY_MODEL_CONFIG: CharacterModelConfig = {
+	path: '/3d/burro.glb',
+	scale: 0.425,
+	rotationY: Math.PI / 2,
+	positionY: -0.3,
+	useSkinTexture: false,
+	animations: {
+		[CharacterAnimation.IDLE]: 'Idle',
+		[CharacterAnimation.WALK]: 'Walk',
+		[CharacterAnimation.RUN]: 'Gallop',
+		[CharacterAnimation.ATTACK]: 'Attack_Kick',
+		[CharacterAnimation.CONSUME]: 'Eating',
+		[CharacterAnimation.JUMP]: 'Gallop_Jump',
+		[CharacterAnimation.DIE]: 'Death',
+	},
+};
+
+const WOLF_MODEL_CONFIG: CharacterModelConfig = {
+	path: '/3d/lobo.glb',
+	scale: 0.425,
+	rotationY: Math.PI / 2,
+	positionY: -0.3,
+	useSkinTexture: false,
+	animations: {
+		[CharacterAnimation.IDLE]: 'Idle',
+		[CharacterAnimation.WALK]: 'Walk',
+		[CharacterAnimation.RUN]: 'Gallop',
+		[CharacterAnimation.ATTACK]: 'Attack',
+		[CharacterAnimation.CONSUME]: 'Eating',
+		[CharacterAnimation.JUMP]: 'Gallop_Jump',
+		[CharacterAnimation.DIE]: 'Death',
+	},
+};
+
+const BULL_BROWN_MODEL_CONFIG: CharacterModelConfig = {
+	path: '/3d/toro-marron.glb',
+	scale: 0.5,
+	rotationY: Math.PI / 2,
+	positionY: -0.3,
+	useSkinTexture: false,
+	animations: {
+		[CharacterAnimation.IDLE]: 'Idle',
+		[CharacterAnimation.WALK]: 'Walk',
+		[CharacterAnimation.RUN]: 'Gallop',
+		[CharacterAnimation.ATTACK]: 'Attack_Headbutt',
+		[CharacterAnimation.CONSUME]: 'Eating',
+		[CharacterAnimation.JUMP]: 'Gallop_Jump',
+		[CharacterAnimation.DIE]: 'Death',
+	},
+};
+
+const BULL_BLACK_MODEL_CONFIG: CharacterModelConfig = {
+	path: '/3d/toro-negro.glb',
+	scale: 0.5,
+	rotationY: Math.PI / 2,
+	positionY: -0.3,
+	useSkinTexture: false,
+	animations: {
+		[CharacterAnimation.IDLE]: 'Idle',
+		[CharacterAnimation.WALK]: 'Walk',
+		[CharacterAnimation.RUN]: 'Gallop',
 		[CharacterAnimation.ATTACK]: 'Attack_Headbutt',
 		[CharacterAnimation.CONSUME]: 'Eating',
 		[CharacterAnimation.JUMP]: 'Gallop_Jump',
@@ -36,6 +122,11 @@ const DEER_MODEL_CONFIG: CharacterModelConfig = {
 
 const CHARACTER_MODEL_CONFIGS: Record<string, CharacterModelConfig> = {
 	deer: DEER_MODEL_CONFIG,
+	siervo: SIERVO_MODEL_CONFIG,
+	donkey: DONKEY_MODEL_CONFIG,
+	wolf: WOLF_MODEL_CONFIG,
+	'bull-brown': BULL_BROWN_MODEL_CONFIG,
+	'bull-black': BULL_BLACK_MODEL_CONFIG,
 	user: HUMAN_MODEL_CONFIG,
 };
 

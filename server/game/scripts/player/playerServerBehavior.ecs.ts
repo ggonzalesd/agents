@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ComponentEcs } from '#/ecs';
 import type { IVec2 } from '#/utils/math.util';
 import type { PlayerState } from '#/state/player.state';
+import { ITEM_REGISTRY } from '#/state/item-registry';
 
 import { ServerDataEcs } from '../serverData.ecs';
 import { MovementServerEcs } from '../entity/MovementServer.ecs';
@@ -132,16 +133,16 @@ export class PlayerServerBehavior extends ComponentEcs {
 						? message.entityId
 						: undefined;
 
-				this.character.attack(entityId);
+				this.character.attack(entityId, this.getEquippedDamage());
 
 				break;
 			}
 			case 'drop': {
 				const slot = ((message as any)?.itemId as number | undefined) ?? null;
 
-				if (slot != null) {
-					this.inventory.dropItem(slot);
-				}
+			if (slot != null) {
+				this.inventory.dropItem(slot);
+			}
 
 				break;
 			}
@@ -149,9 +150,9 @@ export class PlayerServerBehavior extends ComponentEcs {
 				const fromSlot = (message as any)?.fromSlot as number | undefined;
 				const toSlot = (message as any)?.toSlot as number | undefined;
 
-				if (fromSlot != null && toSlot != null) {
-					this.inventory.moveItem(fromSlot, toSlot);
-				}
+			if (fromSlot != null && toSlot != null) {
+				this.inventory.moveItem(fromSlot, toSlot);
+			}
 
 				break;
 			}
@@ -160,18 +161,18 @@ export class PlayerServerBehavior extends ComponentEcs {
 				const toSlot = (message as any)?.toSlot as number | undefined;
 				const quantity = (message as any)?.quantity as number | undefined;
 
-				if (fromSlot != null && toSlot != null && quantity != null) {
-					this.inventory.splitItem(fromSlot, toSlot, quantity);
-				}
+			if (fromSlot != null && toSlot != null && quantity != null) {
+				this.inventory.splitItem(fromSlot, toSlot, quantity);
+			}
 
 				break;
 			}
 			case 'consume-item': {
 				const slot = (message as any)?.slot as number | undefined;
 
-				if (slot != null) {
-					const result = this.inventory.consumeItem(slot);
-					if (result.success) {
+			if (slot != null) {
+				const result = this.inventory.consumeItem(slot);
+				if (result.success) {
 						this.serverData.room.broadcast('agent:consume', {
 							id: this.parent,
 							itemType: result.itemType,
@@ -521,5 +522,11 @@ export class PlayerServerBehavior extends ComponentEcs {
 			this.movement.clientDirection = direction;
 			this.state.character.rotationY = angle;
 		}
+	}
+
+	private getEquippedDamage(): number {
+		const item = this.inventory.inventoryState.items.get('0');
+		const def = item ? ITEM_REGISTRY[item.type] : undefined;
+		return CharacterBodyServerEcs.ATTACK_DAMAGE + (def?.damage ?? 0);
 	}
 }
