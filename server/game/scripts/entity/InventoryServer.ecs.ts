@@ -184,6 +184,20 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 		this.world.deleteEntity(itemEntity);
 	}
 
+	public giveItemTo(
+		target: InventoryServerEcs,
+		fromSlot: number,
+	): { success: boolean; item?: ItemState } {
+		const item = this.inventoryState.items.get(fromSlot.toString());
+		if (!item) return { success: false };
+
+		const freeSlot = target.getAvailableSlot();
+		if (freeSlot === null) return { success: false };
+
+		target.takeItemFromOther(this, fromSlot, freeSlot);
+		return { success: true, item };
+	}
+
 	public getAvailableSlot(): number | null {
 		for (let i = 0; i < this.inventoryState.capacity; i++) {
 			if (this.isIdFree(i)) return i;

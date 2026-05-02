@@ -37,6 +37,7 @@ export const npcServerFactoryGenerator =
 		maxLife?: number;
 	}) => {
 		const state = new NPCState(pos, skin ?? name, life, maxLife, 'AI');
+		state.hasInventory = true;
 
 		return new EntityEcs({
 			name,

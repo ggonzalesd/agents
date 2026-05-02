@@ -8,6 +8,7 @@
 	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
 	import { RecordEcs } from '#/ecs/lib/Record.ecs';
 	import type { PlayerState } from '#/state/player.state';
+	import type { NPCState } from '#/state/game.state';
 	import type { MapSchema } from '@colyseus/schema';
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { IVec2 } from '#/utils/math.util';
@@ -20,6 +21,7 @@
 	let mousePos: IVec2 = { x: 0, y: 0 };
 	let dragFromSlot: string | null = $state(null);
 	let dragOverSlot: string | null = $state(null);
+	let dragOverTarget: string | null = $state(null);
 
 	type InventoryItem = {
 		type: string;
@@ -27,9 +29,18 @@
 		metadata?: MapSchema<string> | Record<string, unknown>;
 	};
 
+	type TransferTarget = {
+		entityId: string;
+		name: string;
+		skin: string;
+		isFull: boolean;
+	};
+
 	let itemState = new SvelteMap<string, InventoryItem>();
+	let transferTargets = new SvelteMap<string, TransferTarget>();
 
 	let roomRef: { send: (type: string, data: unknown) => void } | null = null;
+	let myEntityId: string = '';
 
 	onMount(() => {
 		const world = worldOp.raw();
@@ -48,6 +59,7 @@
 
 		const { proxy, room } = connection;
 		roomRef = room;
+		myEntityId = colyseusClient.entityId;
 
 		const state = world
 			.getEntity(colyseusClient.entityId)
@@ -59,6 +71,7 @@
 			return () => {};
 		}
 
+		// Inventory items reactivity
 		const inventoryProxy = proxy(state.inventory).items;
 
 		const detachAdd = inventoryProxy.onAdd((item, key) => {
@@ -81,10 +94,66 @@
 			});
 		}) ?? (() => undefined);
 
+		// Transfer targets: other players
+		const playersProxy = proxy(room.state).players;
+
+		const detachPlayerAdd = playersProxy.onAdd((playerState: PlayerState, entityId: string) => {
+			if (entityId === myEntityId) return;
+
+			const updateTarget = () => {
+				const isFull = playerState.inventory.items.size >= playerState.inventory.capacity;
+				transferTargets.set(entityId, {
+					entityId,
+					name: entityId,
+					skin: playerState.skin,
+					isFull,
+				});
+			};
+
+			updateTarget();
+			proxy(playerState.inventory).items.onChange(() => updateTarget());
+			proxy(playerState.inventory).items.onAdd(() => updateTarget());
+			proxy(playerState.inventory).items.onRemove(() => updateTarget());
+		}, true) ?? (() => undefined);
+
+		const detachPlayerRemove = playersProxy.onRemove((_: PlayerState, entityId: string) => {
+			transferTargets.delete(entityId);
+		}) ?? (() => undefined);
+
+		// Transfer targets: NPCs
+		const npcsProxy = proxy(room.state).npcs;
+
+		const detachNpcAdd = npcsProxy.onAdd((npcState: NPCState, entityId: string) => {
+			if (!npcState.hasInventory) return;
+
+			const updateTarget = () => {
+				const isFull = npcState.inventory.items.size >= npcState.inventory.capacity;
+				transferTargets.set(entityId, {
+					entityId,
+					name: entityId,
+					skin: npcState.skin,
+					isFull,
+				});
+			};
+
+			updateTarget();
+			proxy(npcState.inventory).items.onChange(() => updateTarget());
+			proxy(npcState.inventory).items.onAdd(() => updateTarget());
+			proxy(npcState.inventory).items.onRemove(() => updateTarget());
+		}, true) ?? (() => undefined);
+
+		const detachNpcRemove = npcsProxy.onRemove((_: NPCState, entityId: string) => {
+			transferTargets.delete(entityId);
+		}) ?? (() => undefined);
+
 		return () => {
 			detachAdd();
 			detachRemove();
 			detachChange();
+			detachPlayerAdd();
+			detachPlayerRemove();
+			detachNpcAdd();
+			detachNpcRemove();
 		};
 	});
 
@@ -157,6 +226,31 @@
 		const def = ITEM_REGISTRY[item.type];
 		if (!def?.consumable) return;
 		sendAction({ type: 'consume-item', slot: Number(slotId) });
+	}
+
+	function handleTargetDragOver(e: DragEvent, target: TransferTarget) {
+		if (target.isFull || dragFromSlot == null) return;
+		e.preventDefault();
+		dragOverTarget = target.entityId;
+	}
+
+	function handleTargetDragLeave() {
+		dragOverTarget = null;
+	}
+
+	function handleTargetDrop(target: TransferTarget) {
+		if (target.isFull || dragFromSlot == null) return;
+		sendAction({
+			type: 'give-item',
+			fromSlot: Number(dragFromSlot),
+			targetEntityId: target.entityId,
+		});
+		dragFromSlot = null;
+		dragOverTarget = null;
+	}
+
+	function skinUrl(skin: string): string {
+		return `${import.meta.env.VITE_API_URL}/api/v1/skin/${skin}.png`;
 	}
 
 	const itemDropHandler = (id: string) => (itemDiv: HTMLDivElement) => {
@@ -242,21 +336,74 @@
 	</div>
 {/snippet}
 
+{#snippet targetAvatar(target: TransferTarget)}
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div
+		class="flex flex-col items-center gap-1 select-none"
+		class:opacity-40={target.isFull}
+		ondragover={(e: DragEvent) => handleTargetDragOver(e, target)}
+		ondragleave={handleTargetDragLeave}
+		ondrop={() => handleTargetDrop(target)}
+	>
+		<div
+			class="relative overflow-hidden rounded-md border-2 transition-colors"
+			class:border-[#8965F2]={dragOverTarget === target.entityId && !target.isFull}
+			class:border-transparent={dragOverTarget !== target.entityId}
+			class:cursor-not-allowed={target.isFull}
+			class:cursor-grab={!target.isFull}
+			style="
+				width: var(--skin-avatar-size, 48px);
+				height: var(--skin-avatar-size, 48px);
+			"
+		>
+			<img
+				src={skinUrl(target.skin)}
+				alt={target.name}
+				style="
+					position: absolute;
+					width: calc(var(--skin-avatar-size, 48px) * var(--skin-avatar-scale, 2.5));
+					top: calc(var(--skin-avatar-offset-y, -4px));
+					left: calc(var(--skin-avatar-offset-x, -8px));
+					image-rendering: pixelated;
+				"
+				draggable="false"
+			/>
+			{#if target.isFull}
+				<div class="absolute inset-0 flex items-center justify-center bg-black/50">
+					<span class="text-[8px] font-bold text-white leading-tight text-center">FULL</span>
+				</div>
+			{/if}
+		</div>
+		<span class="max-w-[52px] truncate text-center text-[10px] text-white/70">{target.name}</span>
+	</div>
+{/snippet}
+
 <svelte:document on:mousemove={onMouseMove} />
 
-<div
-	class="flex flex-col gap-5 rounded-lg bg-[url(/background-inventory.svg)] bg-cover bg-center bg-no-repeat p-5 [direction:reverse]"
->
-	<h1 class="font-zen-dots text-center text-2xl">INVENTORY</h1>
-	<div class="grid grid-cols-9 [direction:reverse]">
-		{#each new Array(27) as _, i}
-			{@render slot(i.toString())}
-		{/each}
+<div class="flex gap-3">
+	<div
+		class="flex flex-col gap-5 rounded-lg bg-[url(/background-inventory.svg)] bg-cover bg-center bg-no-repeat p-5 [direction:reverse]"
+	>
+		<h1 class="font-zen-dots text-center text-2xl">INVENTORY</h1>
+		<div class="grid grid-cols-9 [direction:reverse]">
+			{#each new Array(27) as _, i}
+				{@render slot(i.toString())}
+			{/each}
+		</div>
+
+		<div class="grid grid-cols-9 [direction:reverse]">
+			{#each new Array(9) as _, i}
+				{@render slot((i + 27).toString())}
+			{/each}
+		</div>
 	</div>
 
-	<div class="grid grid-cols-9 [direction:reverse]">
-		{#each new Array(9) as _, i}
-			{@render slot((i + 27).toString())}
-		{/each}
-	</div>
+	{#if transferTargets.size > 0}
+		<div class="flex flex-col gap-3 rounded-lg bg-black/40 p-3 min-w-[72px] max-h-full overflow-y-auto">
+			<span class="text-center text-[10px] text-white/50 uppercase tracking-wider">Nearby</span>
+			{#each [...transferTargets.values()] as target (target.entityId)}
+				{@render targetAvatar(target)}
+			{/each}
+		</div>
+	{/if}
 </div>

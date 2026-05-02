@@ -10,6 +10,7 @@ import { MovementServerEcs } from '../entity/MovementServer.ecs';
 import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
 import { NPCEventQueueEcs } from '../ai/npc-event-queue.ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
+import { WorldEventBusEcs, WorldEventType } from '../world-event-bus.ecs';
 import { NPCContextEcs } from '../ai/npc-context.ecs';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import * as MissionService from '$/services/mission.service';
@@ -42,6 +43,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 	public serverData: ServerDataEcs = null!;
 	public inventory: InventoryServerEcs = null!;
 	public record: RecordEcs = null!;
+	public eventBus: WorldEventBusEcs = null!;
 
 	constructor({ state }: { state: PlayerState }) {
 		super();
@@ -87,6 +89,10 @@ export class PlayerServerBehavior extends ComponentEcs {
 		this.character = parent
 			.get(CharacterBodyServerEcs)
 			.unwrap('CharacterBodyServerEcs not found');
+
+		this.eventBus = this.world
+			.get(WorldEventBusEcs)
+			.unwrap('WorldEventBusEcs not found');
 	}
 
 	onLoop(_delta: number): void {
@@ -455,6 +461,65 @@ export class PlayerServerBehavior extends ComponentEcs {
 									: 'Failed to abandon mission',
 						});
 					});
+				break;
+			}
+			case 'give-item': {
+				const fromSlot = (message as any)?.fromSlot as number | undefined;
+				const targetEntityId = (message as any)?.targetEntityId as string | undefined;
+
+				if (fromSlot == null || !targetEntityId) break;
+
+				const targetEntity = this.world.getEntity(targetEntityId).raw();
+				if (!targetEntity) break;
+
+				const targetInventory = targetEntity.get(InventoryServerEcs).raw();
+				if (!targetInventory) break;
+
+				const giverPos = this.character.body.translation();
+				const targetChar = targetEntity.get(CharacterBodyServerEcs).raw();
+				if (!targetChar) break;
+
+				const targetPos = targetChar.body.translation();
+				const distSq =
+					(giverPos.x - targetPos.x) ** 2 +
+					(giverPos.y - targetPos.y) ** 2 +
+					(giverPos.z - targetPos.z) ** 2;
+
+				if (distSq > 4) break;
+
+				const result = this.inventory.giveItemTo(targetInventory, fromSlot);
+				if (!result.success || !result.item) break;
+
+				this.eventBus.emit(WorldEventType.InventoryItemGiven, this.parent ?? '', {
+					item: { type: result.item.type, quantity: result.item.quantity },
+					targetEntityId,
+				});
+
+				this.eventBus.emit(WorldEventType.InventoryItemReceived, targetEntityId, {
+					item: { type: result.item.type, quantity: result.item.quantity },
+					giverEntityId: this.parent,
+				});
+
+				const targetEventQueue = targetEntity.get(NPCEventQueueEcs).raw();
+				if (targetEventQueue) {
+					targetEventQueue.pushEvent(
+						`Received item ${result.item.type} from ${this.parent}.`,
+						{ item: { type: result.item.type, quantity: result.item.quantity }, giverEntityId: this.parent },
+						2,
+					);
+				}
+
+				for (const client of this.serverData.room.clients) {
+					const identifier = (client.userData?.userInfo as any)?.agent?.identifier as string | undefined;
+					if (identifier === targetEntityId) {
+						client.send('inventory:item_received', {
+							item: { type: result.item.type, quantity: result.item.quantity },
+							giverEntityId: this.parent,
+						});
+						break;
+					}
+				}
+
 				break;
 			}
 			case 'cancel-mission': {

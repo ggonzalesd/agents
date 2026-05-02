@@ -57,6 +57,9 @@ export class NPCState extends Schema {
 	@type('boolean')
 	public hasDialogue: boolean = false;
 
+	@type('boolean')
+	public hasInventory: boolean = false;
+
 	constructor(
 		pos: IVec3,
 		skin: string,

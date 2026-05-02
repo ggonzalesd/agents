@@ -45,6 +45,7 @@ export const classicNpcServerFactoryGenerator =
 	}) => {
 		const state = new NPCState(pos, skin ?? name, life, maxLife, 'CLASSIC');
 		if (dialogueConfig) state.hasDialogue = true;
+		state.hasInventory = true;
 
 		return new EntityEcs({
 			name,

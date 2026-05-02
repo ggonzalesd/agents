@@ -96,6 +96,19 @@ export class ClientManagerEcs extends ComponentEcs {
 				deleteOn: 5000,
 			});
 		});
+
+		room.onMessage('inventory:item_received', (data: { item: { type: string; quantity: number }; giverEntityId: string }) => {
+			const uiClient = this.uiClient.raw();
+			if (!uiClient) return;
+
+			const giverName = data.giverEntityId;
+			const skinUrl = `${import.meta.env.VITE_API_URL}/api/v1/skin/${giverName}.png`;
+
+			uiClient.debug.success(
+				`Recibiste ${data.item.quantity}x ${data.item.type} de ${giverName}`,
+				{ imageUrl: skinUrl },
+			);
+		});
 	}
 
 	onStart(): void {

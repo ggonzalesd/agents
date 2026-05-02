@@ -4,6 +4,8 @@ export enum WorldEventType {
 	EntityJump = 'entity:jump',
 	EntityDeath = 'entity:death',
 	EntityFallVoid = 'entity:fall_void',
+	InventoryItemGiven = 'inventory:item_given',
+	InventoryItemReceived = 'inventory:item_received',
 }
 
 type Unsubscribe = () => void;
