@@ -18,6 +18,7 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 	private entityParent: EntityEcs = null!;
 	private character: CharacterBodyServerEcs = null!;
 	private behaviorStateEcs: ClassicNPCBehaviorStateEcs = null!;
+	private _disabled = false;
 
 	onStart(): void {
 		this.entityParent = this.world
@@ -228,7 +229,19 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 		this.behaviorStateEcs.lastKnownLife = this.character.characterState.life;
 	}
 
+	public disable(playerEntityId: string): void {
+		this._disabled = true;
+		this.behaviorStateEcs.queueAction({ type: 'move-stop' });
+		this.behaviorStateEcs.queueAction({ type: 'look-at-entity', entityId: playerEntityId });
+	}
+
+	public enable(): void {
+		this._disabled = false;
+	}
+
 	onLoop(): void {
+		if (this._disabled) return;
+
 		if (this.character.isDead) {
 			this.clearTarget();
 			this.transitionTo(ClassicNpcBehaviorState.IDLE);

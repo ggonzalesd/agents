@@ -4,6 +4,8 @@ import type {
 	DialogueConversationData,
 	DialogueConfigData,
 } from '#/schema/dialogue.schema';
+import type { EntityEcs } from '#/ecs/Entity.ecs';
+import type { WorldEcs } from '#/ecs/World.ecs';
 
 export type ConversationId = string;
 export type StatementId = string;
@@ -25,22 +27,39 @@ export type OptionEventCtx = StatementEventCtx & {
 	nextStatementId: StatementId | null;
 };
 
-export type DialogueOption = DialogueOptionData & {
-	onSelect?: (ctx: OptionEventCtx) => void;
-	onHover?: (ctx: OptionEventCtx) => void;
+export type ResolveNextCtx = OptionEventCtx & {
+	world: WorldEcs;
+	npcEntity: EntityEcs;
+	playerEntity: EntityEcs;
 };
 
-export type DialogueStatement = Omit<DialogueStatementData, 'options'> & {
-	options: Record<OptionId, DialogueOption>;
+export type ResolveNextFn = (ctx: ResolveNextCtx) => StatementId | null;
+
+export type ConversationHooks = {
+	onStart?: (ctx: ConversationEventCtx) => void;
+	onEnd?: (ctx: ConversationEventCtx) => void;
+	onCancel?: (ctx: ConversationEventCtx) => void;
+};
+
+export type StatementHooks = {
 	onAsk?: (ctx: StatementEventCtx) => void;
 	onResponse?: (ctx: OptionEventCtx) => void;
 };
 
-export type DialogueConversation = Omit<DialogueConversationData, 'statements'> & {
+export type OptionHooks = {
+	onSelect?: (ctx: OptionEventCtx) => void;
+	onHover?: (ctx: OptionEventCtx) => void;
+	resolveNext?: ResolveNextFn;
+};
+
+export type DialogueOption = DialogueOptionData & OptionHooks;
+
+export type DialogueStatement = Omit<DialogueStatementData, 'options'> & StatementHooks & {
+	options: Record<OptionId, DialogueOption>;
+};
+
+export type DialogueConversation = Omit<DialogueConversationData, 'statements'> & ConversationHooks & {
 	statements: Record<StatementId, DialogueStatement>;
-	onStart?: (ctx: ConversationEventCtx) => void;
-	onEnd?: (ctx: ConversationEventCtx) => void;
-	onCancel?: (ctx: ConversationEventCtx) => void;
 };
 
 export type DialogueConfig = Omit<DialogueConfigData, 'conversations'> & {

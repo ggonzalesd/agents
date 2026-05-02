@@ -229,6 +229,18 @@
               "nextStatementId": null
             }
           }
+        },
+
+        "s_buy_fail": {
+          "id": "s_buy_fail",
+          "text": "Lo siento, no tienes monedas suficientes para esto. Vuelve cuando tengas el dinero.",
+          "options": {
+            "o_fail_back": {
+              "id": "o_fail_back",
+              "text": "Entendido. Quizás luego.",
+              "nextStatementId": "s_shop"
+            }
+          }
         }
       }
     },

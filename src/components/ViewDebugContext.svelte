@@ -29,6 +29,13 @@
 			>
 				<span class="sr-only">Delete message</span>
 			</button>
+			<button
+				class="pointer-events-auto ml-auto px-1 text-xs text-zinc-400 hover:cursor-pointer hover:text-white"
+				onclick={() => navigator.clipboard.writeText(message.message)}
+				title="Copiar"
+			>
+				copy
+			</button>
 		</div>
 
 		<div class="flex flex-col justify-center gap-2 p-2">

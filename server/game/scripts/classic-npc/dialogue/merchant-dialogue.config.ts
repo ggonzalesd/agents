@@ -1,13 +1,10 @@
-import { readFileSync } from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 import type { Room } from 'colyseus';
 
-import { dialogueConfigSchema } from '#/schema/dialogue.schema';
-import type { DialogueConfig, ConversationEventCtx, StatementEventCtx, OptionEventCtx } from './dialogue.types';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { ItemState } from '#/state/inventory.state';
+import type { DialogueConfig, ResolveNextCtx } from './dialogue.types';
+import { loadDialogueConfig } from './dialogue-config.builder';
+import { InventoryServerEcs } from '../../entity/InventoryServer.ecs';
 
 type DebugType = 'info' | 'warning' | 'error';
 
@@ -15,82 +12,74 @@ function broadcastDebug(room: Room, message: string, type: DebugType = 'info'): 
 	room.broadcast('dialogue:debug', { message, type });
 }
 
+function resolveBuyPotion({ npcEntity, playerEntity }: ResolveNextCtx): string | null {
+	const playerInventory = playerEntity.get(InventoryServerEcs).raw();
+	if (!playerInventory) return 's_buy_fail';
+
+	const coinEntry = Array.from(playerInventory.inventoryState.items.entries())
+		.find(([_, item]) => item.type === 'coin');
+
+	if (!coinEntry) return 's_buy_fail';
+
+	const [coinSlot] = coinEntry;
+	playerInventory.inventoryState.items.delete(coinSlot);
+
+	const npcInventory = npcEntity.get(InventoryServerEcs).raw();
+	if (npcInventory) {
+		const freeSlot = npcInventory.getAvailableSlot();
+		if (freeSlot !== null) {
+			npcInventory.inventoryState.items.set(freeSlot.toString(), new ItemState('coin', 1, {}));
+		}
+	}
+
+	return 's_buy_success';
+}
+
 export function buildMerchantDialogueConfig(room: Room): DialogueConfig {
 	const jsonPath = resolve(
 		process.cwd(),
 		'server/game/data/dialogues/merchant-example.json',
 	);
-	const raw = JSON.parse(readFileSync(jsonPath, 'utf-8'));
-	const data = dialogueConfigSchema.parse(raw);
 
-	const config: DialogueConfig = {
-		pickStrategy: data.pickStrategy,
-		weights: data.weights,
-		conversations: data.conversations.map((conv) => ({
-			...conv,
-			statements: Object.fromEntries(
-				Object.entries(conv.statements).map(([stmtId, stmt]) => [
-					stmtId,
-					{
-						...stmt,
-						options: Object.fromEntries(
-							Object.entries(stmt.options).map(([optId, opt]) => [
-								optId,
-								{
-									...opt,
-									onSelect: (ctx: OptionEventCtx) => {
-										broadcastDebug(
-											room,
-											`[onSelect] conv="${ctx.conversationId}" stmt="${ctx.statementId}" opt="${ctx.optionId}" → next="${ctx.nextStatementId ?? 'END'}" player="${ctx.playerEntityId}"`,
-											'info',
-										);
-									},
-									onHover: (_ctx: OptionEventCtx) => {
-										// onHover no se usa en server-side por ahora
-									},
-								},
-							]),
-						),
-						onAsk: (ctx: StatementEventCtx) => {
-							broadcastDebug(
-								room,
-								`[onAsk] conv="${ctx.conversationId}" stmt="${ctx.statementId}" player="${ctx.playerEntityId}"`,
-								'info',
-							);
-						},
-						onResponse: (ctx: OptionEventCtx) => {
-							broadcastDebug(
-								room,
-								`[onResponse] conv="${ctx.conversationId}" stmt="${ctx.statementId}" eligió opt="${ctx.optionId}" → next="${ctx.nextStatementId ?? 'END'}"`,
-								'warning',
-							);
-						},
-					},
-				]),
-			),
-			onStart: (ctx: ConversationEventCtx) => {
-				broadcastDebug(
-					room,
-					`[onStart] conv="${ctx.conversationId}" npc="${ctx.npcEntityId}" player="${ctx.playerEntityId}"`,
-					'info',
-				);
+	return loadDialogueConfig(jsonPath, {
+		conversations: {
+			'merchant-greeting-a': {
+				onStart: (ctx) => broadcastDebug(room, `[onStart] conv="${ctx.conversationId}" npc="${ctx.npcEntityId}" player="${ctx.playerEntityId}"`, 'info'),
+				onEnd: (ctx) => broadcastDebug(room, `[onEnd] conv="${ctx.conversationId}" completada por player="${ctx.playerEntityId}"`, 'info'),
+				onCancel: (ctx) => broadcastDebug(room, `[onCancel] conv="${ctx.conversationId}" cancelada por player="${ctx.playerEntityId}"`, 'warning'),
 			},
-			onEnd: (ctx: ConversationEventCtx) => {
-				broadcastDebug(
-					room,
-					`[onEnd] conv="${ctx.conversationId}" completada por player="${ctx.playerEntityId}"`,
-					'info',
-				);
+			'merchant-greeting-b': {
+				onStart: (ctx) => broadcastDebug(room, `[onStart] conv="${ctx.conversationId}" npc="${ctx.npcEntityId}" player="${ctx.playerEntityId}"`, 'info'),
+				onEnd: (ctx) => broadcastDebug(room, `[onEnd] conv="${ctx.conversationId}" completada por player="${ctx.playerEntityId}"`, 'info'),
+				onCancel: (ctx) => broadcastDebug(room, `[onCancel] conv="${ctx.conversationId}" cancelada por player="${ctx.playerEntityId}"`, 'warning'),
 			},
-			onCancel: (ctx: ConversationEventCtx) => {
-				broadcastDebug(
-					room,
-					`[onCancel] conv="${ctx.conversationId}" cancelada por player="${ctx.playerEntityId}"`,
-					'warning',
-				);
+		},
+		statements: {
+			's_greeting': {
+				onAsk: (ctx) => broadcastDebug(room, `[onAsk] stmt="${ctx.statementId}" player="${ctx.playerEntityId}"`, 'info'),
 			},
-		})),
-	};
-
-	return config;
+			's_alt_greeting': {
+				onAsk: (ctx) => broadcastDebug(room, `[onAsk] stmt="${ctx.statementId}" player="${ctx.playerEntityId}"`, 'info'),
+			},
+		},
+		options: {
+			'o_quest': {
+				onSelect: (ctx) => broadcastDebug(room, `[onSelect] opt="${ctx.optionId}" → next="${ctx.nextStatementId ?? 'END'}" player="${ctx.playerEntityId}"`, 'info'),
+			},
+			'o_bye': {
+				onSelect: (ctx) => broadcastDebug(room, `[onSelect] opt="${ctx.optionId}" → END player="${ctx.playerEntityId}"`, 'info'),
+			},
+			'o_confirm_potion': {
+				resolveNext: (ctx) => {
+					const result = resolveBuyPotion(ctx);
+					broadcastDebug(
+						room,
+						`[resolveNext] o_confirm_potion player="${ctx.playerEntityId}" → "${result ?? 'END'}"`,
+						result === 's_buy_success' ? 'info' : 'warning',
+					);
+					return result;
+				},
+			},
+		},
+	});
 }

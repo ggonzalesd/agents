@@ -10,6 +10,7 @@ import {
 	type DialogueUnavailablePayload,
 } from '#/schema/dialogue.schema';
 
+import { ClassicNPCStateMachineEcs } from '../classic-npc-state-machine.ecs';
 import type {
 	ConversationEventCtx,
 	DialogueConfig,
@@ -18,6 +19,7 @@ import type {
 	DialogueSession,
 	DialogueStatement,
 	OptionEventCtx,
+	ResolveNextCtx,
 	StatementEventCtx,
 } from './dialogue.types';
 
@@ -38,6 +40,14 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 		super();
 		this.config = config;
 		this.room = room;
+	}
+
+	private getStateMachine(): ClassicNPCStateMachineEcs | null {
+		return this.world
+			.getEntity(this.parent!)
+			.map((e) => e.get(ClassicNPCStateMachineEcs))
+			.collapse()
+			.raw() ?? null;
 	}
 
 	// ── API pública ────────────────────────────────────────────────────────────
@@ -62,6 +72,7 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 		};
 
 		this.sessions.set(playerEntityId, session);
+		this.getStateMachine()?.disable(playerEntityId);
 
 		const ctx: ConversationEventCtx = {
 			npcEntityId: this.parent!,
@@ -106,24 +117,36 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 		option.onSelect?.(ctx);
 		statement.onResponse?.(ctx);
 
-		if (option.nextStatementId === null) {
+		const npcEntityOp = this.world.getEntity(this.parent!);
+		const playerEntityOp = this.world.getEntity(playerEntityId);
+
+		const resolvedNext: string | null = (option.resolveNext && npcEntityOp.isSome() && playerEntityOp.isSome())
+			? option.resolveNext({
+				...ctx,
+				world: this.world,
+				npcEntity: npcEntityOp.unwrap(),
+				playerEntity: playerEntityOp.unwrap(),
+			} satisfies ResolveNextCtx)
+			: option.nextStatementId;
+
+		if (resolvedNext === null) {
 			this.endDialogue(playerEntityId, conversation);
 			return;
 		}
 
-		const nextStatement = conversation.statements[option.nextStatementId];
+		const nextStatement = conversation.statements[resolvedNext];
 		if (!nextStatement) {
 			this.endDialogue(playerEntityId, conversation);
 			return;
 		}
 
-		session.currentStatementId = option.nextStatementId;
+		session.currentStatementId = resolvedNext;
 
 		const stmtCtx: StatementEventCtx = {
 			npcEntityId: this.parent!,
 			playerEntityId,
 			conversationId: session.conversationId,
-			statementId: option.nextStatementId,
+			statementId: resolvedNext,
 		};
 
 		nextStatement.onAsk?.(stmtCtx);
@@ -146,6 +169,7 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 		conversation?.onCancel?.(ctx);
 
 		this.sessions.delete(playerEntityId);
+		this.getStateMachine()?.enable();
 
 		if (!silent) {
 			const payload: DialogueCancelPayload = {
@@ -181,6 +205,7 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 		}
 
 		this.sessions.delete(playerEntityId);
+		this.getStateMachine()?.enable();
 
 		const payload: DialogueEndPayload = {
 			npcEntityId: this.parent!,
@@ -232,7 +257,7 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 
 	private resolveStartStatement(
 		conversation: DialogueConversation,
-		playerEntityId: string,
+		_playerEntityId: string,
 	): string {
 		if (conversation.resumable) {
 			// No hay sesión guardada aún, se empieza desde el root
@@ -248,7 +273,7 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 	private buildStatementPayload(
 		session: DialogueSession,
 		conversation: DialogueConversation,
-		event: 'dialogue:start' | 'dialogue:next',
+		_event: 'dialogue:start' | 'dialogue:next',
 	): DialogueStartPayload | DialogueNextPayload {
 		const statement = conversation.statements[session.currentStatementId] as DialogueStatement;
 
