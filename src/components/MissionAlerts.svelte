@@ -2,7 +2,7 @@
 
 <script lang="ts">
 	import { getContext, onMount } from 'svelte';
-	import { toast } from 'svelte-sonner';
+	import { getDebugContext } from '@/hooks/useDebug.svelte';
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
 	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
@@ -19,6 +19,7 @@
 	}
 
 	const worldEcsContext = getContext<Option<WorldEcs>>(WorldEcs.name);
+	const debugContext = getDebugContext();
 
 	function getRoom(): Room<GameState> | null {
 		return worldEcsContext
@@ -33,17 +34,17 @@
 		room.onMessage('mission:event', (msg: MissionEvent) => {
 			switch (msg.type) {
 				case 'mission:accepted':
-					toast.success(
+					debugContext.success(
 						`${msg.acceptorName} aceptó tu misión: "${msg.missionTitle}"`,
 					);
 					break;
 				case 'mission:completed':
-					toast.success(
+					debugContext.success(
 						`${msg.validatorName} completó la misión: "${msg.missionTitle}"`,
 					);
 					break;
 				case 'mission:abandoned':
-					toast.warning(
+					debugContext.warning(
 						`${msg.abandonerName} abandonó tu misión: "${msg.missionTitle}"`,
 					);
 					break;

@@ -10,7 +10,9 @@
 	import Button from '@/components/ui/Button.svelte';
 	import { createQuery, createMutation, useQueryClient } from '@tanstack/svelte-query';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
-	import { toast } from 'svelte-sonner';
+	import { getDebugContext } from '@/hooks/useDebug.svelte';
+
+	const debugContext = getDebugContext();
 
 	let queryUsers = createQuery(() => ({
 		queryKey: ['usersList'],
@@ -38,17 +40,17 @@
 			createRedeemTokenService(payload),
 		onSuccess: (data: Awaited<ReturnType<typeof createRedeemTokenService>>) => {
 			if (data.ok) {
-				toast.success(`Token created: ${data.data.token}`);
+				debugContext.success(`Token created: ${data.data.token}`);
 				showTokenForm = null;
 				tokenValidFrom = '';
 				tokenValidUntil = '';
 				queryClient.invalidateQueries({ queryKey: ['redeemTokensList'] });
 			} else {
-				toast.error(data.error.message);
+				debugContext.error(data.error.message);
 			}
 		},
 		onError: (error: Error) => {
-			toast.error(error.message);
+			debugContext.error(error.message);
 		},
 	}));
 
@@ -56,20 +58,20 @@
 		mutationFn: (tokenId: string) => deleteRedeemTokenService(tokenId),
 		onSuccess: (data: Awaited<ReturnType<typeof deleteRedeemTokenService>>) => {
 			if (data.ok) {
-				toast.success('Token deleted');
+				debugContext.success('Token deleted');
 				queryClient.invalidateQueries({ queryKey: ['redeemTokensList'] });
 			} else {
-				toast.error(data.error.message);
+				debugContext.error(data.error.message);
 			}
 		},
 		onError: (error: Error) => {
-			toast.error(error.message);
+			debugContext.error(error.message);
 		},
 	}));
 
 	const handleCreateToken = (userId: string) => {
 		if (!tokenValidFrom || !tokenValidUntil) {
-			toast.error('Both dates are required');
+			debugContext.error('Both dates are required');
 			return;
 		}
 

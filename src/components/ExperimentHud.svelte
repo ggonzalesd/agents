@@ -2,7 +2,7 @@
 
 <script lang="ts">
 	import { getContext, onMount, tick } from 'svelte';
-	import { toast } from 'svelte-sonner';
+	import { getDebugContext } from '@/hooks/useDebug.svelte';
 
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
@@ -38,6 +38,7 @@
 	let phaseCountdown = $state<number | null>(null);
 
 	const worldEcsContext = getContext<Option<WorldEcs>>(WorldEcs.name);
+	const debugContext = getDebugContext();
 
 	function getRoom(): Room<GameState> | null {
 		return worldEcsContext
@@ -83,7 +84,7 @@
 	function sendRoomMessage(type: string, payload: Record<string, unknown> = {}) {
 		const room = getRoom();
 		if (!room) {
-			toast.error('No hay conexión con la sala');
+			debugContext.error('No hay conexión con la sala');
 			return;
 		}
 		room.send(type, payload);
@@ -128,16 +129,16 @@
 		const res = await resetExperimentService(experimentKey);
 		actionLoading = false;
 		if (!res.ok) {
-			toast.error(res.error?.message ?? res.message);
-			return;
-		}
-		await refreshData();
-		toast.success('Experimento reseteado.');
+		debugContext.error(res.error?.message ?? res.message);
+		return;
+	}
+	await refreshData();
+	debugContext.success('Experimento reseteado.');
 	}
 
 	async function submitFeedback() {
-		if (!feedbackComment.trim()) {
-			toast.error('Debes dejar un comentario para completar el experimento.');
+	if (!feedbackComment.trim()) {
+		debugContext.error('Debes dejar un comentario para completar el experimento.');
 			return;
 		}
 		if (!activeExperiment) return;
@@ -150,16 +151,16 @@
 		});
 		actionLoading = false;
 
-		if (!res.ok) {
-			toast.error(res.error?.message ?? res.message);
-			return;
-		}
+	if (!res.ok) {
+		debugContext.error(res.error?.message ?? res.message);
+		return;
+	}
 
-		activeExperiment = res.data.experiment;
-		showFeedbackModal = false;
-		feedbackRating = 5;
-		feedbackComment = '';
-		toast.success('Feedback enviado. Experimento completado.');
+	activeExperiment = res.data.experiment;
+	showFeedbackModal = false;
+	feedbackRating = 5;
+	feedbackComment = '';
+	debugContext.success('Feedback enviado. Experimento completado.');
 	}
 
 	onMount(() => {

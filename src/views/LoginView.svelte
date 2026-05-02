@@ -6,7 +6,7 @@
 
 	import { loginRequestSchema, redeemTokenLoginRequestSchema } from '#/schema/auth.schema';
 
-	import { toast } from 'svelte-sonner';
+	import { getDebugContext } from '@/hooks/useDebug.svelte';
 
 	import InputText from '@/components/InputText.svelte';
 	import Button from '@/components/ui/Button.svelte';
@@ -50,6 +50,7 @@
 	let gameStateContext = getGameStateContext();
 	let gameInputContext = getContext<GameInput>(GameInput.name);
 	let routerContext = getRouterContext();
+	const debugContext = getDebugContext();
 
 	onMount(() => {
 		gameInputContext.disabled = true;
@@ -81,7 +82,7 @@
 			routerContext.changeRoute('/profile');
 			localStorage.setItem('token', response.data.token);
 		} else {
-			toast.error(response.error.message);
+			debugContext.error(response.error.message);
 		}
 
 		loading = false;
@@ -101,7 +102,7 @@
 			routerContext.changeRoute('/profile');
 			localStorage.setItem('token', response.data.token);
 		} else {
-			toast.error(response.error.message);
+			debugContext.error(response.error.message);
 		}
 
 		loading = false;

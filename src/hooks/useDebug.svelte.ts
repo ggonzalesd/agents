@@ -64,7 +64,16 @@ export const useDebugHook = () => {
 		return id;
 	};
 
-	return { subscribe, add, updateMessage, deleteMessage };
+	const error = (message: string, props?: { isCode?: boolean; imageUrl?: string }) =>
+		add(message, { type: 'error', isCode: props?.isCode ?? false, deleteOn: 5000, imageUrl: props?.imageUrl });
+
+	const success = (message: string, props?: { isCode?: boolean; imageUrl?: string }) =>
+		add(message, { type: 'info', isCode: props?.isCode ?? false, deleteOn: 5000, imageUrl: props?.imageUrl });
+
+	const warning = (message: string, props?: { isCode?: boolean; imageUrl?: string }) =>
+		add(message, { type: 'warning', isCode: props?.isCode ?? false, deleteOn: 5000, imageUrl: props?.imageUrl });
+
+	return { subscribe, add, updateMessage, deleteMessage, error, success, warning };
 };
 
 export const getDebugContext = () => {

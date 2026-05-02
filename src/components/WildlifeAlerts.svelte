@@ -2,7 +2,7 @@
 
 <script lang="ts">
 	import { getContext, onMount } from 'svelte';
-	import { toast } from 'svelte-sonner';
+	import { getDebugContext } from '@/hooks/useDebug.svelte';
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
 	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
@@ -20,6 +20,7 @@
 	}
 
 	const worldEcsContext = getContext<Option<WorldEcs>>(WorldEcs.name);
+	const debugContext = getDebugContext();
 
 	function getRoom(): Room<GameState> | null {
 		return worldEcsContext
@@ -32,7 +33,7 @@
 
 	function registerListeners(room: Room<GameState>) {
 		room.onMessage('wildlife:event', (msg: WildlifeEvent) => {
-			toast.warning(
+			debugContext.warning(
 				`${msg.title}: ${msg.message} (${Math.round(msg.x)}, ${Math.round(msg.z)})`,
 			);
 		});
