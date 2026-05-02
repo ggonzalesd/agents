@@ -5,16 +5,16 @@ import { ServerDataEcs } from './serverData.ecs';
 import { classicNpcServerFactoryGenerator } from '../prefab/classicNpc.server';
 import { itemServerFactory } from '../prefab/item.server';
 import { npcServerFactoryGenerator } from '../prefab/npc.server';
-import { treeServerFactory } from '../prefab/tree.server';
 import { boxServerFactory } from '../prefab/box.server';
 import type { IVec3 } from '#/utils/math.util';
 
 import * as ClassicNPCRepository from '$/db/classic-npc.db';
 import * as NPCRepository from '$/db/npc.db';
 import * as InventoryRepository from '$/db/inventory.db';
-import { defaultMap, PHYSICS_SOLID } from '#/maps/default.map';
+import { defaultMap } from '#/maps/default.map';
 import { ItemState } from '#/state/inventory.state';
 import { InventoryServerEcs } from '../scripts/entity/InventoryServer.ecs';
+import { MapLoaderEcs } from './world/map-loader.ecs';
 
 import type { BoxSkin } from '#/state/box.state';
 
@@ -36,41 +36,18 @@ export class ServerManagerEcs extends ComponentEcs {
 			.map((sd) => sd.worldPhysic)
 			.unwrap('World physic not found');
 
+		const mapLoader = this.world
+			.get(MapLoaderEcs)
+			.unwrap('MapLoaderEcs not found');
+
 		// Create Plane
 		const bodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(0, -1, 0);
 		const body = physics.createRigidBody(bodyDesc);
-
 		const colliderDesc = RAPIER.ColliderDesc.cuboid(100, 1, 100);
 		const collider = physics.createCollider(colliderDesc, body);
 
-		defaultMap.grid.forEach((row, z) => {
-			row.forEach((cell, x) => {
-				if (PHYSICS_SOLID.has(cell)) {
-					const wallBodyDesc = RAPIER.RigidBodyDesc.fixed().setTranslation(
-						x + defaultMap.offsetX + 0.5,
-						0,
-						z + defaultMap.offsetY + 0.5,
-					);
-					const wallBody = physics.createRigidBody(wallBodyDesc);
-
-					const wallColliderDesc = RAPIER.ColliderDesc.cuboid(0.5, 1, 0.5);
-					physics.createCollider(wallColliderDesc, wallBody);
-				}
-
-				if (cell === 5) {
-					const tree = treeServerFactory({
-						world: this.world,
-						name: `tree-${x}-${z}`,
-						pos: {
-							x: x + defaultMap.offsetX + 0.5,
-							y: 0,
-							z: z + defaultMap.offsetY + 0.5,
-						},
-					});
-					this.world.addEntity(tree);
-				}
-			});
-		});
+		// Cargar el mapa del lobby a través de MapLoaderEcs para mantener el estándar
+		mapLoader.mountMap('lobby', defaultMap, { x: 0, y: 0, z: 0 });
 
 		BOX_SPAWNS.forEach(({ pos, skin }, index) => {
 			console.log(`Spawning box-${index} at`, pos, 'skin:', skin);
@@ -183,8 +160,10 @@ export class ServerManagerEcs extends ComponentEcs {
 		this.callOnDelete(() => {
 			physics.removeCollider(collider, true);
 			physics.removeRigidBody(body);
+			mapLoader.unmountMap('lobby');
 
 			console.log('ServerManagerEcs cleaned up');
 		});
 	}
 }
+

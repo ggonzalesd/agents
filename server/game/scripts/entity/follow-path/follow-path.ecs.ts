@@ -1,13 +1,15 @@
 import { ComponentEcs } from '#/ecs';
 import { posGridToReal } from '#/utils/map.utils';
+import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 import { WorldPathfinderEcs } from '../../world/world-grid.ecs';
+import { EntityPathfinderEcs } from '../entity-pathfinder.ecs';
 import { CharacterBodyServerEcs } from '../CharacterBodyServer.ecs';
 import { MovementServerEcs } from '../MovementServer.ecs';
 import type { IFollowOption } from './follow-option.interface';
 import { StopMovementOption } from './stop-movement.class';
 
 export class FollowPathEcs extends ComponentEcs {
-	private pathfinder: WorldPathfinderEcs = null!;
+	private pathfinder: IPathfinder = null!;
 
 	private movement: MovementServerEcs = null!;
 	private character: CharacterBodyServerEcs = null!;
@@ -21,11 +23,12 @@ export class FollowPathEcs extends ComponentEcs {
 	}
 
 	onStart(): void {
-		this.pathfinder = this.world
-			.get(WorldPathfinderEcs)
-			.unwrap('WorldPathfinderEcs not found');
-
 		const parent = this.world.getEntity(this.parent).unwrap('Parent not found');
+
+		this.pathfinder = parent
+			.get(EntityPathfinderEcs)
+			.map((c) => c.pathfinder)
+			.orElse(this.world.get(WorldPathfinderEcs).unwrap('No pathfinder available for FollowPathEcs'));
 
 		this.movement = parent
 			.get(MovementServerEcs)

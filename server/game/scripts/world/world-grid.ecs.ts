@@ -10,6 +10,7 @@ import {
 	WorkerType,
 } from '$/utils/workers.utils';
 import { defaultMap, PATHFINDING_SOLID } from '#/maps/default.map';
+import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 
 type WorkerInput = {
 	grid: number[][];
@@ -21,7 +22,7 @@ type WorkerOutput = {
 	result: [number, number][];
 };
 
-export class WorldPathfinderEcs extends ComponentEcs {
+export class WorldPathfinderEcs extends ComponentEcs implements IPathfinder {
 	private worker: Piscina<WorkerInput, WorkerOutput>;
 	public map = defaultMap;
 

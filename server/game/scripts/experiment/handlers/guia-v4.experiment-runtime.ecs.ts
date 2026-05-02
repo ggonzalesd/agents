@@ -1,13 +1,20 @@
 import * as RAPIER from '@dimforge/rapier3d-compat';
 
 import type { ExperimentPhaseDefinition } from '#/experiments/guia-experimentacion-v4';
+import { MapKey, mapRegistry } from '#/maps/maps';
 
 import { CharacterBodyServerEcs } from '../../entity/CharacterBodyServer.ecs';
 import { ServerDataEcs } from '../../serverData.ecs';
+import { MapLoaderEcs } from '../../world/map-loader.ecs';
+import { DynamicPathfinder } from '../../world/dynamic-pathfinder';
 import { ExperimentPhaseEcs } from '../experiment-phase.ecs';
 import { ExperimentRuntimeEcs } from '../experiment-runtime.ecs';
 import { PlaceholderExperimentPhaseEcs } from '../placeholder-experiment-phase.ecs';
 import { JumpOrDieExperimentPhaseEcs } from '../phases/jump-or-die.phase.ecs';
+import { treeServerFactory } from '$/game/prefab/tree.server';
+import { boxServerFactory } from '$/game/prefab/box.server';
+import { itemServerFactory } from '$/game/prefab/item.server';
+import type { BoxSkin } from '#/state/box.state';
 import * as SlotAllocator from '$/services/slot-allocator.service';
 import type { ExperimentActor } from '$/services/experiment-orchestrator.service';
 
@@ -32,9 +39,15 @@ const phaseFactories = new Map<string, PhaseFactory>([
 export class GuiaV4ExperimentRuntimeEcs extends ExperimentRuntimeEcs {
 	private slotRelease: (() => void) | null = null;
 	private platformBodyHandle: number | null = null;
+	private mapId: string | null = null;
+	private pathfinder: DynamicPathfinder | null = null;
 
 	constructor(actor: ExperimentActor, entityName: string) {
 		super(actor, entityName, EXPERIMENT_KEY);
+	}
+
+	get experimentPathfinder(): DynamicPathfinder | null {
+		return this.pathfinder;
 	}
 
 	protected async onExperimentMount(): Promise<void> {
@@ -75,6 +88,35 @@ export class GuiaV4ExperimentRuntimeEcs extends ExperimentRuntimeEcs {
 		}
 		console.log('OnExperimentMount: Created platform for user:', this.userId);
 
+		this.mapId = `experiment-${this.userId}`;
+		const experimentMap = mapRegistry[MapKey.ExperimentBasic];
+
+		this.world.get(MapLoaderEcs).ifSome((loader) => {
+			loader.registerInstanceFactory('tree', ({ world, name, pos }) =>
+				treeServerFactory({ world, name, pos }),
+			);
+			loader.registerInstanceFactory('box', ({ world, name, pos, metadata }) =>
+				boxServerFactory({ world, name, pos, skin: (metadata.skin as BoxSkin) ?? 'box_stacked' }),
+			);
+			loader.registerInstanceFactory('item', ({ world, name, pos, metadata }) =>
+				itemServerFactory({
+					world,
+					name,
+					pos,
+					stats: {
+						type: (metadata.itemType as string) ?? 'wood',
+						amount: (metadata.amount as number) ?? 1,
+					},
+					lifetime: 30_000,
+				}),
+			);
+			loader.mountMap(this.mapId!, experimentMap, position);
+		});
+
+		this.pathfinder = new DynamicPathfinder(experimentMap, position);
+
+		console.log('OnExperimentMount: Loaded experiment map for user:', this.userId);
+
 		this.world.getEntity(this.entityName).ifSome((entity) => {
 			entity.get(CharacterBodyServerEcs).ifSome((body) => {
 				body.body.setTranslation(position, true);
@@ -109,6 +151,18 @@ export class GuiaV4ExperimentRuntimeEcs extends ExperimentRuntimeEcs {
 		}
 
 		this.platformBodyHandle = null;
+
+		if (this.mapId !== null) {
+			this.world.get(MapLoaderEcs).ifSome((loader) => {
+				loader.unmountMap(this.mapId!);
+			});
+			this.mapId = null;
+		}
+
+		if (this.pathfinder !== null) {
+			this.pathfinder.dispose();
+			this.pathfinder = null;
+		}
 
 		const lobby = SlotAllocator.LOBBY_POSITION;
 		this.world.getEntity(this.entityName).ifSome((entity) => {

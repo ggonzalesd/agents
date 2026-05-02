@@ -1,5 +1,13 @@
 import { z } from 'zod';
 
+export const mapInstanceSchema = z.object({
+	type: z.string(),
+	x: z.number(),
+	z: z.number(),
+	y: z.number().default(0),
+	metadata: z.record(z.string(), z.unknown()).optional().default({}),
+});
+
 export const mapSchema = z
 	.object({
 		width: z.number().min(1),
@@ -9,6 +17,7 @@ export const mapSchema = z
 		scale: z.number().min(0),
 		map: z.string().min(1).array().min(1),
 		alias: z.record(z.string().length(1), z.number().min(0)),
+		instances: z.array(mapInstanceSchema).optional().default([]),
 	})
 	// Validate that the map dimensions match the width and height
 	.refine((data) => data.map.length === data.height, {
@@ -35,5 +44,6 @@ export const mapSchema = z
 			offsetX: data.offsetX,
 			offsetY: data.offsetY,
 			scale: data.scale,
+			instances: data.instances,
 		};
 	});

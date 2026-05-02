@@ -6,6 +6,7 @@ import type { ExperimentRuntimeEcs } from '../experiment-runtime.ecs';
 import { ANIMAL_SPAWN_CATALOG } from '../../animal/animal-spawn.catalog';
 import { animalServerFactoryGenerator } from '../../../prefab/animal.server';
 import { getSlotPosition } from '$/services/slot-allocator.service';
+import type { GuiaV4ExperimentRuntimeEcs } from '../handlers/guia-v4.experiment-runtime.ecs';
 
 export class JumpOrDieExperimentPhaseEcs extends ExperimentPhaseEcs {
 	private resolved = false;
@@ -90,6 +91,8 @@ export class JumpOrDieExperimentPhaseEcs extends ExperimentPhaseEcs {
 		const wolfName = `wolf-exp-${userId}`;
 		const factory = animalServerFactoryGenerator(this.world);
 
+		const pathfinder = (this.runtime as GuiaV4ExperimentRuntimeEcs).experimentPathfinder ?? undefined;
+
 		const wolfEntity = factory({
 			name: wolfName,
 			display: 'Lobo',
@@ -98,6 +101,7 @@ export class JumpOrDieExperimentPhaseEcs extends ExperimentPhaseEcs {
 			life: wolfVariant.life,
 			maxLife: wolfVariant.maxLife,
 			profile: wolfVariant.profile,
+			pathfinder,
 		});
 
 		this.world.addEntity(wolfEntity);

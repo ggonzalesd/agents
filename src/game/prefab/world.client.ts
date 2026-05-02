@@ -14,6 +14,7 @@ import { SeasonManagerEcs } from '../scripts/seasonManager.ecs';
 import { VFXManagerEcs } from '../scripts/common/vfx-manager.ecs';
 import { ExperimentPlatformManagerEcs } from '../scripts/experiment/experiment-platform-manager.ecs';
 import { ExperimentHudListenerEcs } from '../scripts/experiment/experiment-hud-listener.ecs';
+import { ExperimentInstanceRendererEcs } from '../scripts/experiment/experiment-instance-renderer.ecs';
 import type { useMessageHistory } from '@/hooks';
 
 type WorldPrefabProps = {
@@ -55,4 +56,5 @@ export const worldPrefab = ({
 		[VFXManagerEcs.name]: new VFXManagerEcs(),
 		[ExperimentPlatformManagerEcs.name]: new ExperimentPlatformManagerEcs(),
 		[ExperimentHudListenerEcs.name]: new ExperimentHudListenerEcs(),
+		[ExperimentInstanceRendererEcs.name]: new ExperimentInstanceRendererEcs(),
 	});

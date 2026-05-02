@@ -1,5 +1,7 @@
 import { ComponentEcs, type EntityEcs } from '#/ecs';
+import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 import { WorldPathfinderEcs } from '../world/world-grid.ecs';
+import { EntityPathfinderEcs } from '../entity/entity-pathfinder.ecs';
 import { FollowEntityOption } from '../entity/follow-path/follow-entity.class';
 import { FollowPathEcs } from '../entity/follow-path/follow-path.ecs';
 import { StopMovementOption } from '../entity/follow-path/stop-movement.class';
@@ -11,7 +13,7 @@ import { AnimalProfileEcs } from './animal-profile.ecs';
 import { AnimalStateEcs } from './animal-state.ecs';
 
 export class AnimalHuntBehaviorEcs extends ComponentEcs {
-	private pathfinder: WorldPathfinderEcs = null!;
+	private pathfinder: IPathfinder = null!;
 	private entityParent: EntityEcs = null!;
 	private character: CharacterBodyServerEcs = null!;
 	private followPath: FollowPathEcs = null!;
@@ -22,13 +24,14 @@ export class AnimalHuntBehaviorEcs extends ComponentEcs {
 	private lastAttackAt = 0;
 
 	onStart(): void {
-		this.pathfinder = this.world
-			.get(WorldPathfinderEcs)
-			.unwrap('WorldPathfinderEcs not found');
-
 		this.entityParent = this.world
 			.getEntity(this.parent)
 			.unwrap('Parent not found');
+
+		this.pathfinder = this.entityParent
+			.get(EntityPathfinderEcs)
+			.map((c) => c.pathfinder)
+			.orElse(this.world.get(WorldPathfinderEcs).unwrap('No pathfinder available for AnimalHuntBehaviorEcs'));
 
 		this.character = this.entityParent
 			.get(CharacterBodyServerEcs)

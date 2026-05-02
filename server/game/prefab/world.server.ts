@@ -6,6 +6,7 @@ import { ServerDataEcs } from '../scripts/serverData.ecs';
 import { ServerManagerEcs } from '../scripts/serverManager.ecs';
 import type { Room } from 'colyseus';
 import { WorldPathfinderEcs } from '../scripts/world/world-grid.ecs';
+import { MapLoaderEcs } from '../scripts/world/map-loader.ecs';
 import { AnimalSpawnerManagerEcs } from '../scripts/animal/animal-spawner-manager.ecs';
 import { ExperimentManagerEcs } from '../scripts/experiment/experiment-manager.ecs';
 import { WorldEventBusEcs } from '../scripts/world-event-bus.ecs';
@@ -29,6 +30,7 @@ export const worldServerFactory = ({
 		[WorldEventBusEcs.name]: new WorldEventBusEcs(),
 		[ExperimentManagerEcs.name]: new ExperimentManagerEcs(experimentFactories),
 		[WorldPathfinderEcs.name]: new WorldPathfinderEcs(),
+		[MapLoaderEcs.name]: new MapLoaderEcs(),
 		[ServerManagerEcs.name]: new ServerManagerEcs(),
 		[AnimalSpawnerManagerEcs.name]: new AnimalSpawnerManagerEcs(),
 	});

@@ -91,7 +91,7 @@ const wolfProfile: AnimalProfileProps = {
 	hunt: {
 		huntRadius: 15,
 		huntCooldownMs: 800,
-		preySpecies: ['deer', 'siervo', 'donkey'],
+		preySpecies: ['deer', 'siervo', 'donkey', 'bull-black', 'bull-brown'],
 		huntPlayers: true,
 		huntNpcs: true,
 	},

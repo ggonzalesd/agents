@@ -2,6 +2,7 @@ import { EntityEcs, type WorldEcs } from '#/ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { NPCState } from '#/state/game.state';
 import type { IVec3 } from '#/utils/math.util';
+import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 import { AnimalChargeBehaviorEcs } from '../scripts/animal/animal-charge-behavior.ecs';
 import { AnimalDropOnDeathEcs } from '../scripts/animal/animal-drop-on-death.ecs';
 import { AnimalFleeBehaviorEcs } from '../scripts/animal/animal-flee-behavior.ecs';
@@ -12,6 +13,7 @@ import { AnimalStateEcs } from '../scripts/animal/animal-state.ecs';
 import { AnimalSyncEcs } from '../scripts/animal/animal-sync.ecs';
 import { AnimalWanderBehaviorEcs } from '../scripts/animal/animal-wander-behavior.ecs';
 import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';
+import { EntityPathfinderEcs } from '../scripts/entity/entity-pathfinder.ecs';
 import { FollowPathEcs } from '../scripts/entity/follow-path/follow-path.ecs';
 import { MovementServerEcs } from '../scripts/entity/MovementServer.ecs';
 
@@ -25,6 +27,7 @@ export const animalServerFactoryGenerator =
 		life,
 		maxLife,
 		profile,
+		pathfinder,
 	}: {
 		name: string;
 		display: string;
@@ -33,6 +36,7 @@ export const animalServerFactoryGenerator =
 		life: number;
 		maxLife: number;
 		profile: AnimalProfileProps;
+		pathfinder?: IPathfinder;
 	}) => {
 		const state = new NPCState(pos, skin, life, maxLife, 'AI');
 
@@ -67,6 +71,10 @@ export const animalServerFactoryGenerator =
 			[AnimalFleeBehaviorEcs.name]: new AnimalFleeBehaviorEcs(),
 			[AnimalWanderBehaviorEcs.name]: new AnimalWanderBehaviorEcs(),
 		};
+
+		if (pathfinder) {
+			components[EntityPathfinderEcs.name] = new EntityPathfinderEcs(pathfinder);
+		}
 
 		if (profile.hunt) {
 			components[AnimalHuntBehaviorEcs.name] = new AnimalHuntBehaviorEcs();
