@@ -1,5 +1,6 @@
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { Option } from '#/utils/Option';
+import { InputMode } from '@/utils/inputMode';
 import { boxClientFactoryGenerator } from '../prefab/box.client';
 import { itemClientFactoryGenerator } from '../prefab/item.client';
 import { npcClientFactoryGenerator } from '../prefab/npc.client';
@@ -152,9 +153,15 @@ export class ClientManagerEcs extends ComponentEcs {
 			if (Math.random() < 0.1)
 				uc.debug.updateMessage(this.idMessage, `D: ${Math.random()}`);
 
-			if (uc.input.down('Escape') && !uc.input.isCursorLock()) {
-				uc.game.setPause(true);
-				uc.input.disabled = true;
+			if (uc.input.down('Escape')) {
+				if (uc.input.mode === InputMode.INTERACTIVE) {
+					// INTERACTIVE → GAME: volver a pointer lock
+					uc.input.setMode(InputMode.GAME);
+				} else if (uc.input.mode === InputMode.GAME && !uc.input.isCursorLock()) {
+					// GAME sin pointer lock → abrir menú
+					uc.game.setPause(true);
+					uc.input.setMode(InputMode.UI);
+				}
 			}
 		});
 	}

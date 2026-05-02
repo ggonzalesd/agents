@@ -2,6 +2,7 @@
 	import { getContext, onMount } from 'svelte';
 
 	import { GameInput } from '@/utils/input.utils';
+	import { InputMode } from '@/utils/inputMode';
 
 	import * as HOOKS from '@/hooks';
 
@@ -14,7 +15,7 @@
 	let gameInputContext = getContext<GameInput>(GameInput.name);
 
 	onMount(() => {
-		gameInputContext.disabled = true;
+		gameInputContext.setMode(InputMode.UI);
 
 		const timeout = setTimeout(() => {
 			if (import.meta.env.VITE_AUTO_JOIN === 'true')

@@ -22,6 +22,8 @@
 		phaseCountdownEvent,
 		awaitingFeedbackEvent,
 	} from '@/game/scripts/experiment/experiment-hud-events.store';
+	import { GameInput } from '@/utils/input.utils';
+	import { InputMode } from '@/utils/inputMode';
 
 	let availableExperiments = $state<ExperimentListItem[]>([]);
 	let activeExperiment = $state<ExperimentStateResponse | null>(null);
@@ -39,6 +41,7 @@
 
 	const worldEcsContext = getContext<Option<WorldEcs>>(WorldEcs.name);
 	const debugContext = getDebugContext();
+	const gameInputContext = getContext<GameInput>(GameInput.name);
 
 	function getRoom(): Room<GameState> | null {
 		return worldEcsContext
@@ -160,6 +163,7 @@
 	showFeedbackModal = false;
 	feedbackRating = 5;
 	feedbackComment = '';
+	gameInputContext.setMode(InputMode.GAME);
 	debugContext.success('Feedback enviado. Experimento completado.');
 	}
 
@@ -191,7 +195,7 @@
 			if (!event) return;
 			if (myUserId === null || event.userId !== myUserId) return;
 			showFeedbackModal = true;
-			document.exitPointerLock();
+			gameInputContext.setMode(InputMode.UI);
 			void tick().then(() => feedbackTextareaEl?.focus());
 		});
 
@@ -226,7 +230,7 @@
 	$effect(() => {
 		if (activeExperiment?.status === 'AWAITING_FEEDBACK') {
 			showFeedbackModal = true;
-			document.exitPointerLock();
+			gameInputContext.setMode(InputMode.UI);
 		}
 	});
 </script>
@@ -435,6 +439,7 @@
 					class="rounded-lg bg-zinc-800 px-4 py-2 text-sm font-semibold text-zinc-100 hover:cursor-pointer hover:bg-zinc-700"
 					onclick={() => {
 						showFeedbackModal = false;
+						gameInputContext.setMode(InputMode.GAME);
 					}}
 				>
 					Cancelar

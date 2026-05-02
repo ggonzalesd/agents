@@ -12,6 +12,7 @@
 	import Button from '@/components/ui/Button.svelte';
 
 	import { GameInput } from '@/utils/input.utils';
+	import { InputMode } from '@/utils/inputMode';
 	import { loginService, redeemLoginService, profileService } from '@/services/api.service';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
@@ -53,7 +54,7 @@
 	const debugContext = getDebugContext();
 
 	onMount(() => {
-		gameInputContext.disabled = true;
+		gameInputContext.setMode(InputMode.UI);
 
 		if (localStorage.getItem('token') == null) return;
 

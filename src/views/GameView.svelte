@@ -7,6 +7,7 @@
 	import { getDebugContext } from '@/hooks/useDebug.svelte';
 	import { getActionsContext } from '@/hooks/useActions.svelte';
 	import { GameInput } from '@/utils/input.utils';
+	import { InputMode } from '@/utils/inputMode';
 
 	import { worldPrefab } from '@/game/prefab/world.client';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
@@ -22,7 +23,7 @@
 	let messageHistoryContext = getMessageHistoryContext();
 
 	onMount(() => {
-		gameInputContext.disabled = false;
+		gameInputContext.setMode(InputMode.GAME);
 
 		const world = worldPrefab({
 			canvas: $state.snapshot(canvasRef) as HTMLCanvasElement,

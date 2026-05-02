@@ -1,3 +1,4 @@
+import { InputMode } from '@/utils/inputMode';
 import type { IVec2 } from '#/utils/math.util';
 
 export class GameInput {
@@ -5,18 +6,40 @@ export class GameInput {
 
 	private keyMap: Map<string, number> = new Map();
 	private prevent: boolean = true;
-	private _disabled: boolean = true;
+	private _mode: InputMode = InputMode.UI;
 	private contextMenu: boolean = false;
 
-	public get disabled(): boolean {
-		return this._disabled;
+	public get mode(): InputMode {
+		return this._mode;
 	}
 
-	public set disabled(value: boolean) {
-		this._disabled = value;
-		if (value) {
+	public setMode(mode: InputMode): void {
+		const wasDisabled = this._mode === InputMode.UI;
+		this._mode = mode;
+
+		if (mode === InputMode.UI) {
 			this.keyMap.clear();
 		}
+
+		if (mode === InputMode.GAME) {
+			document.body.requestPointerLock();
+		} else if (wasDisabled || mode === InputMode.INTERACTIVE) {
+			if (document.pointerLockElement === document.body) {
+				document.exitPointerLock();
+				this.moveX = 0;
+				this.moveY = 0;
+			}
+		}
+	}
+
+	/** @deprecated Usar setMode(InputMode.UI) / setMode(InputMode.GAME) */
+	public get disabled(): boolean {
+		return this._mode === InputMode.UI;
+	}
+
+	/** @deprecated Usar setMode(InputMode.UI) / setMode(InputMode.GAME) */
+	public set disabled(value: boolean) {
+		this.setMode(value ? InputMode.UI : InputMode.GAME);
 	}
 
 	public moveX: number = 0;
@@ -45,15 +68,15 @@ export class GameInput {
 		document.addEventListener('contextmenu', this.onContextMenu);
 
 		document.addEventListener('mousedown', (e) => {
-			if (this.disabled) return;
+			if (this._mode === InputMode.UI) return;
 			if (e.button !== 2) return;
 
-			if (document.pointerLockElement !== document.body) {
-				document.body.requestPointerLock();
-			} else {
-				document.exitPointerLock();
-				this.moveX = 0;
-				this.moveY = 0;
+			if (this._mode === InputMode.GAME) {
+				// GAME → INTERACTIVE: liberar cursor
+				this.setMode(InputMode.INTERACTIVE);
+			} else if (this._mode === InputMode.INTERACTIVE) {
+				// INTERACTIVE → GAME: volver a pointer lock
+				this.setMode(InputMode.GAME);
 			}
 		});
 
@@ -91,7 +114,7 @@ export class GameInput {
 	}
 
 	private onContextMenu(event: MouseEvent) {
-		if (this.disabled || this.contextMenu) return;
+		if (this._mode === InputMode.UI || this.contextMenu) return;
 
 		event.preventDefault();
 		event.stopPropagation();
@@ -103,7 +126,7 @@ export class GameInput {
 			return;
 		}
 
-		if (this.disabled) return;
+		if (this._mode === InputMode.UI) return;
 
 		if (this.prevent) {
 			event.preventDefault();

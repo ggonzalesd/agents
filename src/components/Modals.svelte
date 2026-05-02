@@ -8,6 +8,7 @@
 	import OnLeaveModal from './modals/OnLeaveModal.svelte';
 	import { getContext } from 'svelte';
 	import { GameInput } from '@/utils/input.utils';
+	import { InputMode } from '@/utils/inputMode';
 	import EntityDetailsModal from './modals/EntityDetailsModal.svelte';
 	import MissionsModal from './modals/MissionsModal.svelte';
 	import DialogueModal from './modals/DialogueModal.svelte';
@@ -18,7 +19,7 @@
 	// Reactively enable/disable game inputs when modal opens/closes
 	$effect(() => {
 		if ($gameState.paused) {
-			inputs.disabled = true;
+			inputs.setMode(InputMode.UI);
 		}
 	});
 
@@ -33,7 +34,7 @@
 
 		gameState.continueGame();
 		gameState.setSelectedEntity(null);
-		inputs.disabled = false;
+		inputs.setMode(InputMode.GAME);
 	};
 </script>
 

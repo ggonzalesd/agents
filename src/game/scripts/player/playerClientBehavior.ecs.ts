@@ -3,6 +3,7 @@ import type { Room } from 'colyseus.js';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import type { GameState } from '#/state/game.state';
+import { InputMode } from '@/utils/inputMode';
 
 import type { GameInput } from '@/utils/input.utils';
 
@@ -66,12 +67,12 @@ export class PlayerClientBehavior extends ComponentEcs {
 
 		if (this.input.down('KeyT')) {
 			this.uiClient.game.setPause(true, 'MESSAGE');
-			this.input.disabled = true;
+			this.input.setMode(InputMode.UI);
 		}
 
 		if (this.input.down('KeyE')) {
 			this.uiClient.game.setPause(true, 'INVENTORY');
-			this.input.disabled = true;
+			this.input.setMode(InputMode.UI);
 		}
 
 		if (this.input.down('Space') && this.room.connection.isOpen) {
@@ -109,7 +110,7 @@ export class PlayerClientBehavior extends ComponentEcs {
 
 				this.uiClient.game.setSelectedEntity(entityId);
 				this.uiClient.game.setPause(true, 'ENTITYDETAILS');
-				this.input.disabled = true;
+				this.input.setMode(InputMode.UI);
 			}).bind(this),
 		);
 
@@ -122,7 +123,7 @@ export class PlayerClientBehavior extends ComponentEcs {
 				((npcEntityId: string) => {
 					this.uiClient.game.setDialogueNpc(npcEntityId);
 					this.uiClient.game.setPause(true, 'DIALOGUE');
-					this.input.disabled = true;
+					this.input.setMode(InputMode.UI);
 					this.room.send('dialogue:start', { npcEntityId });
 				}).bind(this),
 			);

@@ -10,6 +10,7 @@
 	import { getMessageHistoryContext, getGameStateContext } from '@/hooks';
 	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
 	import { GameInput } from '@/utils/input.utils';
+	import { InputMode } from '@/utils/inputMode';
 
 	import InputText from '../InputText.svelte';
 
@@ -34,7 +35,7 @@
 		form.reset();
 
 		gameStateContext.setPause(false);
-		gameInputContext.disabled = false;
+		gameInputContext.setMode(InputMode.GAME);
 
 		const room = worldEcsContext
 			.map((w) => w.getUnsafe(ColyseusClientEcs))

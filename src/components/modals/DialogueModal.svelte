@@ -3,6 +3,7 @@
 <script lang="ts">
 	import { getContext, onMount } from 'svelte';
 	import { GameInput } from '@/utils/input.utils';
+	import { InputMode } from '@/utils/inputMode';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import type { Option } from '#/utils/Option';
@@ -115,7 +116,7 @@
 		hoveredOptionId = null;
 		gameState.continueGame();
 		gameState.setDialogueNpc(null);
-		inputs.disabled = false;
+		inputs.setMode(InputMode.GAME);
 	}
 </script>
 

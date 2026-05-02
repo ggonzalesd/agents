@@ -1,10 +1,12 @@
 import * as THREE from 'three';
 
 import { ComponentEcs } from '#/ecs/Component.ecs';
+import { InputMode } from '@/utils/inputMode';
 
 import { defaultMap } from '#/maps/default.map';
 
 import { renderMap } from './render-map.util';
+import { UIClientEcs } from './uiClient.ecs';
 
 export class RenderClientEcs extends ComponentEcs {
 	public scene: THREE.Scene;
@@ -67,6 +69,11 @@ export class RenderClientEcs extends ComponentEcs {
 
 	onStart(): void {
 		const clickEventListener = (event: MouseEvent) => {
+			const inputMode = this.world.get(UIClientEcs).map((ui) => ui.input.mode).raw();
+
+			// En modo UI no procesar ningún click a entidades/items
+			if (inputMode === InputMode.UI) return;
+
 			this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
 			this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
@@ -87,8 +94,8 @@ export class RenderClientEcs extends ComponentEcs {
 					break;
 				}
 
-				// Open entity details when clicking on NPCs or Players
-				if (userData.isEntity) {
+				// Solo en modo INTERACTIVE se puede hacer click a entidades
+				if (userData.isEntity && inputMode === InputMode.INTERACTIVE) {
 					this.world.stacker.stackLoss('entity-interact', userData.parent);
 					break;
 				}

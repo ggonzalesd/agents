@@ -5,6 +5,7 @@
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
 	import { GameInput } from '@/utils/input.utils';
+	import { InputMode } from '@/utils/inputMode';
 	import { getContext } from 'svelte';
 	import closeSvgContent from '@/assets/icons/close.svg?raw';
 
@@ -14,12 +15,12 @@
 
 	const onContinue = () => {
 		gameState.setPause(false);
-		inputs.disabled = false;
+		inputs.setMode(InputMode.GAME);
 	};
 
 	const onExit = () => {
 		gameState.setPause(false);
-		inputs.disabled = false;
+		inputs.setMode(InputMode.GAME);
 		routerContext.changeRoute('/profile');
 	};
 </script>
