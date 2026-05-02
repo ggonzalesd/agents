@@ -12,11 +12,7 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import type { IVec2 } from '#/utils/math.util';
 
-	import cookieSvgSrc from '@/assets/items/cookie.svg';
-	import potionSvgSrc from '@/assets/items/potion.svg';
-	import seedsSvgSrc from '@/assets/items/seeds.svg';
-	import swordSvgSrc from '@/assets/items/sword.svg';
-	import coinSvgSrc from '@/assets/items/coin.svg';
+	import { getItemIcon } from '@/game/item-icons.registry';
 	import { ITEM_REGISTRY } from '#/state/item-registry';
 
 	let worldOp = getContext<Option<WorldEcs>>(WorldEcs.name);
@@ -71,11 +67,11 @@
 				quantity: item.quantity,
 				metadata: item.metadata,
 			});
-		}, true);
+		}, true) ?? (() => undefined);
 
 		const detachRemove = inventoryProxy.onRemove((_item, key) => {
 			itemState.delete(key);
-		});
+		}) ?? (() => undefined);
 
 		const detachChange = inventoryProxy.onChange((item, key) => {
 			itemState.set(key, {
@@ -83,7 +79,7 @@
 				quantity: item.quantity,
 				metadata: item.metadata,
 			});
-		});
+		}) ?? (() => undefined);
 
 		return () => {
 			detachAdd();
@@ -203,16 +199,9 @@
 </script>
 
 {#snippet itemIcon(item: InventoryItem)}
-	{#if item.type === 'cookie'}
-		<img src={cookieSvgSrc} alt="Cookie" class="h-10 w-10" />
-	{:else if item.type === 'potion'}
-		<img src={potionSvgSrc} alt="Potion" class="h-10 w-10" />
-	{:else if item.type === 'seeds'}
-		<img src={seedsSvgSrc} alt="Seeds" class="h-10 w-10" />
-	{:else if item.type === 'sword'}
-		<img src={swordSvgSrc} alt="Sword" class="h-10 w-10" />
-	{:else if item.type === 'coin'}
-		<img src={coinSvgSrc} alt="Coin" class="h-10 w-10" />
+	{@const icon = getItemIcon(item.type)}
+	{#if icon}
+		<img src={icon} alt={item.type} class="h-10 w-10" />
 	{:else}
 		{item.type}
 	{/if}

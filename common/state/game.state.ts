@@ -36,6 +36,12 @@ export class NPCState extends Schema {
 	@type('string')
 	public skin: string;
 
+	@type('string')
+	public npcType: string = 'AI';
+
+	@type('string')
+	public behaviorState: string = 'IDLE';
+
 	@type(CharacterBodyState)
 	public character: CharacterBodyState;
 
@@ -48,10 +54,17 @@ export class NPCState extends Schema {
 	@type(NPCDebugPathState)
 	public debugPath: NPCDebugPathState = new NPCDebugPathState();
 
-	constructor(pos: IVec3, skin: string, life = 100, maxLife = 100) {
+	constructor(
+		pos: IVec3,
+		skin: string,
+		life = 100,
+		maxLife = 100,
+		npcType = 'AI',
+	) {
 		super();
 		this.character = new CharacterBodyState(pos, life, maxLife);
 		this.skin = skin;
+		this.npcType = npcType;
 	}
 }
 

@@ -23,10 +23,20 @@ export interface ItemDefinition {
 }
 
 export const ITEM_REGISTRY: Readonly<Record<string, ItemDefinition>> = {
+	apple: {
+		category: ItemCategory.FOOD,
+		consumable: true,
+		effects: [{ type: ItemEffectType.HEAL, value: 10 }],
+	},
 	cookie: {
 		category: ItemCategory.FOOD,
 		consumable: true,
 		effects: [{ type: ItemEffectType.HEAL, value: 15 }],
+	},
+	meat: {
+		category: ItemCategory.FOOD,
+		consumable: true,
+		effects: [{ type: ItemEffectType.HEAL, value: 20 }],
 	},
 	potion: {
 		category: ItemCategory.POTION,

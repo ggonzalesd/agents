@@ -24,6 +24,9 @@ import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { CharacterBodyServerEcs } from './scripts/entity/CharacterBodyServer.ecs';
 import { InventoryServerEcs } from './scripts/entity/InventoryServer.ecs';
 import { ItemState } from '#/state/inventory.state';
+import { ExperimentManagerEcs } from './scripts/experiment/experiment-manager.ecs';
+import type { StartExperimentRequest } from '#/schema/experiment.schema';
+import * as ExperimentService from '$/services/experiment-orchestrator.service';
 
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
@@ -61,6 +64,8 @@ export class MainRoom extends Room<GameState> {
 
 		this.onMessage('client:state', this.onClientState.bind(this));
 		this.onMessage('client:action', this.onClientAction.bind(this));
+		this.onMessage('experiment:start', this.onExperimentStart.bind(this));
+		this.onMessage('experiment:stop', this.onExperimentStop.bind(this));
 		this.onMessage('*', () => {});
 	}
 
@@ -78,6 +83,48 @@ export class MainRoom extends Room<GameState> {
 			message,
 			5,
 		);
+	}
+
+	private onExperimentStart(client: Client, message: unknown): void {
+		const payload = client.userData?.payload as AuthPayload | undefined;
+		const userInfo = client.userData?.userInfo as
+			| Awaited<ReturnType<typeof ProfileService.getUserInfo>>
+			| undefined;
+
+		if (!payload || !userInfo) return;
+
+		const body = message as StartExperimentRequest;
+		if (!body?.experimentKey) return;
+
+		const manager = this.worldEcs
+			.get(ExperimentManagerEcs)
+			.unwrap('ExperimentManagerEcs not found');
+
+		if (manager.hasActiveRuntime(payload.id)) {
+			client.send('experiment:error', { message: 'Ya tienes un experimento activo' });
+			return;
+		}
+
+		try {
+			manager.startExperiment(
+				{ userId: payload.id, username: payload.username, role: payload.role },
+				userInfo.agent.identifier,
+				body.experimentKey,
+			);
+		} catch (err) {
+			client.send('experiment:error', { message: String(err) });
+		}
+	}
+
+	private onExperimentStop(client: Client, _message: unknown): void {
+		const payload = client.userData?.payload as AuthPayload | undefined;
+		if (!payload) return;
+
+		const manager = this.worldEcs
+			.get(ExperimentManagerEcs)
+			.unwrap('ExperimentManagerEcs not found');
+
+		manager.stopExperiment(payload.id);
 	}
 
 	onUpdate(_delta: number) {
@@ -208,6 +255,27 @@ export class MainRoom extends Room<GameState> {
 
 		this.worldEcs.addEntity(playerEntity);
 
+		// Auto-resume any IN_PROGRESS experiment the user had from a previous session
+		try {
+			const manager = this.worldEcs
+				.get(ExperimentManagerEcs)
+				.unwrap('ExperimentManagerEcs not found');
+
+			if (!manager.hasActiveRuntime(payload.id)) {
+				const inProgress = await ExperimentService.getInProgressExperimentForUser(payload.id);
+				if (inProgress) {
+					console.log(`[MainRoom] Auto-resuming experiment '${inProgress.experimentKey}' for ${payload.id}`);
+					manager.startExperiment(
+						{ userId: payload.id, username: payload.username, role: payload.role },
+						userInfo.agent.identifier,
+						inProgress.experimentKey,
+					);
+				}
+			}
+		} catch (err) {
+			console.error('[MainRoom] Failed to auto-resume experiment for', payload.id, err);
+		}
+
 		if (payload.loginType === LOGIN_TYPE.REDEEM_TOKEN) {
 			this.scheduleExpulsion(client, payload);
 		}
@@ -216,11 +284,12 @@ export class MainRoom extends Room<GameState> {
 	async onLeave(client: Client<any, any>, _consented?: boolean): Promise<any> {
 		this.clearExpulsionTimer(client.sessionId);
 
+		const payload = client.userData?.payload as AuthPayload | undefined;
 		const userInfo = client.userData?.userInfo as
 			| Awaited<ReturnType<typeof ProfileService.getUserInfo>>
 			| undefined;
 
-		if (!userInfo) return;
+		if (!userInfo || !payload) return;
 
 		const entityOp = this.worldEcs.getEntity(userInfo.agent.identifier);
 
@@ -268,6 +337,12 @@ export class MainRoom extends Room<GameState> {
 				items,
 			});
 		}
+
+		const manager = this.worldEcs
+			.get(ExperimentManagerEcs)
+			.unwrap('ExperimentManagerEcs not found');
+
+		manager.onPlayerLeave(payload.id);
 
 		this.worldEcs.deleteEntityById(userInfo.agent.identifier);
 	}

@@ -3,6 +3,7 @@ import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { NPCState } from '#/state/game.state';
 import type { IVec3 } from '#/utils/math.util';
 import { AnimalChargeBehaviorEcs } from '../scripts/animal/animal-charge-behavior.ecs';
+import { AnimalDropOnDeathEcs } from '../scripts/animal/animal-drop-on-death.ecs';
 import { AnimalFleeBehaviorEcs } from '../scripts/animal/animal-flee-behavior.ecs';
 import { AnimalHuntBehaviorEcs } from '../scripts/animal/animal-hunt-behavior.ecs';
 import { AnimalHurtResponseEcs } from '../scripts/animal/animal-hurt-response.ecs';
@@ -33,13 +34,14 @@ export const animalServerFactoryGenerator =
 		maxLife: number;
 		profile: AnimalProfileProps;
 	}) => {
-		const state = new NPCState(pos, skin, life, maxLife);
+		const state = new NPCState(pos, skin, life, maxLife, 'AI');
 
 		const components: ConstructorParameters<typeof EntityEcs>[0]['components'] = {
 			[RecordEcs.name]: new RecordEcs({
 				stats: {
 					kind: 'animal',
 					name: display,
+					populationKey: profile.populationKey,
 					species: profile.species,
 				},
 			}),
@@ -48,7 +50,7 @@ export const animalServerFactoryGenerator =
 				state.character,
 				'cuboid',
 				{
-					respawnPoint: pos,
+					deathBehavior: 'delete',
 					cuboidHalfExtents: {
 						x: 0.3,
 						y: 0.35,
@@ -61,6 +63,7 @@ export const animalServerFactoryGenerator =
 			[AnimalProfileEcs.name]: new AnimalProfileEcs(profile),
 			[AnimalStateEcs.name]: new AnimalStateEcs(pos),
 			[AnimalHurtResponseEcs.name]: new AnimalHurtResponseEcs(),
+			[AnimalDropOnDeathEcs.name]: new AnimalDropOnDeathEcs(),
 			[AnimalFleeBehaviorEcs.name]: new AnimalFleeBehaviorEcs(),
 			[AnimalWanderBehaviorEcs.name]: new AnimalWanderBehaviorEcs(),
 		};

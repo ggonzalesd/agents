@@ -7,7 +7,7 @@ import { ServerDataEcs } from '../serverData.ecs';
 
 const TREE_DROP_PROBABILITY = 0.25;
 const TREE_HIT_COOLDOWN_MS = 400;
-const TREE_DROP_ITEMS = ['sword', 'potion', 'cookie', 'seeds', 'coin'] as const;
+const TREE_DROP_ITEM = 'apple';
 const TREE_COLLIDER_RADIUS = 0.35;
 const TREE_DROP_MIN_RADIUS = TREE_COLLIDER_RADIUS + 0.3;
 const TREE_DROP_MAX_RADIUS = TREE_COLLIDER_RADIUS + 1.2;
@@ -46,8 +46,6 @@ export class TreeServerBehavior extends ComponentEcs {
 
 		if (Math.random() >= TREE_DROP_PROBABILITY) return;
 
-		const itemType =
-			TREE_DROP_ITEMS[Math.floor(Math.random() * TREE_DROP_ITEMS.length)];
 		const angle = Math.random() * Math.PI * 2;
 		const radius =
 			TREE_DROP_MIN_RADIUS +
@@ -62,7 +60,7 @@ export class TreeServerBehavior extends ComponentEcs {
 			},
 			stats: {
 				amount: 1,
-				type: itemType,
+				type: TREE_DROP_ITEM,
 			},
 		});
 

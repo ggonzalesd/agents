@@ -14,11 +14,7 @@
 	import type { MapSchema } from '@colyseus/schema';
 	import { SvelteMap } from 'svelte/reactivity';
 
-	import cookieSvgSrc from '@/assets/items/cookie.svg';
-	import potionSvgSrc from '@/assets/items/potion.svg';
-	import seedsSvgSrc from '@/assets/items/seeds.svg';
-	import swordSvgSrc from '@/assets/items/sword.svg';
-	import coinSvgSrc from '@/assets/items/coin.svg';
+	import { ITEM_ICONS } from '@/game/item-icons.registry';
 
 	interface Props {
 		onBack: () => void;
@@ -48,14 +44,6 @@
 	let itemState = new SvelteMap<string, InventoryItem>();
 	let rewardItem = $state<{ type: string; qty: number } | null>(null);
 	let dragOverReward = $state(false);
-
-	const ITEM_ICONS: Record<string, string> = {
-		cookie: cookieSvgSrc,
-		potion: potionSvgSrc,
-		seeds: seedsSvgSrc,
-		sword: swordSvgSrc,
-		coin: coinSvgSrc,
-	};
 
 	function getRoom(): Room<GameState> | null {
 		return worldEcsContext
@@ -106,21 +94,20 @@
 
 		const detachAdd = inventoryProxy.onAdd((item, key) => {
 			itemState.set(key, { type: item.type, quantity: item.quantity, metadata: item.metadata });
-		}, true);
+		}, true) ?? (() => undefined);
 
 		const detachRemove = inventoryProxy.onRemove((_item, key) => {
 			itemState.delete(key);
-		});
+		}) ?? (() => undefined);
 
 		const detachChange = inventoryProxy.onChange((item, key) => {
 			itemState.set(key, { type: item.type, quantity: item.quantity, metadata: item.metadata });
-		});
+		}) ?? (() => undefined);
 
 		return () => {
 			detachAdd();
 			detachRemove();
 			detachChange();
-			room.onMessage('mission:result', () => {});
 		};
 	});
 
@@ -235,9 +222,9 @@
 
 			<!-- Reward: drag item from inventory -->
 			<div>
-				<label class="block text-sm text-gray-300 mb-2">
+				<div class="block text-sm text-gray-300 mb-2">
 					Recompensa (arrastra un item)
-				</label>
+				</div>
 
 				<!-- Reward drop zone -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->

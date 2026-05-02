@@ -1,4 +1,8 @@
-import { PrismaClient, Role } from './../server/generated/prisma/client';
+import {
+	BehaviorType,
+	PrismaClient,
+	Role,
+} from './../server/generated/prisma/client';
 import envConfig from './../server/config/env.config';
 
 import * as bcrypt from 'bcrypt';
@@ -12,16 +16,28 @@ async function createPlayer(props: {
 	identifier: string;
 	role?: Role;
 }) {
-	const player = await prisma.user.create({
-		data: {
-			password: bcrypt.hashSync(props.password, 10),
+	const password = bcrypt.hashSync(props.password, 10);
+
+	const player = await prisma.user.upsert({
+		where: {
 			username: props.username,
+		},
+		create: {
+			password,
+			username: props.username,
+			role: props.role || Role.USER,
+		},
+		update: {
+			password,
 			role: props.role || Role.USER,
 		},
 	});
 
-	const agent = await prisma.agent.create({
-		data: {
+	const agent = await prisma.agent.upsert({
+		where: {
+			identifier: props.identifier,
+		},
+		create: {
 			display: props.display,
 			identifier: props.identifier,
 			metadata: {},
@@ -30,18 +46,36 @@ async function createPlayer(props: {
 			positionZ: 0,
 			rotation: 0,
 		},
-	});
-
-	const entity = await prisma.entity.create({
-		data: {
-			id: agent.id,
+		update: {
+			display: props.display,
+			metadata: {},
+			positionX: 0,
+			positionY: 0,
+			positionZ: 0,
+			rotation: 0,
 		},
 	});
 
-	const profile = await prisma.profile.create({
-		data: {
+	const entity = await prisma.entity.upsert({
+		where: {
+			id: agent.id,
+		},
+		create: {
+			id: agent.id,
+		},
+		update: {},
+	});
+
+	const profile = await prisma.profile.upsert({
+		where: {
+			entityId: entity.id,
+		},
+		create: {
 			userId: player.id,
 			entityId: entity.id,
+		},
+		update: {
+			userId: player.id,
 		},
 	});
 
@@ -55,8 +89,11 @@ async function createNPC(props: {
 	skinUrl: string;
 	description?: string;
 }) {
-	const agent = await prisma.agent.create({
-		data: {
+	const agent = await prisma.agent.upsert({
+		where: {
+			identifier: props.identifier,
+		},
+		create: {
 			display: props.display,
 			identifier: props.identifier,
 			metadata: {},
@@ -65,17 +102,37 @@ async function createNPC(props: {
 			positionZ: 0,
 			rotation: 0,
 		},
-	});
-
-	const entity = await prisma.entity.create({
-		data: {
-			id: agent.id,
+		update: {
+			display: props.display,
+			metadata: {},
+			positionX: 0,
+			positionY: 0,
+			positionZ: 0,
+			rotation: 0,
 		},
 	});
 
-	const npc = await prisma.nPC.create({
-		data: {
+	const entity = await prisma.entity.upsert({
+		where: {
+			id: agent.id,
+		},
+		create: {
+			id: agent.id,
+		},
+		update: {},
+	});
+
+	const npc = await prisma.nPC.upsert({
+		where: {
 			id: entity.id,
+		},
+		create: {
+			id: entity.id,
+			description: props.description || '',
+			model: props.model,
+			skinUrl: props.skinUrl,
+		},
+		update: {
 			description: props.description || '',
 			model: props.model,
 			skinUrl: props.skinUrl,
@@ -83,6 +140,122 @@ async function createNPC(props: {
 	});
 
 	return { agent, entity, npc };
+}
+
+async function createClassicNPC(props: {
+	display: string;
+	identifier: string;
+	skinUrl: string;
+	description?: string;
+	behaviorType: BehaviorType;
+	position?: {
+		x: number;
+		y: number;
+		z: number;
+	};
+	config?: {
+		aggroRange?: number;
+		attackRange?: number;
+		detectionRange?: number;
+		attackDurationSec?: number;
+		attackCooldownMs?: number;
+		fleeHealthPercent?: number | null;
+		patrolRadius?: number;
+		maxLife?: number;
+		life?: number;
+		rotation?: number;
+	};
+}) {
+	const position = props.position ?? { x: 2, y: 0, z: 2 };
+	const config = props.config ?? {};
+
+	const result = await prisma.$transaction(async (tx) => {
+		const agent = await tx.agent.upsert({
+			where: {
+				identifier: props.identifier,
+			},
+			create: {
+				display: props.display,
+				identifier: props.identifier,
+				metadata: {},
+				positionX: position.x,
+				positionY: position.y,
+				positionZ: position.z,
+				rotation: config.rotation ?? 0,
+			},
+			update: {
+				display: props.display,
+				metadata: {},
+				positionX: position.x,
+				positionY: position.y,
+				positionZ: position.z,
+				rotation: config.rotation ?? 0,
+			},
+		});
+
+		const entity = await tx.entity.upsert({
+			where: {
+				id: agent.id,
+			},
+			create: {
+				id: agent.id,
+				life: config.life ?? 100,
+				maxLife: config.maxLife ?? 100,
+			},
+			update: {
+				life: config.life ?? 100,
+				maxLife: config.maxLife ?? 100,
+			},
+		});
+
+		const classicNpc = await tx.classicNPC.upsert({
+			where: {
+				id: entity.id,
+			},
+			create: {
+				id: entity.id,
+				description: props.description ?? '',
+				skinUrl: props.skinUrl,
+			},
+			update: {
+				description: props.description ?? '',
+				skinUrl: props.skinUrl,
+			},
+		});
+
+		const classicNpcConfig = await tx.classicNpcConfig.upsert({
+			where: {
+				npcId: classicNpc.id,
+			},
+			create: {
+				npcId: classicNpc.id,
+				behaviorType: props.behaviorType,
+				aggroRange: config.aggroRange ?? 10,
+				attackRange: config.attackRange ?? 2,
+				detectionRange: config.detectionRange ?? 15,
+				attackDurationSec: config.attackDurationSec ?? 10,
+				attackCooldownMs: config.attackCooldownMs ?? 1500,
+				fleeHealthPercent: config.fleeHealthPercent ?? null,
+				patrolRadius: config.patrolRadius ?? 8,
+				extraConfig: {},
+			},
+			update: {
+				behaviorType: props.behaviorType,
+				aggroRange: config.aggroRange ?? 10,
+				attackRange: config.attackRange ?? 2,
+				detectionRange: config.detectionRange ?? 15,
+				attackDurationSec: config.attackDurationSec ?? 10,
+				attackCooldownMs: config.attackCooldownMs ?? 1500,
+				fleeHealthPercent: config.fleeHealthPercent ?? null,
+				patrolRadius: config.patrolRadius ?? 8,
+				extraConfig: {},
+			},
+		});
+
+		return { agent, entity, classicNpc, classicNpcConfig };
+	});
+
+	return result;
 }
 
 async function main() {
@@ -132,6 +305,7 @@ async function main() {
 	// });
 
 	// Seed NPC 2 (Hunter-Rex)
+	/*
 	const npc2 = await createNPC({
 		display: 'Hunter-Rex',
 		identifier: 'hunter-rex-001',
@@ -144,6 +318,49 @@ async function main() {
 			'Si detecta rastros de animales cerca, se lanza a investigar sin dudar.',
 			'No entiende el concepto de "descansar". Para él, detenerse es perder la presa.',
 		].join(' '),
+	});
+	console.log(`Created AI NPC: ${npc2.agent.identifier}`);
+	*/
+
+	/*
+	const classicNpc = await createClassicNPC({
+		display: 'Guard-Alpha',
+		identifier: 'guard-alpha-001',
+		skinUrl: `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/guard-alpha-001.png`,
+		description: [
+			'Guardia clasico de prueba con patrulla corta alrededor del origen.',
+			'Se mantiene neutral hasta detectar una amenaza cercana o recibir daño.',
+			'Su objetivo es permitir probar visualmente el spawn y el loop clasico sin depender de OpenAI.',
+		].join(' '),
+		behaviorType: BehaviorType.NEUTRAL,
+		position: { x: 2, y: 0, z: 2 },
+		config: {
+			detectionRange: 12,
+			aggroRange: 8,
+			attackRange: 2,
+			patrolRadius: 4,
+		},
+	});
+	console.log(`Created Classic NPC: ${classicNpc.agent.identifier}`);
+	*/
+
+	// TEMP: keep superadmin enrolled in the simple experiment while phase wiring is under development.
+	// Remove this upsert after manual validation of the experiment flow.
+	await prisma.experimentAssignment.upsert({
+		where: {
+			userId_experimentKey: {
+				userId: player1.player.id,
+				experimentKey: 'GUIA-EXPERIMENTACION-V4',
+			},
+		},
+		create: {
+			userId: player1.player.id,
+			experimentKey: 'GUIA-EXPERIMENTACION-V4',
+			enabled: true,
+		},
+		update: {
+			enabled: true,
+		},
 	});
 }
 

@@ -29,6 +29,8 @@ const schema = z
 		S3_CONSOLE_PORT: z.coerce.number().min(1024).max(65535).default(9001),
 
 		OPEN_AI_KEY: z.string(),
+
+		PRISMA_LOG: z.boolean().default(false),
 	})
 	.transform((val) => {
 		const DB_URL = `${val.DB_PROTOCOL}://${val.DB_USER}:${val.DB_PASSWORD}@${val.DB_HOST}:${val.DB_PORT}/${val.DB_NAME}`;

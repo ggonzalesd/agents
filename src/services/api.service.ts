@@ -10,6 +10,12 @@ import {
 	redeemTokenListResSchema,
 	refreshResSchema,
 } from '#/schema/api.schema';
+import {
+	experimentStateApiResponseSchema,
+	experimentListApiResponseSchema,
+	experimentAdminActiveApiResponseSchema,
+	submitExperimentFeedbackRequestSchema,
+} from '#/schema/experiment.schema';
 
 import {
 	type createNpcRequestSchema,
@@ -455,6 +461,76 @@ export const refreshTokenService = async (): Promise<
 	try {
 		const response = await httpService.post('/auth/refresh');
 		const body = refreshResSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Experiment Services
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const getMyAvailableExperimentsService = async (): Promise<
+	OkResponse<z.infer<typeof experimentListApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.get('/experiment/me/available');
+		const body = experimentListApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const getMyExperimentService = async (
+	experimentKey: string,
+): Promise<
+	OkResponse<z.infer<typeof experimentStateApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.get(`/experiment/me/${experimentKey}`);
+		const body = experimentStateApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const getActiveExperimentService = async (): Promise<
+	OkResponse<z.infer<typeof experimentAdminActiveApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.get('/experiment/admin/active');
+		const body = experimentAdminActiveApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const submitExperimentFeedbackService = async (
+	payload: z.infer<typeof submitExperimentFeedbackRequestSchema>,
+): Promise<
+	OkResponse<z.infer<typeof experimentStateApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.post('/experiment/me/feedback', payload);
+		const body = experimentStateApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const resetExperimentService = async (
+	experimentKey: string,
+): Promise<
+	OkResponse<z.infer<typeof experimentStateApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.post('/experiment/me/reset', { experimentKey });
+		const body = experimentStateApiResponseSchema.parse(response.data);
 		return { ok: true, message: body.message, data: body.data };
 	} catch (error) {
 		return dispatchError(error);

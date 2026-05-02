@@ -4,13 +4,12 @@ import envConfig from './env.config';
 export type PrismaTransactionClient = Prisma.TransactionClient;
 
 const prisma = new PrismaClient({
-	log:
-		envConfig.NODE_ENV === 'development'
-			? [
-					{ emit: 'stdout', level: 'query' },
-					{ emit: 'stdout', level: 'error' },
-				]
-			: [{ emit: 'stdout', level: 'error' }],
+	log: envConfig.PRISMA_LOG
+		? [
+				{ emit: 'stdout', level: 'query' },
+				{ emit: 'stdout', level: 'error' },
+			]
+		: [{ emit: 'stdout', level: 'error' }],
 });
 
 export async function checkDbConnection() {

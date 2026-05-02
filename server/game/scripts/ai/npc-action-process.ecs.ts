@@ -9,7 +9,6 @@ import { WorldPathfinderEcs } from '../world/world-grid.ecs';
 import { NPCContextEcs } from './npc-context.ecs';
 import { NPCEventQueueEcs } from './npc-event-queue.ecs';
 
-import * as ExperimentRepository from '$/db/experiment.db';
 import * as LLMService from '$/services/llm.service';
 import * as LTMRepository from '$/db/ltm.db';
 import * as MissionService from '$/services/mission.service';
@@ -275,14 +274,6 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						);
 					});
 
-				ExperimentRepository.saveExperimentHallucinationResults({
-					npcId: npcId,
-					relatedInfoInMemory: [
-						this.npcContextEcs.shortMemory.toStringContext(),
-						this.npcContextEcs.longMemory.toStringContext(),
-					].join('\n'),
-					message: this.npcContextEcs.lastMessages.toStringContext(),
-				});
 			}
 
 			if (action.type === 'think') {

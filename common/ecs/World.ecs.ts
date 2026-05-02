@@ -27,11 +27,18 @@ export class WorldEcs extends BaseEcs {
 		this.__deferBeforeLoop.add(fn);
 	}
 
+	private isEntityAvailable(
+		entity: EntityEcs | undefined,
+	): entity is EntityEcs {
+		return !!entity?.active && !entity.deleted;
+	}
+
 	getEntitiesWith(
 		component: new (...args: any[]) => ComponentEcs,
 	): EntityEcs[] {
 		return Array.from(this.entities.values()).filter(
-			(entity) => !!entity.getUnsafe(component),
+			(entity) =>
+				this.isEntityAvailable(entity) && !!entity.getUnsafe(component),
 		);
 	}
 
@@ -39,6 +46,7 @@ export class WorldEcs extends BaseEcs {
 		component: new (...args: any[]) => T,
 	): { entity: EntityEcs; component: T }[] {
 		return Array.from(this.entities.values())
+			.filter((entity) => this.isEntityAvailable(entity))
 			.map((e) => ({ entity: e, component: e.getUnsafe(component) }))
 			.filter((x) => x.component != null);
 	}
@@ -49,6 +57,7 @@ export class WorldEcs extends BaseEcs {
 		const keys = Object.keys(components) as Array<keyof T>;
 
 		return Array.from(this.entities.values())
+			.filter((entity) => this.isEntityAvailable(entity))
 			.map((e) => {
 				const comps: Partial<T> = {};
 				for (const key of keys) {
@@ -78,6 +87,9 @@ export class WorldEcs extends BaseEcs {
 		const name = _name instanceof Option ? _name.unsafe() : _name;
 
 		const entity = this.entities.get(name);
+		if (!this.isEntityAvailable(entity)) {
+			return Option.none();
+		}
 
 		return Option.of(entity);
 	}

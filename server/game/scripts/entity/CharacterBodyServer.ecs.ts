@@ -11,6 +11,7 @@ import { NPCEventQueueEcs } from '../ai/npc-event-queue.ecs';
 import { TreeServerBehavior } from '../tree/treeServerBehavior.ecs';
 import { BoxServerBehavior } from '../box/boxServerBehavior.ecs';
 import { AnimalStateEcs } from '../animal/animal-state.ecs';
+import { WorldEventBusEcs, WorldEventType } from '../world-event-bus.ecs';
 
 interface CharacterBodyConfig {
 	bodyType?: 'dynamic' | 'fixed';
@@ -18,6 +19,7 @@ interface CharacterBodyConfig {
 	capsuleRadius?: number;
 	capsuleHalfHeight?: number;
 	respawnPoint?: IVec3;
+	deathBehavior?: 'respawn' | 'delete';
 }
 
 interface DamageContext {
@@ -25,10 +27,12 @@ interface DamageContext {
 }
 
 export class CharacterBodyServerEcs extends ComponentEcs {
+	private deathTimer: ReturnType<typeof setTimeout> | null = null;
 	public physic: RAPIER.World = null!;
 	public body: RAPIER.RigidBody = null!;
 	public collider: RAPIER.Collider = null!;
 	public serverData: ServerDataEcs = null!;
+	public eventBus: WorldEventBusEcs = null!;
 
 	constructor(
 		public characterState: CharacterBodyState,
@@ -47,6 +51,10 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 			.get(ServerDataEcs)
 			.map(({ worldPhysic }) => worldPhysic)
 			.unwrap('RAPIER World not found');
+
+		this.eventBus = this.world
+			.get(WorldEventBusEcs)
+			.unwrap('WorldEventBusEcs not found');
 
 		const bodyDesc =
 			this.config.bodyType === 'fixed'
@@ -79,13 +87,28 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		}
 
 		this.callOnDelete(() => {
+			if (this.deathTimer) {
+				clearTimeout(this.deathTimer);
+				this.deathTimer = null;
+			}
 			this.physic.removeCollider(this.collider, true);
 			this.physic.removeRigidBody(this.body);
 		});
 	}
 
+	private static readonly VOID_THRESHOLD = -10;
+
 	onLoop(_delta: number): void {
 		vec3Set(this.characterState.position, this.body.translation());
+
+		if (
+			!this.isDead &&
+			this.body.translation().y < CharacterBodyServerEcs.VOID_THRESHOLD
+		) {
+			if (this.parent)
+				this.eventBus.emit(WorldEventType.EntityFallVoid, this.parent);
+			this.takeDamage(99999);
+		}
 	}
 
 	private static readonly SPAWN_POINT = { x: 0, y: 2, z: 0 };
@@ -123,6 +146,11 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 				id: this.parent,
 			});
 
+			console.log(`Entity ${this.parent} has died.`);
+			if (this.parent) {
+				this.eventBus.emit(WorldEventType.EntityDeath, this.parent);
+			}
+
 			this.world.getEntity(this.parent).ifSome((entity) => {
 				entity.get(NPCEventQueueEcs).ifSome((queue) => {
 					queue.pushEvent(
@@ -135,12 +163,26 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 
 			this.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
 
-			setTimeout(() => {
+			this.deathTimer = setTimeout(() => {
 				if (!this.isDead) return;
+
+				if (this.config.deathBehavior === 'delete') {
+					this.world.getEntity(this.parent).ifSome((entity) => {
+						this.world.deleteEntity(entity);
+					});
+					this.deathTimer = null;
+					return;
+				}
+
 				this.respawn();
 				this.isDead = false;
+				this.deathTimer = null;
 			}, CharacterBodyServerEcs.DEATH_ANIMATION_MS);
 		}
+	}
+
+	public setRespawnPoint(pos: IVec3): void {
+		this.config.respawnPoint = pos;
 	}
 
 	public heal(amount: number): void {
@@ -171,7 +213,10 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		});
 	}
 
-	public attack(targetId?: string, damage: number = CharacterBodyServerEcs.ATTACK_DAMAGE): void {
+	public attack(
+		targetId?: string,
+		damage: number = CharacterBodyServerEcs.ATTACK_DAMAGE,
+	): void {
 		if (this.isDead) return;
 		const position = this.body.translation();
 		const rotation = this.characterState.rotationY;
@@ -232,9 +277,9 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 				true,
 			);
 
-				body.takeDamage(damage, {
-					attackerId: this.parent ?? undefined,
-				});
+			body.takeDamage(damage, {
+				attackerId: this.parent ?? undefined,
+			});
 
 			this.serverData.room.broadcast('agent:attacked', {
 				id: entity.name,

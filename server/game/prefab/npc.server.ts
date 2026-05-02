@@ -23,6 +23,8 @@ export const npcServerFactoryGenerator =
 		id,
 		model,
 		skin,
+		life,
+		maxLife,
 	}: {
 		name: string;
 		display: string;
@@ -31,8 +33,10 @@ export const npcServerFactoryGenerator =
 		id: string;
 		model: string;
 		skin?: string;
+		life?: number;
+		maxLife?: number;
 	}) => {
-		const state = new NPCState(pos, skin ?? name);
+		const state = new NPCState(pos, skin ?? name, life, maxLife, 'AI');
 
 		return new EntityEcs({
 			name,

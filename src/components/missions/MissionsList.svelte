@@ -15,19 +15,7 @@
 	import type { Room } from 'colyseus.js';
 	import type { GameState } from '#/state/game.state';
 
-	import cookieSvgSrc from '@/assets/items/cookie.svg';
-	import potionSvgSrc from '@/assets/items/potion.svg';
-	import seedsSvgSrc from '@/assets/items/seeds.svg';
-	import swordSvgSrc from '@/assets/items/sword.svg';
-	import coinSvgSrc from '@/assets/items/coin.svg';
-
-	const ITEM_ICONS: Record<string, string> = {
-		cookie: cookieSvgSrc,
-		potion: potionSvgSrc,
-		seeds: seedsSvgSrc,
-		sword: swordSvgSrc,
-		coin: coinSvgSrc,
-	};
+	import { ITEM_ICONS } from '@/game/item-icons.registry';
 
 	type Tab = 'open' | 'created' | 'accepted';
 	let activeTab = $state<Tab>('open');

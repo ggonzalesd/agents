@@ -16,6 +16,8 @@
 	import UiHelpers from '@/components/UiHelpers.svelte';
 	import Modals from '@/components/Modals.svelte';
 	import MissionAlerts from '@/components/MissionAlerts.svelte';
+	import WildlifeAlerts from '@/components/WildlifeAlerts.svelte';
+	import ExperimentHud from '@/components/ExperimentHud.svelte';
 	import Router from '@/components/lib/Router.svelte';
 	import GameView from '@/views/GameView.svelte';
 	import LoginView from '@/views/LoginView.svelte';
@@ -99,6 +101,8 @@
 		<UiHelpers />
 		<Modals />
 		<MissionAlerts />
+		<WildlifeAlerts />
+		<ExperimentHud />
 	</Router>
 
 	<main

@@ -8,9 +8,9 @@ import * as TimeUtils from '#/utils/time.utils';
 
 import * as LLMService from '$/services/llm.service';
 import * as LTMRepository from '$/db/ltm.db';
-import * as ExperimentRepository from '$/db/experiment.db';
 
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
+import { BoxServerBehavior } from '../box/boxServerBehavior.ecs';
 
 import { NPCEventQueueEcs } from './npc-event-queue.ecs';
 import { ServerDataEcs } from '../serverData.ecs';
@@ -42,7 +42,7 @@ export class NPCContextEcs extends ComponentEcs {
 	inventory: InventoryServerEcs | null = null;
 	nextAutonomousTriggerAt = 0;
 
-		onStart(): void {
+	onStart(): void {
 		const parent = this.world
 			.getEntity(this.parent)
 			.unwrap('Parent entity for NPCContextEcs not found');
@@ -86,6 +86,8 @@ export class NPCContextEcs extends ComponentEcs {
 	}
 
 	private systemContext(): string {
+		const hasBoxes =
+			this.world.getFromEntitiesWith(BoxServerBehavior).length > 0;
 		const stats =
 			this.record.getUnsafeRecordOrDefault<z.infer<typeof statsSchema>>(
 				'stats',
@@ -132,10 +134,16 @@ export class NPCContextEcs extends ComponentEcs {
 			'- Ofrece recompensas y entrégalas al validar la finalización.',
 			'',
 			'## Conocimiento del Mundo',
-			'- Las cajas (Display=box) son destructibles: golpéalas repetidamente con "attack-entity" hasta destruirlas para obtener un ítem.',
-			'- Los árboles (Display=tree) tienen 25% de probabilidad de soltar un ítem por golpe. No se destruyen, puedes golpearlos múltiples veces.',
-			'- Tanto cajas como árboles pueden soltar: espada, poción, galleta, semillas o moneda.',
-			'- Para atacar una caja o árbol debes acercarte primero con "move-close-to-entity" y luego usar "attack-entity".',
+			...(hasBoxes
+				? [
+					'- Las cajas (Display=box) son destructibles: golpéalas repetidamente con "attack-entity" hasta destruirlas para obtener un ítem.',
+					'- Las cajas pueden soltar espada, poción, galleta, semillas o moneda.',
+				]
+				: []),
+			'- Los árboles (Display=tree) tienen 25% de probabilidad de soltar una apple por golpe. No se destruyen, puedes golpearlos múltiples veces.',
+			'- Los animales pueden soltar meat al morir. Cuando mueren desaparecen del mundo; no reviven de inmediato.',
+			'- Los lobos y toros pueden aparecer como eventos raros globales anunciados con una posición aproximada.',
+			`- Para atacar ${hasBoxes ? 'una caja o árbol' : 'un árbol'} debes acercarte primero con "move-close-to-entity" y luego usar "attack-entity".`,
 			'- Los ítems caídos (Display=item) aparecen cerca de la entidad destruida y se pueden recoger con "pick-item".',
 			'',
 			'## Sistema de Inventario y Equipamiento',
@@ -143,7 +151,7 @@ export class NPCContextEcs extends ComponentEcs {
 			'- El slot 0 es el arma equipada: el ítem en ese slot se usa al atacar y aumenta el daño causado.',
 			'- Si el slot 0 está vacío, atacas con el daño base (sin bonificación).',
 			'- Usa "move-item" para mover ítems entre slots. Por ejemplo, para equipar una espada que está en slot 3, muévela al slot 0.',
-			'- Las armas (sword) aumentan el daño al atacar. Los consumibles (potion, galleta) curan vida al usarlos con "consume-item".',
+			'- Las armas (sword) aumentan el daño al atacar. Los consumibles (apple, meat, potion, galleta) curan vida al usarlos con "consume-item".',
 		].join('\n');
 	}
 
@@ -171,21 +179,21 @@ export class NPCContextEcs extends ComponentEcs {
 			`{"type": "consume-item", "slot": i32(0...35)} // consume a consumable item from inventory (food heals, potions heal, weapons/materials can't be consumed)`,
 
 			`{"type": "attack", "entityId": string} // attack using current facing direction, needs target within 2 meters in front`,
-		`{"type": "attack-entity", "entityId": string} // auto-aims at target then attacks. Use this to reliably hit a specific entity (agent, box, tree, etc)`,
-		`{"type": "attack-until-resolved", "entityId": string, "maxAttacks": i32(1...20), "retryDelaySec": f32(0.2...10)} // keep trying to attack an entity until it is gone/dead or you run out of attempts. Useful for boxes, enemies or targets that may need multiple hits`,
+			`{"type": "attack-entity", "entityId": string} // auto-aims at target then attacks. Use this to reliably hit a specific entity (agent, box, tree, etc)`,
+			`{"type": "attack-until-resolved", "entityId": string, "maxAttacks": i32(1...20), "retryDelaySec": f32(0.2...10)} // keep trying to attack an entity until it is gone/dead or you run out of attempts. Useful for boxes, enemies or targets that may need multiple hits`,
 
 			`{"type": "create-mission", "title": string, "description": string, "rewardItemType": string?, "rewardItemQty": number?} // create a mission others can accept, reward item is taken from your inventory`,
 			`{"type": "accept-mission", "missionId": string} // accept an available mission`,
 			`{"type": "complete-mission", "missionId": string, "acceptorId": string} // mark mission as completed (only if you created it)`,
 			`{"type": "abandon-mission", "missionId": string} // abandon a mission you accepted`,
 
-	`{"type": "look-at-position", "x": f32, "z": f32} // rotate to face specific world coordinates`,
-	`{"type": "look-at-entity", "entityId": string} // rotate to face another entity (use ID from close entities)`,
+			`{"type": "look-at-position", "x": f32, "z": f32} // rotate to face specific world coordinates`,
+			`{"type": "look-at-entity", "entityId": string} // rotate to face another entity (use ID from close entities)`,
 
-		`{"type": "move-follow-entity", "entityId": string} // follow entity indefinitely until another action interrupts it`,
-		`{"type": "move-close-to-entity", "entityId": string} // approach an entity and stop automatically when you are close enough. Later you will receive an internal event saying whether you arrived or failed`,
-		`{"type": "move-away-from-entity", "entityId": string, "distance": f32} // flee from entity and stop when at least distance meters away. Later you will receive an internal event saying whether you succeeded or failed`,
-		`{"type": "move-to-point", "x": f32, "z": f32} // try to reach a world position. Later you will receive an internal event saying whether you arrived or failed`,
+			`{"type": "move-follow-entity", "entityId": string} // follow entity indefinitely until another action interrupts it`,
+			`{"type": "move-close-to-entity", "entityId": string} // approach an entity and stop automatically when you are close enough. Later you will receive an internal event saying whether you arrived or failed`,
+			`{"type": "move-away-from-entity", "entityId": string, "distance": f32} // flee from entity and stop when at least distance meters away. Later you will receive an internal event saying whether you succeeded or failed`,
+			`{"type": "move-to-point", "x": f32, "z": f32} // try to reach a world position. Later you will receive an internal event saying whether you arrived or failed`,
 			// `{"type": "move-to-entity", "entityId": string, "distance": f32}`,
 			// `{"type": "move-run-away-from-entity", "entityId": string, "distance": f32}`,
 			// `{"type": "move-explore"}`,
@@ -377,17 +385,6 @@ export class NPCContextEcs extends ComponentEcs {
 	async ask() {
 		const currentTime = Date.now();
 
-		const npcId = this.world
-			.getEntity(this.parent)
-			.map((e) => e.getUnsafe(RecordEcs))
-			.map((r) =>
-				r
-					.getRecord<{ id: string; model: string }>('db')
-					.map((r) => r.id)
-					.unsafe(),
-			)
-			.orElse(crypto.randomUUID());
-
 		const npcModel = this.world
 			.getEntity(this.parent)
 			.map((e) => e.getUnsafe(RecordEcs))
@@ -425,17 +422,6 @@ export class NPCContextEcs extends ComponentEcs {
 			importance: 0.5,
 		});
 
-		// TODO: Save build and longtermmemories
-		// queryMessage
-		// resultsMessages
-
-		// Save experiment retrieval results
-		ExperimentRepository.saveExperimentRetrievalResults({
-			npcId: npcId,
-			queryMessage: queryMessage,
-			resultsMessages: longTermMemories.map((ltm) => ltm.text).join('\n'),
-		});
-
 		for (const ltm of longTermMemories) {
 			this.longMemory.addMemory(
 				ltm.identifier,
@@ -459,16 +445,6 @@ export class NPCContextEcs extends ComponentEcs {
 				this.scheduleNextAutonomousTrigger();
 
 				const elapsed = Date.now() - currentTime;
-
-				// Save experiment variability results
-				// record db.id, elapsed, actions, failedActions, successfulActions
-				ExperimentRepository.saveExperimentVariabilityResults({
-					npcId: npcId,
-					delayInMs: elapsed,
-					actionsGenerated: actions.totalActions,
-					failedActions: actions.failedActions,
-					successfulActions: actions.successfulActions,
-				});
 
 				// TODO: Log to monitoring system
 				console.log(`NPCContextEcs ask completed in ${elapsed} ms`);

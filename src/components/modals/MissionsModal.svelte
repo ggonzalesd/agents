@@ -22,11 +22,7 @@
 	import type { MapSchema } from '@colyseus/schema';
 	import { SvelteMap } from 'svelte/reactivity';
 
-	import cookieSvgSrc from '@/assets/items/cookie.svg';
-	import potionSvgSrc from '@/assets/items/potion.svg';
-	import seedsSvgSrc from '@/assets/items/seeds.svg';
-	import swordSvgSrc from '@/assets/items/sword.svg';
-	import coinSvgSrc from '@/assets/items/coin.svg';
+	import { ITEM_ICONS } from '@/game/item-icons.registry';
 
 	type Tab = 'open' | 'created' | 'accepted';
 	type View = 'list' | 'create';
@@ -108,15 +104,15 @@
 
 		const detachAdd = inventoryProxy.onAdd((item, key) => {
 			itemState.set(key, { type: item.type, quantity: item.quantity, metadata: item.metadata });
-		}, true);
+		}, true) ?? (() => undefined);
 
 		const detachRemove = inventoryProxy.onRemove((_item, key) => {
 			itemState.delete(key);
-		});
+		}) ?? (() => undefined);
 
 		const detachChange = inventoryProxy.onChange((item, key) => {
 			itemState.set(key, { type: item.type, quantity: item.quantity, metadata: item.metadata });
-		});
+		}) ?? (() => undefined);
 
 		return () => {
 			detachAdd();
@@ -160,14 +156,6 @@
 	let itemState = new SvelteMap<string, InventoryItem>();
 	let rewardItem = $state<{ type: string; qty: number } | null>(null);
 	let dragOverReward = $state(false);
-
-	const ITEM_ICONS: Record<string, string> = {
-		cookie: cookieSvgSrc,
-		potion: potionSvgSrc,
-		seeds: seedsSvgSrc,
-		sword: swordSvgSrc,
-		coin: coinSvgSrc,
-	};
 
 	function handleInventoryDragStart(e: DragEvent, slotId: string) {
 		e.dataTransfer?.setData('text/plain', slotId);
@@ -255,7 +243,12 @@
 		</div>
 		<p class="text-gray-300 text-xs mb-2">{mission.description}</p>
 		{#if mission.rewardItemType}
-			<div class="text-xs text-amber-400 mb-2">{mission.rewardItemType} x{mission.rewardItemQty ?? 1}</div>
+			<div class="text-xs text-amber-400 mb-2 flex items-center gap-1">
+				{#if ITEM_ICONS[mission.rewardItemType]}
+					<img src={ITEM_ICONS[mission.rewardItemType]} alt={mission.rewardItemType} class="h-4 w-4" />
+				{/if}
+				{mission.rewardItemType} x{mission.rewardItemQty ?? 1}
+			</div>
 		{/if}
 		{#if mission.status === 'OPEN'}
 			<Button type="button" class="h-7 px-2 text-xs" onclick={() => sendAction('accept-mission', { missionId: mission.id })} disabled={pendingAction === 'accept-mission'}>
@@ -272,6 +265,14 @@
 			<span class="text-xs px-2 py-0.5 rounded {getStatusBadge(mission.status)}">{mission.status}</span>
 		</div>
 		<p class="text-gray-300 text-xs mb-2">{mission.description}</p>
+		{#if mission.rewardItemType}
+			<div class="text-xs text-amber-400 mb-2 flex items-center gap-1">
+				{#if ITEM_ICONS[mission.rewardItemType]}
+					<img src={ITEM_ICONS[mission.rewardItemType]} alt={mission.rewardItemType} class="h-4 w-4" />
+				{/if}
+				{mission.rewardItemType} x{mission.rewardItemQty ?? 1}
+			</div>
+		{/if}
 		{#if mission.acceptances.length > 0}
 			<div class="mt-2 border-t border-zinc-600 pt-2">
 				<div class="text-xs text-gray-400 mb-1">Aceptantes:</div>
@@ -316,6 +317,14 @@
 			<span class="text-xs px-2 py-0.5 rounded {getStatusBadge(myAcceptance?.status || 'ACTIVE')}">{myAcceptance?.status || 'N/A'}</span>
 		</div>
 		<p class="text-gray-300 text-xs mb-2">{mission.description}</p>
+		{#if mission.rewardItemType}
+			<div class="text-xs text-amber-400 mb-2 flex items-center gap-1">
+				{#if ITEM_ICONS[mission.rewardItemType]}
+					<img src={ITEM_ICONS[mission.rewardItemType]} alt={mission.rewardItemType} class="h-4 w-4" />
+				{/if}
+				{mission.rewardItemType} x{mission.rewardItemQty ?? 1}
+			</div>
+		{/if}
 		{#if myAcceptance?.status === 'ACTIVE'}
 			<Button type="button" class="h-7 px-2 text-xs bg-orange-600 hover:bg-orange-700" onclick={() => sendAction('abandon-mission', { missionId: mission.id })} disabled={pendingAction === 'abandon-mission'}>
 				{pendingAction === 'abandon-mission' ? 'Abandonando...' : 'Abandonar'}
@@ -408,7 +417,7 @@
 					class="w-full h-24 bg-zinc-700 border border-zinc-600 rounded px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"></textarea>
 			</div>
 			<div>
-				<label class="block text-xs text-gray-400 mb-1">Recompensa (arrastra un item)</label>
+				<div class="block text-xs text-gray-400 mb-1">Recompensa (arrastra un item)</div>
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div
 					class="flex items-center gap-2 p-2 rounded border-2 border-dashed min-h-12 transition-colors {dragOverReward ? 'border-blue-500 bg-blue-900/20' : 'border-zinc-600 bg-zinc-700'}"

@@ -37,6 +37,27 @@ export class BaseEcs {
 
 		this.components.set(component.name, component);
 		component.onStart();
+		component.isSetup = true;
+		return this;
+	}
+
+	public unset<T extends ComponentEcs>(
+		componentClassOrName: (new (...args: any[]) => T) | string,
+		name?: string,
+	): BaseEcs {
+		const componentName =
+			typeof componentClassOrName === 'string'
+				? componentClassOrName
+				: (name ?? componentClassOrName.name);
+
+		const component = this.components.get(componentName);
+		if (!component) {
+			return this;
+		}
+
+		component.active = false;
+		component.onDelete();
+		this.components.delete(componentName);
 		return this;
 	}
 

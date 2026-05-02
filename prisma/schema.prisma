@@ -20,6 +20,22 @@ enum Role {
   MODERATOR
 }
 
+enum BehaviorType {
+  PASSIVE
+  NEUTRAL
+  AGGRESSIVE
+  EXPLORER
+  COLLECTOR
+  THIEF
+}
+
+enum DialogTrigger {
+  PROXIMITY
+  INTERACT
+  QUEST_START
+  QUEST_COMPLETE
+}
+
 model User {
   id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   username  String    @unique @db.VarChar(64)
@@ -33,6 +49,8 @@ model User {
 
   redeemTokens  RedeemToken[]
   refreshTokens RefreshToken[]
+  experimentAssignments ExperimentAssignment[]
+  experiments          UserExperiment[]
 }
 
 model Agent {
@@ -61,6 +79,7 @@ model Entity {
 
   Profile        Profile[]
   NPC            NPC[]
+  ClassicNPC     ClassicNPC[]
   inventoryItems InventoryItem[]
 }
 
@@ -95,14 +114,70 @@ model NPC {
   skinUrl     String @db.Text
   model       String @db.VarChar(255)
 
-  entity                         Entity                           @relation(fields: [id], references: [id])
-  LongTermMemory                 LongTermMemory[]
-  // experimentVariabilityResults   ExperimentVariabilityResults[]
-  // experimentRetrievalResults     ExperimentRetrievalResults[]
-  // experimentHallucinationResults ExperimentHallucinationResults[]
-  experimentRetrievalResults     ExperimentRetrievalResults[]
-  experimentVariabilityResults   ExperimentVariabilityResults[]
-  experimentHallucinationResults ExperimentHallucinationResults[]
+  entity         Entity           @relation(fields: [id], references: [id])
+  LongTermMemory LongTermMemory[]
+}
+
+model ClassicNPC {
+  id          String @id @db.Uuid
+  description String @db.Text
+  skinUrl     String @db.Text
+
+  entity  Entity                  @relation(fields: [id], references: [id], onDelete: Cascade)
+  config  ClassicNpcConfig?
+  dialogs ClassicNpcDialogTree[]
+}
+
+model ClassicNpcConfig {
+  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  npcId             String       @unique @db.Uuid
+  behaviorType      BehaviorType @default(PASSIVE)
+  aggroRange        Float        @default(10)
+  attackRange       Float        @default(2)
+  detectionRange    Float        @default(15)
+  attackDurationSec Int          @default(10)
+  attackCooldownMs  Int          @default(1500)
+  fleeHealthPercent Float?
+  patrolRadius      Float        @default(8)
+  extraConfig       Json         @default("{}") @db.JsonB
+
+  npc ClassicNPC @relation(fields: [npcId], references: [id], onDelete: Cascade)
+}
+
+model ClassicNpcDialogTree {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  npcId       String        @db.Uuid
+  triggerType DialogTrigger
+  key         String?       @db.VarChar(100)
+
+  npc   ClassicNPC              @relation(fields: [npcId], references: [id], onDelete: Cascade)
+  nodes ClassicNpcDialogNode[]
+
+  @@index([npcId, triggerType])
+}
+
+model ClassicNpcDialogNode {
+  id     String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  treeId String @db.Uuid
+  key    String? @db.VarChar(100)
+  text   String @db.Text
+
+  tree    ClassicNpcDialogTree      @relation(fields: [treeId], references: [id], onDelete: Cascade)
+  options ClassicNpcDialogOption[]
+
+  @@index([treeId])
+}
+
+model ClassicNpcDialogOption {
+  id         String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nodeId     String  @db.Uuid
+  text       String  @db.Text
+  nextNodeId String? @db.Uuid
+  actions    Json    @default("[]") @db.JsonB
+
+  node ClassicNpcDialogNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@index([nodeId])
 }
 
 model LongTermMemory {
@@ -118,79 +193,104 @@ model LongTermMemory {
   NPC NPC @relation(fields: [npcId], references: [id])
 }
 
-model ExperimentRetrievalResults {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  npcId     String   @db.Uuid
-
-  // The message that was used to query the NPC's memory
-  queryMessage      String @db.Text
-  // The messages that were retrieved from the NPC's memory
-  resultsMessages   String @db.Text
-  // Score indicating the relevance of the retrieved results
-  llmRetrievalScore Float  @default(0)
-
-  NPC NPC @relation(fields: [npcId], references: [id])
+enum ExperimentRunStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  AWAITING_FEEDBACK
+  COMPLETED
 }
 
-model ExperimentVariabilityResults {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  npcId     String   @db.Uuid
-
-  delayInMs         Int @default(0)
-  // Number of generated actions during the experiment
-  actionsGenerated  Int @default(0)
-  // Number of failed and successful actions
-  failedActions     Int @default(0)
-  // Number of successful actions
-  successfulActions Int @default(0)
-
-  NPC NPC @relation(fields: [npcId], references: [id])
+enum ExperimentPhaseStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
 }
 
-model ExperimentHallucinationResults {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
-  npcId     String   @db.Uuid
-
-  // Information that was supposed to be in the NPC's memory
-  relatedInfoInMemory   String @db.Text
-  // Message that the NPC generated
-  message               String @db.Text
-  // Score indicating the level of hallucination in the message
-  llmHallucinationScore Float  @default(0)
-
-  NPC NPC @relation(fields: [npcId], references: [id])
+enum ExperimentAttemptStatus {
+  ACTIVE
+  FAILED
+  COMPLETED
+  ABORTED
 }
 
-/**
- * model ExperimentVariabilityResults {
- * id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
- * createdAt DateTime @default(now()) @db.Timestamptz(6)
- * npcId     String   @db.Uuid
- * delayInMs Int @default(0)
- * // Number of generated actions during the experiment
- * actionsGenerated Int @default(0)
- * // Number of failed and successful actions
- * failedActions     Int @default(0)
- * // Number of successful actions
- * successfulActions Int @default(0)
- * NPC NPC @relation(fields: [npcId], references: [id])
- * }
- * model ExperimentHallucinationResults {
- * id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
- * createdAt DateTime @default(now()) @db.Timestamptz(6)
- * npcId     String   @db.Uuid
- * // Information that was supposed to be in the NPC's memory
- * relatedInfoInMemory String @db.Text
- * // Message that the NPC generated
- * message             String @db.Text
- * // Score indicating the level of hallucination in the message
- * llmHallucinationScore Float @default(0)
- * NPC NPC @relation(fields: [npcId], references: [id])
- * }
- */
+model ExperimentAssignment {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @db.Uuid
+  experimentKey String   @db.VarChar(100)
+  enabled       Boolean  @default(true)
+  createdAt     DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, experimentKey])
+  @@index([experimentKey, enabled])
+}
+
+model UserExperiment {
+  id             String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String              @db.Uuid
+  experimentKey  String              @db.VarChar(100)
+  status         ExperimentRunStatus @default(NOT_STARTED)
+  currentPhaseIndex Int              @default(0)
+  mountedRoomId  String?             @db.VarChar(100)
+  mountedAt      DateTime?           @db.Timestamptz(6)
+  startedAt      DateTime?           @db.Timestamptz(6)
+  completedAt    DateTime?           @db.Timestamptz(6)
+  rating         Int?
+  comment        String?             @db.Text
+  createdAt      DateTime            @default(now()) @db.Timestamptz(6)
+  updatedAt      DateTime            @updatedAt @db.Timestamptz(6)
+
+  user   User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phases UserExperimentPhase[]
+
+  @@unique([userId, experimentKey])
+  @@index([experimentKey, status])
+  @@index([mountedRoomId, mountedAt])
+}
+
+model UserExperimentPhase {
+  id                      String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  experimentId            String                @db.Uuid
+  phaseKey                String                @db.VarChar(100)
+  phaseIndex              Int
+  status                  ExperimentPhaseStatus @default(PENDING)
+  attemptCount            Int                   @default(0)
+  failureCount            Int                   @default(0)
+  totalTimeMs             Int                   @default(0)
+  currentAttemptNumber    Int                   @default(0)
+  currentAttemptElapsedMs Int                   @default(0)
+  currentAttemptStartedAt DateTime?             @db.Timestamptz(6)
+  mountedAt               DateTime?             @db.Timestamptz(6)
+  completedAt             DateTime?             @db.Timestamptz(6)
+  createdAt               DateTime              @default(now()) @db.Timestamptz(6)
+  updatedAt               DateTime              @updatedAt @db.Timestamptz(6)
+
+  experiment UserExperiment         @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+  attempts   UserExperimentAttempt[]
+
+  @@unique([experimentId, phaseKey])
+  @@index([experimentId, phaseIndex])
+}
+
+model UserExperimentAttempt {
+  id            String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  phaseId       String                  @db.Uuid
+  attemptNumber Int
+  status        ExperimentAttemptStatus @default(ACTIVE)
+  failureCount  Int                     @default(0)
+  elapsedMs     Int                     @default(0)
+  startedAt     DateTime                @default(now()) @db.Timestamptz(6)
+  endedAt       DateTime?               @db.Timestamptz(6)
+  createdAt     DateTime                @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime                @updatedAt @db.Timestamptz(6)
+
+  phase UserExperimentPhase @relation(fields: [phaseId], references: [id], onDelete: Cascade)
+
+  @@unique([phaseId, attemptNumber])
+  @@index([phaseId, status])
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Redeem Token System - One-time tokens for temporary access

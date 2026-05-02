@@ -1,6 +1,7 @@
 import { ComponentEcs } from '#/ecs';
 
 export type AnimalSpecies = 'deer' | 'siervo' | 'donkey' | 'wolf' | 'bull-brown' | 'bull-black';
+export type AnimalPopulationKey = 'deer' | 'donkey' | 'wolf' | 'bull';
 
 export interface AnimalHuntConfig {
 	huntRadius: number;
@@ -15,7 +16,14 @@ export interface AnimalChargeConfig {
 	chargeRecoverMs: number;
 }
 
+export interface AnimalDropConfig {
+	itemType: string;
+	quantity: number;
+	chance: number;
+}
+
 export interface AnimalProfileProps {
+	populationKey: AnimalPopulationKey;
 	species: AnimalSpecies;
 	attackDamage: number;
 	canFlee: boolean;
@@ -31,6 +39,7 @@ export interface AnimalProfileProps {
 	stareAfterAttackMs: number;
 	hunt?: AnimalHuntConfig;
 	charge?: AnimalChargeConfig;
+	drop?: AnimalDropConfig;
 }
 
 export class AnimalProfileEcs extends ComponentEcs {

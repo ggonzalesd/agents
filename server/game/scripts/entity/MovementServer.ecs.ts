@@ -18,12 +18,14 @@ import type { MovementState } from '#/state/movement.state';
 import { vec3ToRapier } from '$/utils/math.utils';
 
 import { ServerDataEcs } from '../serverData.ecs';
+import { WorldEventBusEcs, WorldEventType } from '../world-event-bus.ecs';
 
 import { CharacterBodyServerEcs } from './CharacterBodyServer.ecs';
 
 export class MovementServerEcs extends ComponentEcs {
 	physic: RAPIER.World = null!;
 	character: CharacterBodyServerEcs = null!;
+	eventBus: WorldEventBusEcs = null!;
 
 	public direction: IVec3 = { x: 0, y: 0, z: 0 };
 	public clientDirection: IVec2 = { x: 0, y: 0 };
@@ -45,6 +47,10 @@ export class MovementServerEcs extends ComponentEcs {
 			.getEntity(this.parent)
 			.map((p) => p.getUnsafe(CharacterBodyServerEcs))
 			.unwrap('CharacterBodyServerEcs not found');
+
+		this.eventBus = this.world
+			.get(WorldEventBusEcs)
+			.unwrap('WorldEventBusEcs not found');
 	}
 
 	onLoop(_delta: number): void {
@@ -80,6 +86,9 @@ export class MovementServerEcs extends ComponentEcs {
 			this.serverData.room.broadcast('agent:jump', {
 				id: this.parent,
 			});
+
+			if (this.parent)
+				this.eventBus.emit(WorldEventType.EntityJump, this.parent);
 		}
 	}
 

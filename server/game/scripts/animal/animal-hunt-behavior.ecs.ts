@@ -136,7 +136,7 @@ export class AnimalHuntBehaviorEcs extends ComponentEcs {
 		this.world
 			.getFromEntitiesWith(AnimalProfileEcs)
 			.filter(({ component: profile }) => preySpecies.includes(profile.profile.species))
-			.forEach(({ entity, component: profile }) => {
+			.forEach(({ entity }) => {
 				const body = entity.get(CharacterBodyServerEcs).raw();
 				if (body) checkEntity(entity, body);
 			});
