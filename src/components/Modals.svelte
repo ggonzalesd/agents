@@ -10,6 +10,7 @@
 	import { GameInput } from '@/utils/input.utils';
 	import EntityDetailsModal from './modals/EntityDetailsModal.svelte';
 	import MissionsModal from './modals/MissionsModal.svelte';
+	import DialogueModal from './modals/DialogueModal.svelte';
 
 	let gameState = getGameStateContext();
 	let inputs = getContext<GameInput>(GameInput.name);
@@ -26,6 +27,9 @@
 
 		e.stopPropagation();
 		e.preventDefault();
+
+		// Don't close dialogue modal on backdrop click — use cancel button
+		if ($gameState.view === 'DIALOGUE') return;
 
 		gameState.continueGame();
 		gameState.setSelectedEntity(null);
@@ -51,8 +55,10 @@
 			<OnLeaveModal />
 		{:else if $gameState.view === 'ENTITYDETAILS'}
 			<EntityDetailsModal />
-		{:else if $gameState.view === 'MISSIONS'}
-			<MissionsModal />
-		{/if}
+	{:else if $gameState.view === 'MISSIONS'}
+		<MissionsModal />
+	{:else if $gameState.view === 'DIALOGUE'}
+		<DialogueModal />
+	{/if}
 	</div>
 {/if}

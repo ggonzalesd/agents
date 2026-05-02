@@ -113,6 +113,20 @@ export class PlayerClientBehavior extends ComponentEcs {
 			}).bind(this),
 		);
 
+		// Handle NPC dialogue interaction with F key
+		if (this.input.down('KeyF')) {
+			const selectedEntityId = this.uiClient.game['dialogueNpcEntityId' as never] as string | null;
+			// Check if any nearby NPC has dialogue available via stacker
+			this.world.stacker.dispatch(
+				'dialogue-interact',
+				((npcEntityId: string) => {
+					this.uiClient.game.setDialogueNpc(npcEntityId);
+					this.uiClient.game.setPause(true, 'DIALOGUE');
+					this.input.disabled = true;
+					this.room.send('dialogue:start', { npcEntityId });
+				}).bind(this),
+			);
+		}
 		this.clientAuthoritative.update({
 			isMoving,
 			...(isMoving ? { direction: angle } : {}),

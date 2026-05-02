@@ -54,6 +54,9 @@ export class NPCState extends Schema {
 	@type(NPCDebugPathState)
 	public debugPath: NPCDebugPathState = new NPCDebugPathState();
 
+	@type('boolean')
+	public hasDialogue: boolean = false;
+
 	constructor(
 		pos: IVec3,
 		skin: string,

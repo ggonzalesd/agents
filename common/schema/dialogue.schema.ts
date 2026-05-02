@@ -61,8 +61,13 @@ export const dialogueResponseMessageSchema = z.object({
 	optionId: z.string(),
 });
 
+export const dialogueUnavailablePayloadSchema = z.object({
+	npcEntityId: z.string(),
+});
+
 export type DialogueStartPayload = z.infer<typeof dialogueStartPayloadSchema>;
 export type DialogueNextPayload = z.infer<typeof dialogueNextPayloadSchema>;
 export type DialogueEndPayload = z.infer<typeof dialogueEndPayloadSchema>;
 export type DialogueCancelPayload = z.infer<typeof dialogueCancelPayloadSchema>;
 export type DialogueResponseMessage = z.infer<typeof dialogueResponseMessageSchema>;
+export type DialogueUnavailablePayload = z.infer<typeof dialogueUnavailablePayloadSchema>;

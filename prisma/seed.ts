@@ -322,7 +322,6 @@ async function main() {
 	console.log(`Created AI NPC: ${npc2.agent.identifier}`);
 	*/
 
-	/*
 	const classicNpc = await createClassicNPC({
 		display: 'Guard-Alpha',
 		identifier: 'guard-alpha-001',
@@ -342,7 +341,6 @@ async function main() {
 		},
 	});
 	console.log(`Created Classic NPC: ${classicNpc.agent.identifier}`);
-	*/
 
 	// TEMP: keep superadmin enrolled in the simple experiment while phase wiring is under development.
 	// Remove this upsert after manual validation of the experiment flow.

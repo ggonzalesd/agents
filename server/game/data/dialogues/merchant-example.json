@@ -1,0 +1,288 @@
+{
+  "pickStrategy": "random",
+  "conversations": [
+    {
+      "id": "merchant-greeting-a",
+      "rootStatementId": "s_greeting",
+      "reusable": true,
+      "resumable": false,
+      "statements": {
+        "s_greeting": {
+          "id": "s_greeting",
+          "text": "¡Bienvenido, viajero! Soy Aldric, el mercader. ¿En qué puedo ayudarte hoy?",
+          "options": {
+            "o_shop": {
+              "id": "o_shop",
+              "text": "Quiero ver tus mercancías.",
+              "nextStatementId": "s_shop"
+            },
+            "o_quest": {
+              "id": "o_quest",
+              "text": "He oído que necesitas ayuda con algo.",
+              "nextStatementId": "s_quest_intro"
+            },
+            "o_rumor": {
+              "id": "o_rumor",
+              "text": "¿Has escuchado algún rumor últimamente?",
+              "nextStatementId": "s_rumor"
+            },
+            "o_bye": {
+              "id": "o_bye",
+              "text": "Nada, solo pasaba por aquí.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_shop": {
+          "id": "s_shop",
+          "text": "Tengo pociones de vida, espadas de hierro y escudos de roble. ¿Qué te interesa?",
+          "options": {
+            "o_buy_potion": {
+              "id": "o_buy_potion",
+              "text": "Dame una poción de vida.",
+              "nextStatementId": "s_buy_potion_confirm"
+            },
+            "o_buy_sword": {
+              "id": "o_buy_sword",
+              "text": "Necesito una espada de hierro.",
+              "nextStatementId": "s_buy_sword_confirm"
+            },
+            "o_too_expensive": {
+              "id": "o_too_expensive",
+              "text": "Son demasiado caros. Quizás luego.",
+              "nextStatementId": "s_farewell"
+            },
+            "o_back_to_greeting": {
+              "id": "o_back_to_greeting",
+              "text": "En realidad, quería preguntarte otra cosa.",
+              "nextStatementId": "s_greeting"
+            }
+          }
+        },
+
+        "s_buy_potion_confirm": {
+          "id": "s_buy_potion_confirm",
+          "text": "Una poción de vida por 50 monedas de oro. ¿Trato hecho?",
+          "options": {
+            "o_confirm_potion": {
+              "id": "o_confirm_potion",
+              "text": "Trato hecho.",
+              "nextStatementId": "s_buy_success"
+            },
+            "o_negotiate_potion": {
+              "id": "o_negotiate_potion",
+              "text": "¿No puedes bajar el precio un poco?",
+              "nextStatementId": "s_negotiate"
+            },
+            "o_cancel_potion": {
+              "id": "o_cancel_potion",
+              "text": "Pensándolo bien, no me interesa.",
+              "nextStatementId": "s_shop"
+            }
+          }
+        },
+
+        "s_buy_sword_confirm": {
+          "id": "s_buy_sword_confirm",
+          "text": "Una espada de hierro por 120 monedas. Es de buena calidad, te lo aseguro.",
+          "options": {
+            "o_confirm_sword": {
+              "id": "o_confirm_sword",
+              "text": "La compro.",
+              "nextStatementId": "s_buy_success"
+            },
+            "o_cancel_sword": {
+              "id": "o_cancel_sword",
+              "text": "Es demasiado para mí ahora mismo.",
+              "nextStatementId": "s_shop"
+            }
+          }
+        },
+
+        "s_negotiate": {
+          "id": "s_negotiate",
+          "text": "Hmm... está bien. Solo porque pareces un cliente de fiar, te la dejo en 40 monedas. Pero no se lo digas a nadie.",
+          "options": {
+            "o_accept_deal": {
+              "id": "o_accept_deal",
+              "text": "Trato. Eres un hombre honesto, Aldric.",
+              "nextStatementId": "s_buy_success"
+            },
+            "o_reject_deal": {
+              "id": "o_reject_deal",
+              "text": "Aun así no tengo el dinero. Quizás en otra ocasión.",
+              "nextStatementId": "s_farewell"
+            }
+          }
+        },
+
+        "s_buy_success": {
+          "id": "s_buy_success",
+          "text": "¡Excelente elección! Que te sea de utilidad en tu aventura. ¿Necesitas algo más?",
+          "options": {
+            "o_more_shopping": {
+              "id": "o_more_shopping",
+              "text": "Sí, déjame ver más cosas.",
+              "nextStatementId": "s_shop"
+            },
+            "o_done_shopping": {
+              "id": "o_done_shopping",
+              "text": "No, es todo. ¡Gracias, Aldric!",
+              "nextStatementId": "s_farewell"
+            }
+          }
+        },
+
+        "s_quest_intro": {
+          "id": "s_quest_intro",
+          "text": "En efecto. Unos bandidos robaron mi cargamento en el paso norte. Si recuperas las mercancías, te recompensaré generosamente.",
+          "options": {
+            "o_accept_quest": {
+              "id": "o_accept_quest",
+              "text": "Acepto. ¿Dónde está el paso norte?",
+              "nextStatementId": "s_quest_directions"
+            },
+            "o_ask_reward": {
+              "id": "o_ask_reward",
+              "text": "¿Cuánto pagas por el trabajo?",
+              "nextStatementId": "s_quest_reward"
+            },
+            "o_decline_quest": {
+              "id": "o_decline_quest",
+              "text": "No es algo en lo que pueda involucrarme ahora.",
+              "nextStatementId": "s_greeting"
+            }
+          }
+        },
+
+        "s_quest_reward": {
+          "id": "s_quest_reward",
+          "text": "Dos espadas de hierro y 200 monedas de oro. Más que suficiente para cualquier aventurero.",
+          "options": {
+            "o_accept_after_reward": {
+              "id": "o_accept_after_reward",
+              "text": "Trato. Iré al paso norte.",
+              "nextStatementId": "s_quest_directions"
+            },
+            "o_still_decline": {
+              "id": "o_still_decline",
+              "text": "Es tentador, pero no es buen momento.",
+              "nextStatementId": "s_farewell"
+            }
+          }
+        },
+
+        "s_quest_directions": {
+          "id": "s_quest_directions",
+          "text": "Sigue el camino de piedra hacia el norte hasta el gran roble partido por el rayo. Ahí doblas a la izquierda. ¡Ten cuidado, son peligrosos!",
+          "options": {
+            "o_quest_accepted": {
+              "id": "o_quest_accepted",
+              "text": "Entendido. Volveré con tus mercancías.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_rumor": {
+          "id": "s_rumor",
+          "text": "He oído que en las ruinas del este habitan criaturas que no existían hace un año. Los aldeanos dicen que hay un portal abierto, pero yo no soy de los que creen esas cosas.",
+          "options": {
+            "o_ask_more_rumor": {
+              "id": "o_ask_more_rumor",
+              "text": "¿Un portal? Cuéntame más.",
+              "nextStatementId": "s_rumor_detail"
+            },
+            "o_dismiss_rumor": {
+              "id": "o_dismiss_rumor",
+              "text": "Interesante. Gracias por la información.",
+              "nextStatementId": "s_greeting"
+            }
+          }
+        },
+
+        "s_rumor_detail": {
+          "id": "s_rumor_detail",
+          "text": "Un viejo sabio llamado Edrin lo investigó. Dicen que encontró algo, pero nadie supo más de él. Si te interesa, sus anotaciones podrían estar en la torre abandonada al sur.",
+          "options": {
+            "o_rumor_noted": {
+              "id": "o_rumor_noted",
+              "text": "Lo tendré en cuenta. Gracias, Aldric.",
+              "nextStatementId": "s_farewell"
+            },
+            "o_rumor_back_to_menu": {
+              "id": "o_rumor_back_to_menu",
+              "text": "Volvamos al tema. ¿Vendías algo útil?",
+              "nextStatementId": "s_greeting"
+            }
+          }
+        },
+
+        "s_farewell": {
+          "id": "s_farewell",
+          "text": "Que los caminos te sean favorables, viajero. ¡Vuelve cuando quieras!",
+          "options": {
+            "o_farewell_done": {
+              "id": "o_farewell_done",
+              "text": "Hasta pronto.",
+              "nextStatementId": null
+            }
+          }
+        }
+      }
+    },
+
+    {
+      "id": "merchant-greeting-b",
+      "rootStatementId": "s_alt_greeting",
+      "reusable": true,
+      "resumable": false,
+      "statements": {
+        "s_alt_greeting": {
+          "id": "s_alt_greeting",
+          "text": "Ah, otro viajero. Hoy es un buen día para hacer negocios. ¿Buscas algo en particular?",
+          "options": {
+            "o_alt_shop": {
+              "id": "o_alt_shop",
+              "text": "Sí, necesito suministros.",
+              "nextStatementId": "s_alt_shop"
+            },
+            "o_alt_bye": {
+              "id": "o_alt_bye",
+              "text": "Solo miraba, gracias.",
+              "nextStatementId": null
+            }
+          }
+        },
+        "s_alt_shop": {
+          "id": "s_alt_shop",
+          "text": "Tengo lo que necesitas. Pociones, armas, herramientas. Dinero en mano, claro.",
+          "options": {
+            "o_alt_buy": {
+              "id": "o_alt_buy",
+              "text": "Me llevaré una poción.",
+              "nextStatementId": "s_alt_sold"
+            },
+            "o_alt_pass": {
+              "id": "o_alt_pass",
+              "text": "Nada que me interese hoy.",
+              "nextStatementId": null
+            }
+          }
+        },
+        "s_alt_sold": {
+          "id": "s_alt_sold",
+          "text": "Hecho. Aquí tienes. Cuídate por esos caminos.",
+          "options": {
+            "o_alt_thanks": {
+              "id": "o_alt_thanks",
+              "text": "Gracias.",
+              "nextStatementId": null
+            }
+          }
+        }
+      }
+    }
+  ]
+}

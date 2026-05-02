@@ -15,6 +15,7 @@ import { defaultMap } from '#/maps/default.map';
 import { ItemState } from '#/state/inventory.state';
 import { InventoryServerEcs } from '../scripts/entity/InventoryServer.ecs';
 import { MapLoaderEcs } from './world/map-loader.ecs';
+import { buildMerchantDialogueConfig } from '../scripts/classic-npc/dialogue/merchant-dialogue.config';
 
 import type { BoxSkin } from '#/state/box.state';
 
@@ -79,6 +80,10 @@ export class ServerManagerEcs extends ComponentEcs {
 		const npcServerFactory = npcServerFactoryGenerator(this.world);
 		const classicNpcServerFactory = classicNpcServerFactoryGenerator(this.world);
 
+		const serverData = this.world
+			.get(ServerDataEcs)
+			.unwrap('ServerDataEcs not found in ServerManagerEcs');
+
 		Promise.all([
 			NPCRepository.getAllNPCs({}),
 			ClassicNPCRepository.getAllClassicNPCs({}),
@@ -122,6 +127,8 @@ export class ServerManagerEcs extends ComponentEcs {
 			classicNpcs.forEach(async (one) => {
 				console.log('Spawning Classic NPC:', one.agent.identifier);
 
+				const dialogueConfig = buildMerchantDialogueConfig(serverData.room);
+
 				const npc = classicNpcServerFactory({
 					id: one.classicNpc.id,
 					name: one.agent.identifier,
@@ -136,6 +143,8 @@ export class ServerManagerEcs extends ComponentEcs {
 					},
 					life: one.entity.life,
 					maxLife: one.entity.maxLife,
+					dialogueConfig,
+					room: serverData.room,
 				});
 
 				const inventoryOp = npc.get(InventoryServerEcs);

@@ -13,9 +13,11 @@ type GameType = {
 		| 'INVENTORY'
 		| 'ONLEAVE'
 		| 'ENTITYDETAILS'
-		| 'MISSIONS';
+		| 'MISSIONS'
+		| 'DIALOGUE';
 	username: string;
 	selectedEntityId: string | null;
+	dialogueNpcEntityId: string | null;
 };
 
 const NPC_PATHS_STORAGE_KEY = 'x-show-npc-paths';
@@ -35,6 +37,7 @@ export const useGameState = () => {
 		view: 'MENU',
 		username: '',
 		selectedEntityId: null,
+		dialogueNpcEntityId: null,
 	});
 
 	const publisher = new Publisher<GameType>();
@@ -66,6 +69,14 @@ export const useGameState = () => {
 		update((state) => {
 			const newValue = { ...state, selectedEntityId: id };
 			publisher.publish('game:selected-entity', newValue);
+			return newValue;
+		});
+	};
+
+	const setDialogueNpc = (npcEntityId: string | null) => {
+		update((state) => {
+			const newValue = { ...state, dialogueNpcEntityId: npcEntityId };
+			publisher.publish('game:dialogue-npc', newValue);
 			return newValue;
 		});
 	};
@@ -106,6 +117,7 @@ export const useGameState = () => {
 		continueGame,
 		setUsername,
 		setSelectedEntity,
+		setDialogueNpc,
 		setShowNpcPaths,
 		toggleNpcPaths,
 		publisher: { subscribe: publisher.subscribe },

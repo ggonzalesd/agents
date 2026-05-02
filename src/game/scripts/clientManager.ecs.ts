@@ -71,7 +71,7 @@ export class ClientManagerEcs extends ComponentEcs {
 		});
 
 		proxy(room.state).npcs.onAdd((state, index) => {
-			const npc = this.npcClientFactory(index, state);
+			const npc = this.npcClientFactory(index, state, state.hasDialogue);
 			this.world.addEntity(npc);
 		});
 
@@ -85,6 +85,14 @@ export class ClientManagerEcs extends ComponentEcs {
 			uiClient?.debug.add(message, {
 				isCode: false,
 				type: 'info',
+			});
+		});
+
+		room.onMessage('dialogue:debug', (data: { message: string; type: 'info' | 'warning' | 'error' }) => {
+			this.uiClient.raw()?.debug.add(data.message, {
+				isCode: false,
+				type: data.type ?? 'info',
+				deleteOn: 5000,
 			});
 		});
 	}

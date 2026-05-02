@@ -27,6 +27,8 @@ import { ItemState } from '#/state/inventory.state';
 import { ExperimentManagerEcs } from './scripts/experiment/experiment-manager.ecs';
 import type { StartExperimentRequest } from '#/schema/experiment.schema';
 import * as ExperimentService from '$/services/experiment-orchestrator.service';
+import { ClassicNpcDialogueEcs } from './scripts/classic-npc/dialogue/classic-npc-dialogue.ecs';
+import { dialogueResponseMessageSchema } from '#/schema/dialogue.schema';
 
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
@@ -64,6 +66,9 @@ export class MainRoom extends Room<GameState> {
 
 		this.onMessage('client:state', this.onClientState.bind(this));
 		this.onMessage('client:action', this.onClientAction.bind(this));
+		this.onMessage('dialogue:start', this.onDialogueStart.bind(this));
+		this.onMessage('dialogue:response', this.onDialogueResponse.bind(this));
+		this.onMessage('dialogue:cancel', this.onDialogueCancel.bind(this));
 		this.onMessage('experiment:start', this.onExperimentStart.bind(this));
 		this.onMessage('experiment:stop', this.onExperimentStop.bind(this));
 		this.onMessage('*', () => {});
@@ -83,6 +88,66 @@ export class MainRoom extends Room<GameState> {
 			message,
 			5,
 		);
+	}
+
+	private onDialogueStart(client: Client, message: unknown): void {
+		const playerEntityId = client.userData?.userInfo?.agent?.identifier as string | undefined;
+		if (!playerEntityId) {
+			client.send('dialogue:unavailable', { npcEntityId: '' });
+			return;
+		}
+
+		const data = message as { npcEntityId?: string } | null;
+		if (!data?.npcEntityId) {
+			client.send('dialogue:unavailable', { npcEntityId: '' });
+			return;
+		}
+
+		const npcEntity = this.worldEcs.getEntity(data.npcEntityId).raw();
+		if (!npcEntity) {
+			client.send('dialogue:unavailable', { npcEntityId: data.npcEntityId });
+			return;
+		}
+
+		const dialogueEcs = npcEntity.get(ClassicNpcDialogueEcs).raw();
+		if (!dialogueEcs) {
+			client.send('dialogue:unavailable', { npcEntityId: data.npcEntityId });
+			return;
+		}
+
+		dialogueEcs.startDialogue(playerEntityId);
+	}
+
+	private onDialogueResponse(client: Client, message: unknown): void {
+		const playerEntityId = client.userData?.userInfo?.agent?.identifier as string | undefined;
+		if (!playerEntityId) return;
+
+		const parsed = dialogueResponseMessageSchema.safeParse(message);
+		if (!parsed.success) return;
+
+		const npcEntity = this.worldEcs.getEntity(parsed.data.npcEntityId).raw();
+		if (!npcEntity) return;
+
+		const dialogueEcs = npcEntity.get(ClassicNpcDialogueEcs).raw();
+		if (!dialogueEcs) return;
+
+		dialogueEcs.receiveResponse(playerEntityId, message);
+	}
+
+	private onDialogueCancel(client: Client, message: unknown): void {
+		const playerEntityId = client.userData?.userInfo?.agent?.identifier as string | undefined;
+		if (!playerEntityId) return;
+
+		const data = message as { npcEntityId?: string } | null;
+		if (!data?.npcEntityId) return;
+
+		const npcEntity = this.worldEcs.getEntity(data.npcEntityId).raw();
+		if (!npcEntity) return;
+
+		const dialogueEcs = npcEntity.get(ClassicNpcDialogueEcs).raw();
+		if (!dialogueEcs) return;
+
+		dialogueEcs.cancelDialogue(playerEntityId);
 	}
 
 	private onExperimentStart(client: Client, message: unknown): void {

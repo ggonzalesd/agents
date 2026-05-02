@@ -6,12 +6,15 @@ import type { ClassicNpcConfigDB } from '$/models/ClassicNPC.model';
 import { ClassicNPCActionProcessEcs } from '../scripts/classic-npc/classic-npc-action-process.ecs';
 import { ClassicNPCBehaviorStateEcs } from '../scripts/classic-npc/classic-npc-behavior-state.ecs';
 import { ClassicNPCStateMachineEcs } from '../scripts/classic-npc/classic-npc-state-machine.ecs';
+import { ClassicNpcDialogueEcs } from '../scripts/classic-npc/dialogue/classic-npc-dialogue.ecs';
 import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';
 import { FollowPathEcs } from '../scripts/entity/follow-path/follow-path.ecs';
 import { NpcPathDebugSyncEcs } from '../scripts/entity/follow-path/npc-path-debug-sync.ecs';
 import { InventoryServerEcs } from '../scripts/entity/InventoryServer.ecs';
 import { MovementServerEcs } from '../scripts/entity/MovementServer.ecs';
 import { NpcServerBehavior } from '../scripts/npc/npcServerBehavior.ecs';
+import type { DialogueConfig } from '../scripts/classic-npc/dialogue/dialogue.types';
+import type { Room } from 'colyseus';
 
 export const classicNpcServerFactoryGenerator =
 	(world: WorldEcs) =>
@@ -25,6 +28,8 @@ export const classicNpcServerFactoryGenerator =
 		skin,
 		life,
 		maxLife,
+		dialogueConfig,
+		room,
 	}: {
 		name: string;
 		display: string;
@@ -35,8 +40,11 @@ export const classicNpcServerFactoryGenerator =
 		skin?: string;
 		life?: number;
 		maxLife?: number;
+		dialogueConfig?: DialogueConfig;
+		room?: Room;
 	}) => {
 		const state = new NPCState(pos, skin ?? name, life, maxLife, 'CLASSIC');
+		if (dialogueConfig) state.hasDialogue = true;
 
 		return new EntityEcs({
 			name,
@@ -68,8 +76,11 @@ export const classicNpcServerFactoryGenerator =
 					config,
 					spawnPoint: pos,
 				}),
-				[ClassicNPCStateMachineEcs.name]: new ClassicNPCStateMachineEcs(),
-				[ClassicNPCActionProcessEcs.name]: new ClassicNPCActionProcessEcs(),
-			},
-		});
+			[ClassicNPCStateMachineEcs.name]: new ClassicNPCStateMachineEcs(),
+			[ClassicNPCActionProcessEcs.name]: new ClassicNPCActionProcessEcs(),
+			...(dialogueConfig && room
+				? { [ClassicNpcDialogueEcs.name]: new ClassicNpcDialogueEcs(dialogueConfig, room) }
+				: {}),
+		},
+	});
 	};
