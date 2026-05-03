@@ -14,8 +14,9 @@ const NPC_SKIN = 'kanye';
 const SENDER_CONV_ID = 'collect-item-ask';
 const RECEIVER_CONV_ID = 'collect-item-deliver';
 
-const MAX_BOXES = 12;
+const MAX_ACTIVE_BOXES = 4;
 const BOX_SPAWN_RADIUS = 8;
+const RESPAWN_INTERVAL_MS = 5000;
 
 const ITEM_NAMES: Record<string, string> = {
 	sword: 'espadas',
@@ -31,6 +32,8 @@ const ITEM_NAMES: Record<string, string> = {
 export class CollectItemPhaseEcs extends ExperimentPhaseEcs {
 	private npcName: string | null = null;
 	private readonly spawnedBoxNames: string[] = [];
+	private respawnInterval: ReturnType<typeof setInterval> | null = null;
+	private boxCounter = 0;
 	private accepted = false;
 	private delivered = false;
 
@@ -66,6 +69,11 @@ export class CollectItemPhaseEcs extends ExperimentPhaseEcs {
 	}
 
 	protected onUnmountPhase(): void {
+		if (this.respawnInterval !== null) {
+			clearInterval(this.respawnInterval);
+			this.respawnInterval = null;
+		}
+
 		if (this.npcName) {
 			this.world.getEntity(this.npcName).ifSome((entity) => {
 				this.world.deleteEntity(entity);
@@ -131,34 +139,55 @@ export class CollectItemPhaseEcs extends ExperimentPhaseEcs {
 		});
 	}
 
-	private spawnBoxes(userId: string): void {
+	private spawnSingleBox(userId: string): void {
 		const serverData = this.world.get(ServerDataEcs).raw();
 		if (!serverData) return;
 
 		const slotPos = getSlotPosition(userId);
 		const basePos = slotPos ?? { x: 0, y: 0, z: 0 };
 
-		for (let i = 0; i < MAX_BOXES; i++) {
-			const angle = (Math.PI * 2 * i) / MAX_BOXES + (Math.random() - 0.5) * 0.5;
-			const radius = 3 + Math.random() * (BOX_SPAWN_RADIUS - 3);
-			const pos = {
-				x: basePos.x + Math.cos(angle) * radius,
-				y: basePos.y,
-				z: basePos.z + Math.sin(angle) * radius,
-			};
+		const angle = Math.random() * Math.PI * 2;
+		const radius = 3 + Math.random() * (BOX_SPAWN_RADIUS - 3);
+		const pos = {
+			x: basePos.x + Math.cos(angle) * radius,
+			y: basePos.y,
+			z: basePos.z + Math.sin(angle) * radius,
+		};
 
-			const boxName = `collect-box-${userId}-${i}`;
-			const box = boxServerFactory({
-				world: this.world,
-				name: boxName,
-				pos,
-				skin: i % 2 === 0 ? 'box_stacked' : 'crate',
-				dropItems: this.dropItems,
-			});
+		const boxName = `collect-box-${userId}-${this.boxCounter++}`;
+		const box = boxServerFactory({
+			world: this.world,
+			name: boxName,
+			pos,
+			skin: Math.random() > 0.5 ? 'box_stacked' : 'crate',
+			dropItems: this.dropItems,
+		});
 
-			this.world.addEntity(box);
-			this.spawnedBoxNames.push(boxName);
+		this.world.addEntity(box);
+		this.spawnedBoxNames.push(boxName);
+	}
+
+	private pruneStaleBoxes(): void {
+		for (let i = this.spawnedBoxNames.length - 1; i >= 0; i--) {
+			const entity = this.world.getEntity(this.spawnedBoxNames[i]).raw();
+			if (!entity) {
+				this.spawnedBoxNames.splice(i, 1);
+			}
 		}
+	}
+
+	private startBoxRespawn(userId: string): void {
+		for (let i = 0; i < MAX_ACTIVE_BOXES; i++) {
+			this.spawnSingleBox(userId);
+		}
+
+		this.respawnInterval = setInterval(() => {
+			this.pruneStaleBoxes();
+
+			while (this.spawnedBoxNames.length < MAX_ACTIVE_BOXES) {
+				this.spawnSingleBox(userId);
+			}
+		}, RESPAWN_INTERVAL_MS);
 	}
 
 	private buildVariables(): Record<string, string> {
@@ -189,7 +218,7 @@ export class CollectItemPhaseEcs extends ExperimentPhaseEcs {
 					this.world.getEntity(npcName).ifSome((entity) => {
 						entity.get(ClassicNpcDialogueEcs).raw()?.enableConversation(RECEIVER_CONV_ID);
 					});
-					this.spawnBoxes(userId);
+					this.startBoxRespawn(userId);
 				} else {
 					this.handlePhaseFailure();
 				}

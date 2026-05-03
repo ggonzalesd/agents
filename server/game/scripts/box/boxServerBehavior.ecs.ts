@@ -12,7 +12,7 @@ const BOX_DROP_MIN_RADIUS = BOX_COLLIDER_RADIUS + 0.15;
 const BOX_DROP_MAX_RADIUS = BOX_COLLIDER_RADIUS + 0.75;
 
 export class BoxServerBehavior extends ComponentEcs {
-	private static readonly DROP_HEIGHT = 3;
+	private static readonly DROP_HEIGHT = 2;
 
 	public state: BoxState;
 	private readonly customDropItems: string[] | null;
