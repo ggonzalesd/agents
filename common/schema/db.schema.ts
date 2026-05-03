@@ -24,5 +24,5 @@ export const npcDBSchema = z.object({
 	id: z.uuid(),
 	description: z.string().min(0).max(1024),
 	model: z.string().min(2).max(255),
-	skinUrl: z.string().min(2).max(255),
+	skinKey: z.string().min(2).max(255),
 });

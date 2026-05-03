@@ -1,6 +1,6 @@
 export interface NPCDB {
 	id: string;
 	description: string;
-	skinUrl: string;
+	skinKey: string;
 	model: string;
 }

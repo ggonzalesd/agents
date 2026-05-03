@@ -13,7 +13,7 @@ import type { ExperimentRuntimeEcs } from '../experiment-runtime.ecs';
 import { ExperimentManagerEcs } from '../experiment-manager.ecs';
 
 const NPC_IDENTIFIER = 'gold-coin-merchant-npc';
-const NPC_SKIN_URL = 'https://mc-heads.net/avatar/MHF_Steve/64';
+const NPC_SKIN_URL = 'kanye';
 const COIN_ITEM_TYPE = 'coin';
 
 export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {

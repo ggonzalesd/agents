@@ -38,7 +38,7 @@ export const createNPC = async ({
 		npc: {
 			description: payload.description ?? 'A mysterious NPC',
 			model: 'gpt-4.1-mini',
-			skinUrl: payload.skin,
+					skinKey: payload.skin,
 		},
 	});
 
@@ -72,7 +72,7 @@ export const updateNPC = async ({
 			payload.description || payload.skin
 				? {
 						description: payload.description,
-						skinUrl: payload.skin,
+		skinKey: payload.skin,
 					}
 				: undefined,
 	});

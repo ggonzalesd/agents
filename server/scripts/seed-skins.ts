@@ -11,13 +11,26 @@ import envConfig from '$/config/env.config';
 import { s3ClientConfig } from '$/config/s3.config';
 import * as S3Service from '$/services/s3.service';
 
-const SKIN_PATH = path.resolve(
+const TEXTURES_DIR = path.resolve(
+	import.meta.dirname,
+	'../../public/3d/textures/entity',
+);
+
+const DEFAULT_SKIN_PATH = path.resolve(
 	import.meta.dirname,
 	'../../public/3d/gordon.png',
 );
 
-const SEED_USERNAMES = ['superadmin', 'happyman', 'foreignman'];
-const SEED_NPC_IDENTIFIERS = ['scout-777'];
+interface SkinMapping {
+	s3Key: string;
+	filePath: string;
+}
+
+const SKIN_MAPPINGS: SkinMapping[] = [
+	{ s3Key: 'skins/combine.png', filePath: path.join(TEXTURES_DIR, 'combine.png') },
+	{ s3Key: 'skins/spike.png', filePath: path.join(TEXTURES_DIR, 'spike.png') },
+	{ s3Key: 'skins/kanye.png', filePath: path.join(TEXTURES_DIR, 'kanye.png') },
+];
 
 async function ensurePublicBucket() {
 	const bucketName = envConfig.S3_NAME;
@@ -52,22 +65,15 @@ async function ensurePublicBucket() {
 async function uploadSkins() {
 	await ensurePublicBucket();
 
-	const skinBuffer = fs.readFileSync(SKIN_PATH);
+	const defaultBuffer = fs.readFileSync(DEFAULT_SKIN_PATH);
 
-	// Upload default fallback skin
-	await S3Service.uploadFile('skins/default.png', skinBuffer, 'image/png');
+	await S3Service.uploadFile('skins/default.png', defaultBuffer, 'image/png');
 	console.log('Uploaded default skin -> skins/default.png');
 
-	for (const username of SEED_USERNAMES) {
-		const key = `skins/${username}.png`;
-		await S3Service.uploadFile(key, skinBuffer, 'image/png');
-		console.log(`Uploaded skin for player: ${username} -> ${key}`);
-	}
-
-	for (const identifier of SEED_NPC_IDENTIFIERS) {
-		const key = `skins/${identifier}.png`;
-		await S3Service.uploadFile(key, skinBuffer, 'image/png');
-		console.log(`Uploaded skin for NPC: ${identifier} -> ${key}`);
+	for (const mapping of SKIN_MAPPINGS) {
+		const buffer = fs.readFileSync(mapping.filePath);
+		await S3Service.uploadFile(mapping.s3Key, buffer, 'image/png');
+		console.log(`Uploaded ${path.basename(mapping.filePath)} -> ${mapping.s3Key}`);
 	}
 
 	console.log('All seed skins uploaded successfully.');

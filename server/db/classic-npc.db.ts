@@ -22,7 +22,7 @@ export type ClassicNPCWithRelations = {
 type ClassicNpcRow = {
 	id: string;
 	description: string;
-	skinUrl: string;
+	skinKey: string;
 	config: {
 		id: string;
 		npcId: string;
@@ -66,7 +66,7 @@ function mapClassicNpcResult(row: ClassicNpcRow): ClassicNPCWithRelations {
 		classicNpc: {
 			id: row.id,
 			description: row.description,
-			skinUrl: row.skinUrl,
+			skinKey: row.skinKey,
 		},
 		config: row.config
 			? {
@@ -171,7 +171,7 @@ export const createClassicNPC = async (
 			data: {
 				id: createdAgent.id,
 				description: classicNpc.description,
-				skinUrl: classicNpc.skinUrl,
+				skinKey: classicNpc.skinKey,
 				config: config
 					? {
 						create: {

@@ -13,7 +13,7 @@ type NPCWithRelations = { npc: NPCDB; entity: EntityDB; agent: AgentDB };
 function mapNPCResult(row: {
 	id: string;
 	description: string;
-	skinUrl: string;
+	skinKey: string;
 	model: string;
 	entity: {
 		id: string;
@@ -38,7 +38,7 @@ function mapNPCResult(row: {
 		npc: {
 			id: row.id,
 			description: row.description,
-			skinUrl: row.skinUrl,
+			skinKey: row.skinKey,
 			model: row.model,
 		},
 		entity: {
@@ -164,7 +164,7 @@ export const createNPC = async (
 			data: {
 				id: createdAgent.id,
 				description: npc.description,
-				skinUrl: npc.skinUrl,
+				skinKey: npc.skinKey,
 				model: npc.model,
 			},
 			include: npcInclude,

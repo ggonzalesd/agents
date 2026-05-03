@@ -20,7 +20,7 @@ export enum ClassicNpcDialogTrigger {
 export interface ClassicNPCDB {
 	id: string;
 	description: string;
-	skinUrl: string;
+	skinKey: string;
 }
 
 export interface ClassicNpcConfigDB {

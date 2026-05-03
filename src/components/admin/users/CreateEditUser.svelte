@@ -174,7 +174,7 @@
 				>
 					{#if data.skin}
 						<img
-							src={data.skin}
+							src={`${import.meta.env.VITE_API_URL}/api/v1/skin/${data.skin}.png`}
 							alt="User Skin"
 							class="mt-2 size-8 object-cover"
 						/>

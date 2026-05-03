@@ -93,7 +93,7 @@
 			const response = await httpService.post<
 				OkResponse<{
 					url: string;
-					filename: string;
+					skinHash: string;
 				}>
 			>('/skin/save', formData, {
 				headers: {

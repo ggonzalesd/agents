@@ -16,6 +16,7 @@ interface PlayerServerFactoryParams {
 	entityId: string;
 	life?: number;
 	maxLife?: number;
+	skin?: string;
 }
 
 export const playerServerFactoryGenerator =
@@ -28,10 +29,11 @@ export const playerServerFactoryGenerator =
 		entityId,
 		life,
 		maxLife,
+		skin,
 	}: PlayerServerFactoryParams) => {
 		const state = new PlayerState({
 			pos,
-			skin: username,
+			skin: skin ?? username,
 			sessionId,
 			life,
 			maxLife,

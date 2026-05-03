@@ -9,14 +9,12 @@
 	import { uploadSkinService } from '@/services/api.service';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
 
-	import { httpService } from '@/services/http.service';
-
 	let gameStateContext = getGameStateContext();
 
 	let retry = $state(0);
 
 	function canvasAttach(canvas: HTMLCanvasElement) {
-		const username = get(gameStateContext).username as string;
+		const skinHash = get(gameStateContext).skinHash as string;
 
 		const scene = new THREE.Scene();
 		const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
@@ -27,15 +25,13 @@
 		});
 		renderer.setPixelRatio(Math.min(window.devicePixelRatio ?? 1, 2));
 
-		// Medir el padre del canvas y ajustar cámara + renderer
 		const parentEl = canvas.parentElement as HTMLElement | null;
 		const getParentSize = () => {
 			if (parentEl) {
 				const rect = parentEl.getBoundingClientRect();
-				const size = Math.max(1, Math.floor(rect.height)); // usar altura del padre (mínimo 1)
+				const size = Math.max(1, Math.floor(rect.height));
 				return { width: 450, height: size };
 			}
-			// Fallback si no hay padre o no tiene altura todavía
 			const fallback = Math.max(1, canvas.clientHeight || 450);
 			return { width: fallback, height: fallback };
 		};
@@ -57,31 +53,21 @@
 		light.position.set(5, 5, 5).normalize();
 		scene.add(light);
 
-		const ambientLight = new THREE.AmbientLight(0x707070, 1); // soft white light
+		const ambientLight = new THREE.AmbientLight(0x707070, 1);
 		scene.add(ambientLight);
 
 		const modelSpot = new THREE.Object3D();
 		scene.add(modelSpot);
 
-		let texture = loadTexture(
-			import.meta.env.VITE_API_URL +
-				'/api/v1/skin/rand/' +
-				Date.now() +
-				'/' +
-				username +
-				'.png?_=' +
-				Date.now(),
-		);
+		const skinUrl = skinHash
+			? `${import.meta.env.VITE_API_URL}/api/v1/skin/${skinHash}.png`
+			: '/3d/gordon.png';
+
+		let texture = loadTexture(skinUrl);
 		const material = new THREE.MeshStandardMaterial({
 			color: 0xffffff,
 			map: texture,
 			transparent: true,
-		});
-
-		httpService.get('/skin/exists/' + username).catch((error) => {
-			texture = loadTexture('/3d/gordon.png', false);
-			material.map = texture;
-			material.needsUpdate = true;
 		});
 
 		let mixer: THREE.AnimationMixer | null = null;
@@ -91,8 +77,8 @@
 			'/3d/SkinModel2.glb',
 			(gltf) => {
 				modelSpot.add(gltf.scene);
-				gltf.scene.rotation.y = (3 * Math.PI) / 2; // Rotate model to face camera
-				gltf.scene.position.y = -1; // Adjust model position if needed
+				gltf.scene.rotation.y = (3 * Math.PI) / 2;
+				gltf.scene.position.y = -1;
 				gltf.scene.traverse((child) => {
 					if ((child as THREE.Mesh).isMesh) {
 						(child as THREE.Mesh).material = material;
@@ -123,7 +109,7 @@
 			requestId = requestAnimationFrame(animate);
 			renderer.render(scene, camera);
 
-			modelSpot.rotation.y += 0.01; // Rotate model for some animation
+			modelSpot.rotation.y += 0.01;
 			const delta = clock.getDelta();
 
 			if (mixer) {

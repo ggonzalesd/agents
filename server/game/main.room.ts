@@ -307,6 +307,7 @@ export class MainRoom extends Room<GameState> {
 			entityId: userInfo.entity.id,
 			life: userInfo.entity.life,
 			maxLife: userInfo.entity.maxLife,
+			skin: userInfo.user.skin ?? undefined,
 			pos: {
 				x: userInfo.agent.positionX,
 				y: userInfo.agent.positionY,

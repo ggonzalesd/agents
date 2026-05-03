@@ -5,7 +5,7 @@ export const saveNPCSkin = async (
 	file: File,
 ): Promise<{
 	url: string;
-	filename: string;
+	skinHash: string;
 }> => {
 	const formData = new FormData();
 	formData.append('file', file);
@@ -13,7 +13,7 @@ export const saveNPCSkin = async (
 	const response = await httpService.post<
 		OkResponse<{
 			url: string;
-			filename: string;
+			skinHash: string;
 		}>
 	>('/skin/save', formData, {
 		headers: {

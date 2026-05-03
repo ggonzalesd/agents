@@ -159,7 +159,7 @@ export class ServerManagerEcs extends ComponentEcs {
 					description: one.classicNpc.description,
 					display: one.agent.display,
 					config: one.config,
-					skin: one.classicNpc.skinUrl,
+					skin: one.classicNpc.skinKey,
 					pos: {
 						x: one.agent.positionX,
 						y: one.agent.positionY,

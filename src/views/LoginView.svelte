@@ -62,6 +62,7 @@
 			if (!data.ok) return;
 
 			gameStateContext.setUsername(data.data.user.username);
+			gameStateContext.setSkinHash(data.data.user.skin ?? '');
 			routerContext.changeRoute('/profile');
 		});
 	});
@@ -80,6 +81,7 @@
 
 		if (response.ok) {
 			gameStateContext.setUsername(response.data.payload.username);
+			gameStateContext.setSkinHash(response.data.user.skin ?? '');
 			routerContext.changeRoute('/profile');
 			localStorage.setItem('token', response.data.token);
 		} else {
@@ -100,6 +102,7 @@
 
 		if (response.ok) {
 			gameStateContext.setUsername(response.data.payload.username);
+			gameStateContext.setSkinHash(response.data.user.skin ?? '');
 			routerContext.changeRoute('/profile');
 			localStorage.setItem('token', response.data.token);
 		} else {

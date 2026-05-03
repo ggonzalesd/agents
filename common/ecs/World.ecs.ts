@@ -101,6 +101,15 @@ export class WorldEcs extends BaseEcs {
 	}
 
 	deleteEntityById(id: string) {
+		// Si onStart() aún no se ejecutó (entidad en cola __deferAdd),
+		// simplemente la sacamos — no hay callbacks de cleanup que llamar.
+		for (const entity of this.__deferAdd) {
+			if (entity.name === id) {
+				this.__deferAdd.delete(entity);
+				return;
+			}
+		}
+
 		const entity = this.entities.get(id);
 		if (entity) {
 			this.deleteEntity(entity);

@@ -1,3 +1,4 @@
+import * as crypto from 'node:crypto';
 import type { Response, Request } from 'express';
 
 import envConfig from '$/config/env.config';
@@ -7,24 +8,25 @@ import * as S3Service from '$/services/s3.service';
 import { getAuth } from '$/utils/req.utils';
 import { HttpError } from '#/utils/HttpError';
 import { jsonResponse } from '#/utils/HttpResponse';
+import { updateFullUser } from '$/db/user.db';
 
 export const saveSkinController = async (req: Request, res: Response) => {
 	const file = req.file!;
 
-	const randomname = `${Date.now()}-${Math.floor(Math.random() * 1e6)}.png`;
+	const skinHash = crypto.randomUUID();
 
-	await S3Service.uploadFile(`skins/${randomname}`, file.buffer, 'image/png', {
+	await S3Service.uploadFile(`skins/${skinHash}.png`, file.buffer, 'image/png', {
 		originalName: file.originalname,
 	});
 
-	const url = `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/${randomname}`;
+	const url = `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/${skinHash}.png`;
 
 	res.json({
 		ok: true,
 		message: 'Skin saved successfully',
 		data: {
 			url,
-			filename: randomname,
+			skinHash,
 		},
 	});
 };
@@ -33,8 +35,10 @@ export const uploadSkinController = async (req: Request, res: Response) => {
 	const file = req.file!;
 	const { user } = getAuth(req);
 
+	const skinHash = crypto.randomUUID();
+
 	await S3Service.uploadFile(
-		`skins/${user.username}.png`,
+		`skins/${skinHash}.png`,
 		file.buffer,
 		'image/png',
 		{
@@ -42,18 +46,19 @@ export const uploadSkinController = async (req: Request, res: Response) => {
 		},
 	);
 
-	const signedUrl = await S3Service.getSignedUrl(
-		`skins/${user.username}.png`,
-		24 * 3600,
-	); // 24 hours
-	const url = `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/${user.username}.png`;
+	await updateFullUser({
+		userId: user.id,
+		user: { skin: skinHash },
+	});
+
+	const url = `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/${skinHash}.png`;
 
 	res.json({
 		ok: true,
 		message: 'Skin uploaded successfully',
 		data: {
 			url,
-			signedUrl,
+			skinHash,
 		},
 	});
 };

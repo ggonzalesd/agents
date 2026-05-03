@@ -15,6 +15,7 @@ async function createPlayer(props: {
 	display: string;
 	identifier: string;
 	role?: Role;
+	skin?: string;
 }) {
 	const password = bcrypt.hashSync(props.password, 10);
 
@@ -26,10 +27,12 @@ async function createPlayer(props: {
 			password,
 			username: props.username,
 			role: props.role || Role.USER,
+			skin: props.skin ?? null,
 		},
 		update: {
 			password,
 			role: props.role || Role.USER,
+			skin: props.skin ?? undefined,
 		},
 	});
 
@@ -86,7 +89,7 @@ async function createNPC(props: {
 	display: string;
 	identifier: string;
 	model: string;
-	skinUrl: string;
+	skinKey: string;
 	description?: string;
 }) {
 	const agent = await prisma.agent.upsert({
@@ -130,12 +133,12 @@ async function createNPC(props: {
 			id: entity.id,
 			description: props.description || '',
 			model: props.model,
-			skinUrl: props.skinUrl,
+			skinKey: props.skinKey,
 		},
 		update: {
 			description: props.description || '',
 			model: props.model,
-			skinUrl: props.skinUrl,
+			skinKey: props.skinKey,
 		},
 	});
 
@@ -145,7 +148,7 @@ async function createNPC(props: {
 async function createClassicNPC(props: {
 	display: string;
 	identifier: string;
-	skinUrl: string;
+	skinKey: string;
 	description?: string;
 	behaviorType: BehaviorType;
 	position?: {
@@ -215,11 +218,11 @@ async function createClassicNPC(props: {
 			create: {
 				id: entity.id,
 				description: props.description ?? '',
-				skinUrl: props.skinUrl,
-			},
-			update: {
-				description: props.description ?? '',
-				skinUrl: props.skinUrl,
+		skinKey: props.skinKey,
+		},
+		update: {
+			description: props.description ?? '',
+			skinKey: props.skinKey,
 			},
 		});
 
@@ -266,6 +269,7 @@ async function main() {
 		display: 'Super Admin',
 		identifier: 'great-man-feq2',
 		role: Role.ADMIN,
+		skin: 'combine',
 	});
 	console.log(`Created superadmin user: ${superadminPlayer.player.username}`);
 
@@ -294,7 +298,7 @@ async function main() {
 	// 	display: 'Scout-Delta',
 	// 	identifier: 'scout-777',
 	// 	model: 'gpt-4.1-mini',
-	// 	skinUrl: `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/scout-777.png`,
+	// 	skinKey: 'scout-777',
 	// 	description: [
 	// 		'Explorador curtido y silencioso. Habla poco y cuando lo hace es directo, casi seco.',
 	// 		'Desconfía de los desconocidos pero respeta a quienes demuestran valor.',
@@ -310,7 +314,7 @@ async function main() {
 		display: 'Hunter-Rex',
 		identifier: 'hunter-rex-001',
 		model: 'gpt-4.1-mini',
-		skinUrl: `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/hunter-rex-001.png`,
+		skinKey: 'hunter-rex-001',
 		description: [
 			'Cazador agresivo e impaciente. Nunca está quieto: siempre rastreando, siempre en movimiento.',
 			'Está obsesionado con los ciervos. Los busca sin descanso por todo el terreno.',
@@ -325,7 +329,7 @@ async function main() {
 	const classicNpc = await createClassicNPC({
 		display: 'Guard-Alpha',
 		identifier: 'guard-alpha-001',
-		skinUrl: `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/guard-alpha-001.png`,
+		skinKey: 'spike',
 		description: [
 			'Guardia clasico de prueba con patrulla corta alrededor del origen.',
 			'Se mantiene neutral hasta detectar una amenaza cercana o recibir daño.',

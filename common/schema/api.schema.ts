@@ -42,8 +42,8 @@ export const profileResSchema = apiResSchema.extend({
 
 export const uploadSkinResSchema = apiResSchema.extend({
 	data: z.object({
-		url: z.url(),
-		signedUrl: z.url(),
+		url: z.string(),
+		skinHash: z.string(),
 	}),
 });
 

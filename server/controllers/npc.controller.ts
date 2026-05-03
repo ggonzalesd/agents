@@ -25,7 +25,7 @@ export const getOneNPCController = async (
 				x: npc.agent.positionX.toString(),
 				y: npc.agent.positionY.toString(),
 				z: npc.agent.positionZ.toString(),
-				skin: npc.npc.skinUrl,
+				skin: npc.npc.skinKey,
 			},
 			{
 				message: 'NPC retrieved successfully',
@@ -49,7 +49,7 @@ export const getAllNPCsController = async (_req: Request, res: Response) => {
 				x: agent.positionX.toString(),
 				y: agent.positionY.toString(),
 				z: agent.positionZ.toString(),
-				skin: npc.skinUrl,
+				skin: npc.skinKey,
 			})),
 			{
 				message: 'All NPCs retrieved successfully',

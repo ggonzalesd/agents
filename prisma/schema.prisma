@@ -111,7 +111,7 @@ model InventoryItem {
 model NPC {
   id          String @id @db.Uuid
   description String @db.Text
-  skinUrl     String @db.Text
+  skinKey     String @db.Text
   model       String @db.VarChar(255)
 
   entity         Entity           @relation(fields: [id], references: [id])
@@ -121,7 +121,7 @@ model NPC {
 model ClassicNPC {
   id          String @id @db.Uuid
   description String @db.Text
-  skinUrl     String @db.Text
+  skinKey     String @db.Text
 
   entity  Entity                  @relation(fields: [id], references: [id], onDelete: Cascade)
   config  ClassicNpcConfig?

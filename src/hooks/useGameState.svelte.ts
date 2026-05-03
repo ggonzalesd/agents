@@ -16,6 +16,7 @@ type GameType = {
 		| 'MISSIONS'
 		| 'DIALOGUE';
 	username: string;
+	skinHash: string;
 	selectedEntityId: string | null;
 	dialogueNpcEntityId: string | null;
 };
@@ -36,6 +37,7 @@ export const useGameState = () => {
 		showNpcPaths: getInitialShowNpcPaths(),
 		view: 'MENU',
 		username: '',
+		skinHash: '',
 		selectedEntityId: null,
 		dialogueNpcEntityId: null,
 	});
@@ -53,6 +55,14 @@ export const useGameState = () => {
 		update((state) => {
 			const newValue = { ...state, username };
 			publisher.publish('game:username', newValue);
+			return newValue;
+		});
+	};
+
+	const setSkinHash = (skinHash: string) => {
+		update((state) => {
+			const newValue = { ...state, skinHash };
+			publisher.publish('game:skinHash', newValue);
 			return newValue;
 		});
 	};
@@ -116,6 +126,7 @@ export const useGameState = () => {
 		setPause,
 		continueGame,
 		setUsername,
+		setSkinHash,
 		setSelectedEntity,
 		setDialogueNpc,
 		setShowNpcPaths,
