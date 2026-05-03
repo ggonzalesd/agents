@@ -28,6 +28,11 @@ export const ITEM_REGISTRY: Readonly<Record<string, ItemDefinition>> = {
 		consumable: true,
 		effects: [{ type: ItemEffectType.HEAL, value: 10 }],
 	},
+	green_apple: {
+		category: ItemCategory.FOOD,
+		consumable: true,
+		effects: [{ type: ItemEffectType.HEAL, value: 5 }],
+	},
 	cookie: {
 		category: ItemCategory.FOOD,
 		consumable: true,

@@ -8,6 +8,10 @@ const ITEM_MODELS: Readonly<Record<string, ItemModelEntry>> = {
 		path: '/3d/apple.glb',
 		scale: 0.25,
 	},
+	green_apple: {
+		path: '/3d/green-apple.glb',
+		scale: 0.25,
+	},
 	coin: {
 		path: '/3d/coin.glb',
 		scale: 0.25,

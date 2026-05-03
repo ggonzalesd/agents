@@ -8,6 +8,7 @@ const PUBLIC_ITEM_TEXTURES_PATH = '/3d/textures/items';
 
 export const ITEM_ICONS: Readonly<Record<string, string>> = {
 	apple: `${PUBLIC_ITEM_TEXTURES_PATH}/apple.svg`,
+	green_apple: `${PUBLIC_ITEM_TEXTURES_PATH}/green-apple.svg`,
 	coin: coinSvgSrc,
 	cookie: cookieSvgSrc,
 	meat: `${PUBLIC_ITEM_TEXTURES_PATH}/meat.svg`,

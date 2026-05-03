@@ -7,10 +7,26 @@ import { ServerDataEcs } from '../serverData.ecs';
 
 const TREE_DROP_PROBABILITY = 0.25;
 const TREE_HIT_COOLDOWN_MS = 400;
-const TREE_DROP_ITEM = 'apple';
+const TREE_DROP_ITEMS: ReadonlyArray<{ type: string; weight: number }> = [
+	{ type: 'green_apple', weight: 70 },
+	{ type: 'apple', weight: 30 },
+];
+const TREE_DROP_TOTAL_WEIGHT = TREE_DROP_ITEMS.reduce(
+	(sum, item) => sum + item.weight,
+	0,
+);
 const TREE_COLLIDER_RADIUS = 0.35;
 const TREE_DROP_MIN_RADIUS = TREE_COLLIDER_RADIUS + 0.3;
 const TREE_DROP_MAX_RADIUS = TREE_COLLIDER_RADIUS + 1.2;
+
+function pickDropItem(): string {
+	let roll = Math.random() * TREE_DROP_TOTAL_WEIGHT;
+	for (const item of TREE_DROP_ITEMS) {
+		roll -= item.weight;
+		if (roll < 0) return item.type;
+	}
+	return TREE_DROP_ITEMS[TREE_DROP_ITEMS.length - 1].type;
+}
 
 export class TreeServerBehavior extends ComponentEcs {
 	private static readonly DROP_HEIGHT = 4;
@@ -60,7 +76,7 @@ export class TreeServerBehavior extends ComponentEcs {
 			},
 			stats: {
 				amount: 1,
-				type: TREE_DROP_ITEM,
+				type: pickDropItem(),
 			},
 		});
 
