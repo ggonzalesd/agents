@@ -9,12 +9,12 @@ import type { Room } from 'colyseus';
 import { WorldPathfinderEcs } from '../scripts/world/world-grid.ecs';
 import { MapLoaderEcs } from '../scripts/world/map-loader.ecs';
 import { AnimalSpawnerManagerEcs } from '../scripts/animal/animal-spawner-manager.ecs';
-import { ExperimentManagerEcs } from '../scripts/experiment/experiment-manager.ecs';
+import { ExperimentManagerEcs, type ExperimentRuntimeFactory } from '../scripts/experiment/experiment-manager.ecs';
 import { WorldEventBusEcs } from '../scripts/world-event-bus.ecs';
 import { GuiaV4ExperimentRuntimeEcs } from '../scripts/experiment/handlers/guia-v4.experiment-runtime.ecs';
 import { NpcsSinLlmsExperimentRuntimeEcs } from '../scripts/experiment/handlers/npcs-sin-llms.experiment-runtime.ecs';
 
-const experimentFactories: ConstructorParameters<typeof ExperimentManagerEcs>[0] = new Map([
+const experimentFactories: ConstructorParameters<typeof ExperimentManagerEcs>[0] = new Map<string, ExperimentRuntimeFactory>([
 	['GUIA-EXPERIMENTACION-V4', (actor, entityName) => new GuiaV4ExperimentRuntimeEcs(actor, entityName)],
 	['NPCS-SIN-LLMS', (actor, entityName) => new NpcsSinLlmsExperimentRuntimeEcs(actor, entityName)],
 ]);
