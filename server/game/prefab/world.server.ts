@@ -11,9 +11,11 @@ import { AnimalSpawnerManagerEcs } from '../scripts/animal/animal-spawner-manage
 import { ExperimentManagerEcs } from '../scripts/experiment/experiment-manager.ecs';
 import { WorldEventBusEcs } from '../scripts/world-event-bus.ecs';
 import { GuiaV4ExperimentRuntimeEcs } from '../scripts/experiment/handlers/guia-v4.experiment-runtime.ecs';
+import { NpcsSinLlmsExperimentRuntimeEcs } from '../scripts/experiment/handlers/npcs-sin-llms.experiment-runtime.ecs';
 
 const experimentFactories: ConstructorParameters<typeof ExperimentManagerEcs>[0] = new Map([
 	['GUIA-EXPERIMENTACION-V4', (actor, entityName) => new GuiaV4ExperimentRuntimeEcs(actor, entityName)],
+	['NPCS-SIN-LLMS', (actor, entityName) => new NpcsSinLlmsExperimentRuntimeEcs(actor, entityName)],
 ]);
 
 export const worldServerFactory = ({

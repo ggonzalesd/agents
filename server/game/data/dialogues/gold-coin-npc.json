@@ -1,0 +1,569 @@
+{
+  "pickStrategy": "sequential",
+  "conversations": [
+    {
+      "id": "gold-coin-main",
+      "rootStatementId": "s_root",
+      "reusable": true,
+      "resumable": false,
+      "statements": {
+        "s_root": {
+          "id": "s_root",
+          "text": "Bienvenido, viajero. Pareces recién llegado a estas tierras. ¿Hay algo en lo que pueda ayudarte?",
+          "options": {
+            "o_root_1": {
+              "id": "o_root_1",
+              "text": "Busco una moneda de oro. ¿Podrías darme una?",
+              "nextStatementId": "s_request_direct"
+            },
+            "o_root_2": {
+              "id": "o_root_2",
+              "text": "¿Qué clase de mercancías tienes?",
+              "nextStatementId": "s_shop_intro"
+            },
+            "o_root_3": {
+              "id": "o_root_3",
+              "text": "¿Cuánto tiempo llevas en este lugar?",
+              "nextStatementId": "s_lore_start"
+            },
+            "o_root_4": {
+              "id": "o_root_4",
+              "text": "Tengo prisa. No necesito nada.",
+              "nextStatementId": "s_hurry_1"
+            }
+          }
+        },
+
+        "s_request_direct": {
+          "id": "s_request_direct",
+          "text": "¿Una moneda de oro? No acostumbro a regalar mis bienes a desconocidos. Dime, ¿qué razón me das para confiar en ti?",
+          "options": {
+            "o_req_1": {
+              "id": "o_req_1",
+              "text": "Soy un viajero honesto que ha recorrido muchas tierras. Te lo suplico.",
+              "nextStatementId": "s_supplication_1"
+            },
+            "o_req_2": {
+              "id": "o_req_2",
+              "text": "Tengo algo valioso que ofrecerte a cambio.",
+              "nextStatementId": "s_trade_start"
+            },
+            "o_req_3": {
+              "id": "o_req_3",
+              "text": "Es una cuestión de vida o muerte. Debo ayudar a alguien.",
+              "nextStatementId": "s_emergency_start"
+            }
+          }
+        },
+
+        "s_supplication_1": {
+          "id": "s_supplication_1",
+          "text": "Viajero honesto, dices. Muchos afirman serlo pero pocos lo demuestran. ¿Puedes contarme algo de tus viajes que me convenza?",
+          "options": {
+            "o_sup_1": {
+              "id": "o_sup_1",
+              "text": "Crucé los Pantanos del Norte en pleno invierno para llevar medicina a un pueblo olvidado.",
+              "nextStatementId": "s_supplication_2"
+            },
+            "o_sup_2": {
+              "id": "o_sup_2",
+              "text": "Mira, no tengo historias. Solo necesito la moneda para seguir adelante.",
+              "nextStatementId": "s_supplication_cold"
+            }
+          }
+        },
+
+        "s_supplication_2": {
+          "id": "s_supplication_2",
+          "text": "Los Pantanos del Norte... Conozco esos caminos. Son traicioneros. Solo alguien con verdadera determinación los cruza en invierno. Eso habla bien de ti. ¿Y qué pasó con ese pueblo?",
+          "options": {
+            "o_sup2_1": {
+              "id": "o_sup2_1",
+              "text": "Llegué a tiempo. Los niños se recuperaron. Nunca pedí nada a cambio.",
+              "nextStatementId": "s_coin_route_a"
+            },
+            "o_sup2_2": {
+              "id": "o_sup2_2",
+              "text": "Llegué tarde. No pude hacer nada. Es una historia que prefiero no recordar.",
+              "nextStatementId": "s_supplication_sad"
+            }
+          }
+        },
+
+        "s_coin_route_a": {
+          "id": "s_coin_route_a",
+          "text": "Una persona que actúa sin esperar recompensa es exactamente el tipo de viajero al que me alegra ayudar. Toma esta moneda de oro. Que te lleve lejos.",
+          "options": {
+            "o_coin_a_end": {
+              "id": "o_coin_a_end",
+              "text": "Gracias, de corazón. No lo olvidaré.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_supplication_sad": {
+          "id": "s_supplication_sad",
+          "text": "Lo entiendo. A veces llegamos tarde sin importar cuánto nos esforcemos. Me alegra que lo hayas intentado. Lamentablemente no tengo monedas de sobra hoy. Quizá otro día.",
+          "options": {
+            "o_sad_end": {
+              "id": "o_sad_end",
+              "text": "Gracias de todos modos. Fue una conversación que necesitaba.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_supplication_cold": {
+          "id": "s_supplication_cold",
+          "text": "La sinceridad se agradece, pero la generosidad también tiene sus límites. Si no puedes darme una razón, no puedo darte lo que pides. Buena suerte en tu camino.",
+          "options": {
+            "o_cold_end": {
+              "id": "o_cold_end",
+              "text": "Entendido. Adiós.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_trade_start": {
+          "id": "s_trade_start",
+          "text": "¿Algo valioso? Ahora tengo tu atención. Soy comerciante, así que aprecio los tratos justos. ¿De qué se trata exactamente?",
+          "options": {
+            "o_trade_1": {
+              "id": "o_trade_1",
+              "text": "Tengo una espada que heredé de mi maestro. Es vieja pero de acero fino.",
+              "nextStatementId": "s_trade_sword"
+            },
+            "o_trade_2": {
+              "id": "o_trade_2",
+              "text": "Puedo ofrecerte un mapa de rutas poco conocidas al sur de aquí.",
+              "nextStatementId": "s_trade_map"
+            },
+            "o_trade_3": {
+              "id": "o_trade_3",
+              "text": "Pensándolo bien, no tengo nada que valga una moneda de oro. Fue un error.",
+              "nextStatementId": "s_trade_empty"
+            }
+          }
+        },
+
+        "s_trade_sword": {
+          "id": "s_trade_sword",
+          "text": "Una espada de acero fino, heredada de un maestro. Eso podría interesarme. ¿Está en buen estado? ¿Tiene marca del herrero?",
+          "options": {
+            "o_sword_1": {
+              "id": "o_sword_1",
+              "text": "Está perfectamente cuidada. Tiene la marca del herrero Darvon de las montañas del Este.",
+              "nextStatementId": "s_coin_route_b"
+            },
+            "o_sword_2": {
+              "id": "o_sword_2",
+              "text": "Tiene algunos golpes, pero el acero es sólido. Sin marca visible.",
+              "nextStatementId": "s_trade_sword_reject"
+            }
+          }
+        },
+
+        "s_coin_route_b": {
+          "id": "s_coin_route_b",
+          "text": "¡Darvon del Este! Ese hombre es una leyenda entre los herreros. Una espada suya vale mucho más que una moneda de oro, pero un trato es un trato. Aquí tienes tu moneda.",
+          "options": {
+            "o_coin_b_end": {
+              "id": "o_coin_b_end",
+              "text": "Trato hecho. Ha sido un placer negociar contigo.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_trade_sword_reject": {
+          "id": "s_trade_sword_reject",
+          "text": "Sin marca y con daños visibles, su valor es incierto. No puedo arriesgarme a hacer un mal negocio. Te deseo suerte, viajero.",
+          "options": {
+            "o_sword_rej_end": {
+              "id": "o_sword_rej_end",
+              "text": "Lo comprendo. Seguiré buscando otra forma.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_trade_map": {
+          "id": "s_trade_map",
+          "text": "Rutas al sur... Tengo mis propios mapas, pero siempre hay caminos que se ignoran. ¿De qué zona exactamente?",
+          "options": {
+            "o_map_costa": {
+              "id": "o_map_costa",
+              "text": "Las Rutas de la Costa, incluyendo tres atajos que evitan los puestos de peaje.",
+              "nextStatementId": "s_trade_map_reject"
+            },
+            "o_map_valles": {
+              "id": "o_map_valles",
+              "text": "Los Valles Secos. Conozco un paso que acorta el camino a la mitad.",
+              "nextStatementId": "s_trade_map_reject"
+            }
+          }
+        },
+
+        "s_trade_map_reject": {
+          "id": "s_trade_map_reject",
+          "text": "Interesante información, aunque debo verificarla antes de pagar por ella. No puedo entregarte la moneda sin confirmarlo primero. Vuelve cuando tengas algo más concreto.",
+          "options": {
+            "o_map_rej_end": {
+              "id": "o_map_rej_end",
+              "text": "De acuerdo. Volveré con más detalles.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_trade_empty": {
+          "id": "s_trade_empty",
+          "text": "Lo aprecio que seas honesto al menos. Es una cualidad rara. Pero sin intercambio, no hay moneda. Que tengas buen camino.",
+          "options": {
+            "o_empty_end": {
+              "id": "o_empty_end",
+              "text": "Tienes razón. Hasta la próxima.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_emergency_start": {
+          "id": "s_emergency_start",
+          "text": "Vida o muerte, dices. Esas son palabras serias y no las tomo a la ligera. ¿Quién necesita ayuda? Cuéntame.",
+          "options": {
+            "o_emg_1": {
+              "id": "o_emg_1",
+              "text": "Una anciana en el camino norte. Está herida y necesita un curandero. La moneda pagaría su atención.",
+              "nextStatementId": "s_emergency_healer"
+            },
+            "o_emg_2": {
+              "id": "o_emg_2",
+              "text": "Un niño perdido en el bosque. Necesito pagar al guía local para que lo busque.",
+              "nextStatementId": "s_emergency_child"
+            },
+            "o_emg_3": {
+              "id": "o_emg_3",
+              "text": "En realidad no hay emergencia. Pensé que así me darías la moneda más rápido.",
+              "nextStatementId": "s_emergency_lie"
+            }
+          }
+        },
+
+        "s_emergency_healer": {
+          "id": "s_emergency_healer",
+          "text": "Una anciana herida en el camino norte... Conozco al curandero del que hablas. Es un hombre honesto. ¿Cómo sabes que ella está allí? ¿La viste tú mismo?",
+          "options": {
+            "o_heal_1": {
+              "id": "o_heal_1",
+              "text": "Sí. La encontré hace menos de una hora. Me pidió que buscara ayuda.",
+              "nextStatementId": "s_coin_route_c"
+            },
+            "o_heal_2": {
+              "id": "o_heal_2",
+              "text": "Me lo contó un viajero que venía de allá. No la vi personalmente.",
+              "nextStatementId": "s_emergency_unverified"
+            }
+          }
+        },
+
+        "s_coin_route_c": {
+          "id": "s_coin_route_c",
+          "text": "No hay tiempo que perder entonces. Toma esta moneda de oro y corre al curandero. Dile que viene de mi parte, te atenderá de inmediato. Ve.",
+          "options": {
+            "o_coin_c_end": {
+              "id": "o_coin_c_end",
+              "text": "Gracias. Correré ahora mismo. Que el cielo te lo pague.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_emergency_unverified": {
+          "id": "s_emergency_unverified",
+          "text": "De segunda mano... Es difícil actuar con certeza en esos casos. Prefiero no arriesgarme a ser engañado. Si confirmas la situación, vuelve y te ayudaré.",
+          "options": {
+            "o_unverified_end": {
+              "id": "o_unverified_end",
+              "text": "Tienes razón, lo confirmaré. Volveré pronto.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_emergency_child": {
+          "id": "s_emergency_child",
+          "text": "Un niño perdido. Eso es grave. ¿De qué familia es? ¿Alguien ya fue a avisar al guarda del pueblo?",
+          "options": {
+            "o_child_1": {
+              "id": "o_child_1",
+              "text": "Ya avisé al guarda pero dice que no moverá un dedo sin pago por adelantado.",
+              "nextStatementId": "s_emergency_guard_reject"
+            },
+            "o_child_2": {
+              "id": "o_child_2",
+              "text": "No sé de qué familia es. Lo encontré llorando solo y luego lo perdí de vista.",
+              "nextStatementId": "s_emergency_guard_reject"
+            }
+          }
+        },
+
+        "s_emergency_guard_reject": {
+          "id": "s_emergency_guard_reject",
+          "text": "El guarda que conozco no cobra por rescates. Si ese hombre te pidió dinero, algo no cuadra. Te recomiendo ir directamente al alcalde. Mis monedas no van a manos sospechosas.",
+          "options": {
+            "o_guard_rej_end": {
+              "id": "o_guard_rej_end",
+              "text": "Tienes razón. Iré al alcalde directamente.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_emergency_lie": {
+          "id": "s_emergency_lie",
+          "text": "Aprecio que lo admitas, pero me has hecho perder el tiempo con una mentira. En este mundo la confianza vale más que el oro. No habrá moneda hoy.",
+          "options": {
+            "o_lie_end": {
+              "id": "o_lie_end",
+              "text": "Lo merezco. Que tengas un buen día.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_shop_intro": {
+          "id": "s_shop_intro",
+          "text": "Tengo de todo un poco: pociones de cura, semillas para plantar, comida seca para el camino. También compro materiales si traes algo útil. ¿Qué te interesa?",
+          "options": {
+            "o_shop_1": {
+              "id": "o_shop_1",
+              "text": "¿También tienes monedas de oro? Las necesito para algo importante.",
+              "nextStatementId": "s_shop_no_gold"
+            },
+            "o_shop_2": {
+              "id": "o_shop_2",
+              "text": "¿Cuánto cuestan tus pociones?",
+              "nextStatementId": "s_shop_potions"
+            },
+            "o_shop_3": {
+              "id": "o_shop_3",
+              "text": "No me interesa nada de eso. Solo quería saber.",
+              "nextStatementId": "s_shop_farewell"
+            }
+          }
+        },
+
+        "s_shop_no_gold": {
+          "id": "s_shop_no_gold",
+          "text": "El oro no es mercancía que se venda en un puesto como el mío. Eso lo encontrarías en un banco o en el mercado central de la ciudad. Aquí solo tengo bienes de consumo.",
+          "options": {
+            "o_nogold_1": {
+              "id": "o_nogold_1",
+              "text": "¿Y si te compenso con lo que necesites a cambio de una moneda?",
+              "nextStatementId": "s_shop_no_deal"
+            },
+            "o_nogold_2": {
+              "id": "o_nogold_2",
+              "text": "Entendido. Gracias de todos modos.",
+              "nextStatementId": "s_shop_farewell"
+            }
+          }
+        },
+
+        "s_shop_no_deal": {
+          "id": "s_shop_no_deal",
+          "text": "Aprecio el gesto, pero no tengo oro que vender. Así de simple. Si tienes monedas ordinarias puedo cambiarlas, pero oro no manejo. Te deseo suerte.",
+          "options": {
+            "o_nodeal_end": {
+              "id": "o_nodeal_end",
+              "text": "Gracias por ser directo. Hasta luego.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_shop_potions": {
+          "id": "s_shop_potions",
+          "text": "Una poción pequeña vale dos monedas de plata. Una grande, cinco. Si compras tres o más te hago un precio especial. ¿Te interesa alguna?",
+          "options": {
+            "o_pot_1": {
+              "id": "o_pot_1",
+              "text": "En otro momento. Ahora mismo no llevo monedas.",
+              "nextStatementId": "s_shop_farewell"
+            },
+            "o_pot_2": {
+              "id": "o_pot_2",
+              "text": "Gracias por la información. Me lo pensaré.",
+              "nextStatementId": "s_shop_farewell"
+            }
+          }
+        },
+
+        "s_shop_farewell": {
+          "id": "s_shop_farewell",
+          "text": "Cuando quieras. Aquí estaré. Que el camino sea favorable.",
+          "options": {
+            "o_shop_bye": {
+              "id": "o_shop_bye",
+              "text": "Hasta pronto.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_lore_start": {
+          "id": "s_lore_start",
+          "text": "¿Cuánto tiempo? Demasiado. Llegué aquí siendo joven, cuando esto aún era una aldea pequeña. He visto crecer estas murallas y caer a los que las construyeron. ¿Qué quieres saber?",
+          "options": {
+            "o_lore_1": {
+              "id": "o_lore_1",
+              "text": "¿Hay tesoros escondidos en este lugar?",
+              "nextStatementId": "s_lore_treasure"
+            },
+            "o_lore_2": {
+              "id": "o_lore_2",
+              "text": "¿Qué pasó con los constructores de las murallas?",
+              "nextStatementId": "s_lore_builders"
+            },
+            "o_lore_3": {
+              "id": "o_lore_3",
+              "text": "No importa. Fue solo curiosidad.",
+              "nextStatementId": "s_lore_farewell"
+            }
+          }
+        },
+
+        "s_lore_treasure": {
+          "id": "s_lore_treasure",
+          "text": "Los tesoros... Todos preguntan por eso. Los que vinieron antes que tú excavaron el suelo hasta dañar los cimientos de dos casas. Nada encontraron. Este lugar no esconde oro, solo historias.",
+          "options": {
+            "o_lore_t1": {
+              "id": "o_lore_t1",
+              "text": "Historias que quizás valgan más que el oro. ¿Tienes alguna que contar?",
+              "nextStatementId": "s_lore_story"
+            },
+            "o_lore_t2": {
+              "id": "o_lore_t2",
+              "text": "Qué decepcionante. Gracias de todas formas.",
+              "nextStatementId": "s_lore_farewell"
+            }
+          }
+        },
+
+        "s_lore_story": {
+          "id": "s_lore_story",
+          "text": "Hay una historia que pocos conocen. Dicen que el primer alcalde enterró una moneda de oro bajo la fuente central como ofrenda para que el agua nunca se secara. Nadie la ha reclamado. Pero yo no soy el guardián de esa moneda.",
+          "options": {
+            "o_story_1": {
+              "id": "o_story_1",
+              "text": "Fascinante. ¿Y tú tienes alguna moneda de oro propia que puedas compartir?",
+              "nextStatementId": "s_lore_no_coin"
+            },
+            "o_story_2": {
+              "id": "o_story_2",
+              "text": "Gracias por compartirlo. Es una historia hermosa.",
+              "nextStatementId": "s_lore_farewell"
+            }
+          }
+        },
+
+        "s_lore_no_coin": {
+          "id": "s_lore_no_coin",
+          "text": "Tengo lo justo para vivir. No soy hombre de riquezas. Las historias son lo único que guardo con generosidad. Te deseo buen viaje.",
+          "options": {
+            "o_no_coin_end": {
+              "id": "o_no_coin_end",
+              "text": "Gracias por la historia de todos modos. Fue valioso.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_lore_builders": {
+          "id": "s_lore_builders",
+          "text": "Una historia triste. Muchos murieron de enfermedad durante la construcción. Los que sobrevivieron se fueron al sur cuando terminaron el trabajo. Nadie quedó para ver florecer lo que construyeron.",
+          "options": {
+            "o_build_1": {
+              "id": "o_build_1",
+              "text": "Qué historia tan triste. ¿Se les honra de alguna manera?",
+              "nextStatementId": "s_lore_honor"
+            },
+            "o_build_2": {
+              "id": "o_build_2",
+              "text": "Interesante. Gracias por contármelo.",
+              "nextStatementId": "s_lore_farewell"
+            }
+          }
+        },
+
+        "s_lore_honor": {
+          "id": "s_lore_honor",
+          "text": "Hay una placa en la muralla este. La mayoría la ignora. Yo la limpio cada año en el solsticio de invierno. Es lo menos que puedo hacer.",
+          "options": {
+            "o_honor_1": {
+              "id": "o_honor_1",
+              "text": "Ese es un gesto noble de tu parte. Ojalá más gente lo supiera.",
+              "nextStatementId": "s_lore_farewell"
+            }
+          }
+        },
+
+        "s_lore_farewell": {
+          "id": "s_lore_farewell",
+          "text": "Fue un placer conversar con alguien curioso. Los viajeros que hacen preguntas suelen llegar más lejos. Buen camino.",
+          "options": {
+            "o_lore_bye": {
+              "id": "o_lore_bye",
+              "text": "El placer fue mío. Hasta la próxima.",
+              "nextStatementId": null
+            }
+          }
+        },
+
+        "s_hurry_1": {
+          "id": "s_hurry_1",
+          "text": "El apuro es el enemigo del buen juicio, viajero. Pero lo entiendo. ¿Al menos puedo ofrecerte algo rápido para el camino? ¿Agua, algo de comer?",
+          "options": {
+            "o_hurry_1": {
+              "id": "o_hurry_1",
+              "text": "No, gracias. Debo irme.",
+              "nextStatementId": "s_hurry_end"
+            },
+            "o_hurry_2": {
+              "id": "o_hurry_2",
+              "text": "Está bien, quizás un momento. ¿Qué tienes?",
+              "nextStatementId": "s_hurry_offer"
+            }
+          }
+        },
+
+        "s_hurry_offer": {
+          "id": "s_hurry_offer",
+          "text": "Pan seco y agua de manantial. No es mucho pero sostiene en el camino. Tómalo sin cargo, considéralo hospitalidad del lugar.",
+          "options": {
+            "o_hoffer_1": {
+              "id": "o_hoffer_1",
+              "text": "Gracias. Eres amable. Quizás vuelva cuando tenga más tiempo.",
+              "nextStatementId": "s_hurry_end"
+            }
+          }
+        },
+
+        "s_hurry_end": {
+          "id": "s_hurry_end",
+          "text": "Cuídate en el camino. El mundo exterior no siempre es amable con los que viajan solos.",
+          "options": {
+            "o_hurry_bye": {
+              "id": "o_hurry_bye",
+              "text": "Lo tendré en cuenta. Adiós.",
+              "nextStatementId": null
+            }
+          }
+        }
+      }
+    }
+  ]
+}
