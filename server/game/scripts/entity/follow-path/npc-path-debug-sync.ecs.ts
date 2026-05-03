@@ -18,7 +18,7 @@ export class NpcPathDebugSyncEcs extends ComponentEcs {
 			.unwrap('FollowPathEcs not found');
 	}
 
-		onLoop(): void {
+	onLoop(): void {
 		const shouldClear =
 			this.followPath.option instanceof StopMovementOption ||
 			(this.followPath.option.isDone() && this.followPath.path.length === 0);
@@ -57,7 +57,7 @@ export class NpcPathDebugSyncEcs extends ComponentEcs {
 			this.state.debugPath.points.push(new GridPointState({ x, y }));
 		}
 
-		console.log(`[NPC Path] ${this.parent}:`, this.followPath.path);
+		// console.log(`[NPC Path] ${this.parent}:`, this.followPath.path);
 
 		this.state.debugPath.active = true;
 		this.state.debugPath.revision += 1;
@@ -73,7 +73,7 @@ export class NpcPathDebugSyncEcs extends ComponentEcs {
 			this.state.debugPath.points.pop();
 		}
 
-		console.log(`[NPC Path] ${this.parent}: cleared`);
+		// console.log(`[NPC Path] ${this.parent}: cleared`);
 
 		this.state.debugPath.active = false;
 		this.state.debugPath.revision += 1;

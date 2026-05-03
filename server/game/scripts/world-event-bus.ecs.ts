@@ -4,6 +4,8 @@ export enum WorldEventType {
 	EntityJump = 'entity:jump',
 	EntityDeath = 'entity:death',
 	EntityFallVoid = 'entity:fall_void',
+	EntityEnterTrigger = 'entity:enter_trigger',
+	EntityExitTrigger = 'entity:exit_trigger',
 	InventoryItemGiven = 'inventory:item_given',
 	InventoryItemReceived = 'inventory:item_received',
 }

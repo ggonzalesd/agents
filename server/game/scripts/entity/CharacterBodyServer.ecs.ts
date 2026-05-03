@@ -62,6 +62,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 				: RAPIER.RigidBodyDesc.dynamic();
 		bodyDesc.setTranslation(...vec3Flatten(this.characterState.position));
 		this.body = this.physic.createRigidBody(bodyDesc);
+		this.body.userData = this.parent;
 
 		const cuboidHalfExtents = this.config.cuboidHalfExtents ?? {
 			x: 0.25,

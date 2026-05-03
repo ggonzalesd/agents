@@ -6,6 +6,7 @@ import { BoxState } from './box.state';
 import { InventoryState, ItemEntityState } from './inventory.state';
 import { CharacterBodyState } from './character-body.state';
 import { MovementState } from './movement.state';
+import { TriggerZoneState } from './trigger-zone.state';
 
 export class GridPointState extends Schema {
 	@type('int32')
@@ -86,4 +87,7 @@ export class GameState extends Schema {
 
 	@type({ map: BoxState })
 	public boxes = new MapSchema<BoxState>();
+
+	@type({ map: TriggerZoneState })
+	public triggerZones = new MapSchema<TriggerZoneState>();
 }

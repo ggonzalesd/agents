@@ -4,6 +4,7 @@ import type RAPIER from '@dimforge/rapier3d-compat';
 
 import { ServerDataEcs } from '../scripts/serverData.ecs';
 import { ServerManagerEcs } from '../scripts/serverManager.ecs';
+import { SensorDispatchEcs } from '../scripts/trigger/sensorDispatch.ecs';
 import type { Room } from 'colyseus';
 import { WorldPathfinderEcs } from '../scripts/world/world-grid.ecs';
 import { MapLoaderEcs } from '../scripts/world/map-loader.ecs';
@@ -21,18 +22,21 @@ const experimentFactories: ConstructorParameters<typeof ExperimentManagerEcs>[0]
 export const worldServerFactory = ({
 	state,
 	worldPhysics,
+	eventQueue,
 	room,
 }: {
 	state: GameState;
 	worldPhysics: RAPIER.World;
+	eventQueue: RAPIER.EventQueue;
 	room: Room<GameState>;
 }) =>
 	new WorldEcs({
-		[ServerDataEcs.name]: new ServerDataEcs(state, worldPhysics, room),
+		[ServerDataEcs.name]: new ServerDataEcs(state, worldPhysics, eventQueue, room),
 		[WorldEventBusEcs.name]: new WorldEventBusEcs(),
 		[ExperimentManagerEcs.name]: new ExperimentManagerEcs(experimentFactories),
 		[WorldPathfinderEcs.name]: new WorldPathfinderEcs(),
 		[MapLoaderEcs.name]: new MapLoaderEcs(),
 		[ServerManagerEcs.name]: new ServerManagerEcs(),
 		[AnimalSpawnerManagerEcs.name]: new AnimalSpawnerManagerEcs(),
+		[SensorDispatchEcs.name]: new SensorDispatchEcs(),
 	});

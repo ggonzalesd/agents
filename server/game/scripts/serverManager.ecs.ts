@@ -6,6 +6,7 @@ import { classicNpcServerFactoryGenerator } from '../prefab/classicNpc.server';
 import { itemServerFactory } from '../prefab/item.server';
 import { npcServerFactoryGenerator } from '../prefab/npc.server';
 import { boxServerFactory } from '../prefab/box.server';
+import { triggerZoneServerFactory } from '../prefab/trigger-zone.server';
 import type { IVec3 } from '#/utils/math.util';
 
 import * as ClassicNPCRepository from '$/db/classic-npc.db';
@@ -18,6 +19,7 @@ import { MapLoaderEcs } from './world/map-loader.ecs';
 import { buildMerchantDialogueConfig } from '../scripts/classic-npc/dialogue/merchant-dialogue.config';
 
 import type { BoxSkin } from '#/state/box.state';
+import { WorldEventBusEcs, WorldEventType } from './world-event-bus.ecs';
 
 const BOX_SPAWNS: { pos: IVec3; skin: BoxSkin }[] = [
 	{ pos: { x: 4, y: 0, z: 3 }, skin: 'box_stacked' },
@@ -77,8 +79,30 @@ export class ServerManagerEcs extends ComponentEcs {
 			this.world.addEntity(item);
 		}
 
+		// Trigger zone en el lobby
+		const trigger = triggerZoneServerFactory({
+			world: this.world,
+			name: 'trigger-lobby-1',
+			pos: { x: 0, y: 1, z: 0 },
+			radius: 3,
+			height: 5,
+			color: 0xff0000,
+		});
+		this.world.addEntity(trigger);
+
+		this.world.get(WorldEventBusEcs).ifSome((bus) => {
+			bus.on(WorldEventType.EntityEnterTrigger, (entityName, payload) => {
+				console.log(
+					` = = = = = = ${entityName} entered trigger with payload:`,
+					payload,
+				);
+			});
+		});
+
 		const npcServerFactory = npcServerFactoryGenerator(this.world);
-		const classicNpcServerFactory = classicNpcServerFactoryGenerator(this.world);
+		const classicNpcServerFactory = classicNpcServerFactoryGenerator(
+			this.world,
+		);
 
 		const serverData = this.world
 			.get(ServerDataEcs)
@@ -175,4 +199,3 @@ export class ServerManagerEcs extends ComponentEcs {
 		});
 	}
 }
-

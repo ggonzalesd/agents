@@ -4,6 +4,7 @@ import { InputMode } from '@/utils/inputMode';
 import { boxClientFactoryGenerator } from '../prefab/box.client';
 import { itemClientFactoryGenerator } from '../prefab/item.client';
 import { npcClientFactoryGenerator } from '../prefab/npc.client';
+import { triggerZoneClientFactoryGenerator } from '../prefab/trigger-zone.client';
 
 import { playerClientFactoryGenerator } from '../prefab/player.client';
 import { ColyseusClientEcs } from './colyseus-client.ecs';
@@ -21,6 +22,9 @@ export class ClientManagerEcs extends ComponentEcs {
 		null!;
 
 	private npcClientFactory: ReturnType<typeof npcClientFactoryGenerator> =
+		null!;
+
+	private triggerZoneClientFactory: ReturnType<typeof triggerZoneClientFactoryGenerator> =
 		null!;
 
 	private idMessage: string = '';
@@ -80,6 +84,15 @@ export class ClientManagerEcs extends ComponentEcs {
 			this.world.deleteEntityById(index);
 		});
 
+		proxy(room.state).triggerZones.onAdd((state, index) => {
+			const trigger = this.triggerZoneClientFactory(index, state);
+			this.world.addEntity(trigger);
+		});
+
+		proxy(room.state).triggerZones.onRemove((_state, index) => {
+			this.world.deleteEntityById(index);
+		});
+
 		room.onMessage('message', (message) => {
 			const uiClient = this.uiClient.raw();
 
@@ -116,6 +129,7 @@ export class ClientManagerEcs extends ComponentEcs {
 		this.itemClientFactory = itemClientFactoryGenerator(this.world);
 		this.boxClientFactory = boxClientFactoryGenerator(this.world);
 		this.npcClientFactory = npcClientFactoryGenerator(this.world);
+		this.triggerZoneClientFactory = triggerZoneClientFactoryGenerator(this.world);
 
 		this.world.get(UIClientEcs).giveTo(this.uiClient);
 		this.world.get(ColyseusClientEcs).giveTo(this.colyseusClient);

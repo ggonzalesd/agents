@@ -33,6 +33,7 @@ import { dialogueResponseMessageSchema } from '#/schema/dialogue.schema';
 export class MainRoom extends Room<GameState> {
 	worldEcs: WorldEcs = null!;
 	worldPhy: RAPIER.World = null!;
+	eventQueue: RAPIER.EventQueue = null!;
 
 	playerServerFactory: ReturnType<
 		typeof PlayerPrefab.playerServerFactoryGenerator
@@ -47,10 +48,12 @@ export class MainRoom extends Room<GameState> {
 
 		this.state = new GameState();
 		this.worldPhy = new RAPIER.World({ x: 0, y: -9.81, z: 0 });
+		this.eventQueue = new RAPIER.EventQueue(true);
 
 		this.worldEcs = WorldPrefab.worldServerFactory({
 			state: this.state,
 			worldPhysics: this.worldPhy,
+			eventQueue: this.eventQueue,
 			room: this,
 		});
 
@@ -91,7 +94,9 @@ export class MainRoom extends Room<GameState> {
 	}
 
 	private onDialogueStart(client: Client, message: unknown): void {
-		const playerEntityId = client.userData?.userInfo?.agent?.identifier as string | undefined;
+		const playerEntityId = client.userData?.userInfo?.agent?.identifier as
+			| string
+			| undefined;
 		if (!playerEntityId) {
 			client.send('dialogue:unavailable', { npcEntityId: '' });
 			return;
@@ -119,7 +124,9 @@ export class MainRoom extends Room<GameState> {
 	}
 
 	private onDialogueResponse(client: Client, message: unknown): void {
-		const playerEntityId = client.userData?.userInfo?.agent?.identifier as string | undefined;
+		const playerEntityId = client.userData?.userInfo?.agent?.identifier as
+			| string
+			| undefined;
 		if (!playerEntityId) return;
 
 		const parsed = dialogueResponseMessageSchema.safeParse(message);
@@ -135,7 +142,9 @@ export class MainRoom extends Room<GameState> {
 	}
 
 	private onDialogueCancel(client: Client, message: unknown): void {
-		const playerEntityId = client.userData?.userInfo?.agent?.identifier as string | undefined;
+		const playerEntityId = client.userData?.userInfo?.agent?.identifier as
+			| string
+			| undefined;
 		if (!playerEntityId) return;
 
 		const data = message as { npcEntityId?: string } | null;
@@ -166,7 +175,9 @@ export class MainRoom extends Room<GameState> {
 			.unwrap('ExperimentManagerEcs not found');
 
 		if (manager.hasActiveRuntime(payload.id)) {
-			client.send('experiment:error', { message: 'Ya tienes un experimento activo' });
+			client.send('experiment:error', {
+				message: 'Ya tienes un experimento activo',
+			});
 			return;
 		}
 
@@ -194,7 +205,7 @@ export class MainRoom extends Room<GameState> {
 
 	onUpdate(_delta: number) {
 		this.worldEcs.onUpdate(_delta);
-		this.worldPhy.step();
+		this.worldPhy.step(this.eventQueue);
 	}
 
 	async onDispose(): Promise<void> {
@@ -327,18 +338,29 @@ export class MainRoom extends Room<GameState> {
 				.unwrap('ExperimentManagerEcs not found');
 
 			if (!manager.hasActiveRuntime(payload.id)) {
-				const inProgress = await ExperimentService.getInProgressExperimentForUser(payload.id);
+				const inProgress =
+					await ExperimentService.getInProgressExperimentForUser(payload.id);
 				if (inProgress) {
-					console.log(`[MainRoom] Auto-resuming experiment '${inProgress.experimentKey}' for ${payload.id}`);
+					console.log(
+						`[MainRoom] Auto-resuming experiment '${inProgress.experimentKey}' for ${payload.id}`,
+					);
 					manager.startExperiment(
-						{ userId: payload.id, username: payload.username, role: payload.role },
+						{
+							userId: payload.id,
+							username: payload.username,
+							role: payload.role,
+						},
 						userInfo.agent.identifier,
 						inProgress.experimentKey,
 					);
 				}
 			}
 		} catch (err) {
-			console.error('[MainRoom] Failed to auto-resume experiment for', payload.id, err);
+			console.error(
+				'[MainRoom] Failed to auto-resume experiment for',
+				payload.id,
+				err,
+			);
 		}
 
 		if (payload.loginType === LOGIN_TYPE.REDEEM_TOKEN) {
