@@ -11,7 +11,11 @@ import { NPCEventQueueEcs } from '../ai/npc-event-queue.ecs';
 import { TreeServerBehavior } from '../tree/treeServerBehavior.ecs';
 import { BoxServerBehavior } from '../box/boxServerBehavior.ecs';
 import { AnimalStateEcs } from '../animal/animal-state.ecs';
-import { WorldEventBusEcs, WorldEventType } from '../world-event-bus.ecs';
+import {
+	WorldEventBusEcs,
+	WorldEventType,
+	type EntityDamagedPayload,
+} from '../world-event-bus.ecs';
 
 interface CharacterBodyConfig {
 	bodyType?: 'dynamic' | 'fixed';
@@ -129,6 +133,14 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 			newLife: this.characterState.life,
 			attackerId: context.attackerId,
 		});
+
+		if (this.parent) {
+			const payload: EntityDamagedPayload = {
+				attackerId: context.attackerId ?? 'unknown',
+				amount,
+			};
+			this.eventBus.emit(WorldEventType.EntityDamaged, this.parent, payload);
+		}
 
 		if (context.attackerId) {
 			this.world.getEntity(this.parent).ifSome((entity) => {

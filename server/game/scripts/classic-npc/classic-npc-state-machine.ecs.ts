@@ -1,10 +1,15 @@
 import { ComponentEcs, type EntityEcs } from '#/ecs';
 import { Option } from '#/utils/Option';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
-import { PlayerServerBehavior } from '../player/playerServerBehavior.ecs';
+import { AnimalStateEcs } from '../animal/animal-state.ecs';
 import { ClassicNPCBehaviorStateEcs } from './classic-npc-behavior-state.ecs';
 import { ClassicNpcBehaviorType } from '$/models/ClassicNPC.model';
 import { ClassicNpcBehaviorState } from './classic-npc.types';
+import {
+	WorldEventBusEcs,
+	WorldEventType,
+	type EntityDamagedPayload,
+} from '../world-event-bus.ecs';
 
 type TargetCandidate = {
 	entity: EntityEcs;
@@ -14,10 +19,13 @@ type TargetCandidate = {
 export class ClassicNPCStateMachineEcs extends ComponentEcs {
 	private static readonly PATROL_DELAY_MIN_MS = 2_000;
 	private static readonly PATROL_DELAY_MAX_MS = 5_000;
- 
+
 	private entityParent: EntityEcs = null!;
 	private character: CharacterBodyServerEcs = null!;
 	private behaviorStateEcs: ClassicNPCBehaviorStateEcs = null!;
+	private eventBus: WorldEventBusEcs = null!;
+	private unsubscribeDamage: (() => void) | null = null;
+	private pendingAttackerId: string | null = null;
 	private _disabled = false;
 
 	onStart(): void {
@@ -32,6 +40,22 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 		this.behaviorStateEcs = this.entityParent
 			.get(ClassicNPCBehaviorStateEcs)
 			.unwrap('ClassicNPCBehaviorStateEcs not found on classic NPC');
+
+		this.eventBus = this.world
+			.get(WorldEventBusEcs)
+			.unwrap('WorldEventBusEcs not found');
+
+		this.unsubscribeDamage = this.eventBus.on<EntityDamagedPayload>(
+			WorldEventType.EntityDamaged,
+			(entityName, payload) => {
+				if (entityName !== this.parent) return;
+				this.pendingAttackerId = payload.attackerId;
+			},
+		);
+
+		this.callOnDelete(() => {
+			this.unsubscribeDamage?.();
+		});
 
 		this.transitionTo(ClassicNpcBehaviorState.IDLE);
 	}
@@ -151,18 +175,36 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 		};
 	}
 
-	private findNearestPlayer(maxDistance: number): TargetCandidate | null {
+	private findNearestEntity(maxDistance: number): TargetCandidate | null {
 		const myPos = this.character.body.translation();
 		const candidates = this.world
-			.getEntityLike({
-				behavior: PlayerServerBehavior,
-				character: CharacterBodyServerEcs,
+			.getFromEntitiesWith(CharacterBodyServerEcs)
+			.filter(({ entity, component }) => {
+				return entity.name !== this.parent && !component.isDead;
 			})
-			.filter(({ entity, components }) => {
-				return entity.name !== this.parent && !components.character.isDead;
+			.map(({ entity, component }) => {
+				const targetPos = component.body.translation();
+				return {
+					entity,
+					distance: Math.hypot(targetPos.x - myPos.x, targetPos.z - myPos.z),
+				};
 			})
-			.map(({ entity, components }) => {
-				const targetPos = components.character.body.translation();
+			.filter((candidate) => candidate.distance <= maxDistance)
+			.sort((left, right) => left.distance - right.distance);
+
+		return candidates[0] ?? null;
+	}
+
+	private findNearestAnimal(maxDistance: number): TargetCandidate | null {
+		const myPos = this.character.body.translation();
+		const candidates = this.world
+			.getFromEntitiesWith(CharacterBodyServerEcs)
+			.filter(({ entity, component }) => {
+				if (entity.name === this.parent || component.isDead) return false;
+				return entity.get(AnimalStateEcs).raw() != null;
+			})
+			.map(({ entity, component }) => {
+				const targetPos = component.body.translation();
 				return {
 					entity,
 					distance: Math.hypot(targetPos.x - myPos.x, targetPos.z - myPos.z),
@@ -188,13 +230,6 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 		return currentLifePercent <= threshold;
 	}
 
-	private isAggressiveBehavior(): boolean {
-		return (
-			this.behaviorStateEcs.config.behaviorType ===
-			ClassicNpcBehaviorType.AGGRESSIVE
-		);
-	}
-
 	private canPatrol(): boolean {
 		return this.behaviorStateEcs.config.patrolRadius > 0;
 	}
@@ -211,22 +246,51 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 	}
 
 	private resolveReactiveTarget(now: number): void {
-		const tookDamage =
-			this.character.characterState.life < this.behaviorStateEcs.lastKnownLife;
-		if (!tookDamage) {
+		const attackerId = this.pendingAttackerId;
+		this.pendingAttackerId = null;
+		if (!attackerId) return;
+
+		const type = this.behaviorStateEcs.config.behaviorType;
+
+		if (type === ClassicNpcBehaviorType.PASSIVE) return;
+
+		if (type === ClassicNpcBehaviorType.HUNTER) {
+			const target = this.getTargetCandidateById(attackerId);
+			if (target && target.entity.get(AnimalStateEcs).raw() != null) {
+				this.beginCombat(target, now);
+			}
 			return;
 		}
 
-		const retaliateTarget = this.findNearestPlayer(
-			this.behaviorStateEcs.config.detectionRange,
-		);
-		if (retaliateTarget) {
-			this.beginCombat(retaliateTarget, now);
-		}
+		const target = this.getTargetCandidateById(attackerId);
+		if (!target) return;
+
+		const hasActiveTarget = this.behaviorStateEcs.targetEntityId != null;
+
+		if (type === ClassicNpcBehaviorType.AGGRESSIVE && hasActiveTarget) return;
+
+		this.beginCombat(target, now);
 	}
 
-	private syncLastKnownLife(): void {
-		this.behaviorStateEcs.lastKnownLife = this.character.characterState.life;
+	private resolveProactiveTarget(now: number): void {
+		if (this.behaviorStateEcs.targetEntityId != null) return;
+
+		const type = this.behaviorStateEcs.config.behaviorType;
+
+		if (type === ClassicNpcBehaviorType.AGGRESSIVE) {
+			const target = this.findNearestEntity(
+				this.behaviorStateEcs.config.aggroRange,
+			);
+			if (target) this.beginCombat(target, now);
+			return;
+		}
+
+		if (type === ClassicNpcBehaviorType.HUNTER) {
+			const target = this.findNearestAnimal(
+				this.behaviorStateEcs.config.aggroRange,
+			);
+			if (target) this.beginCombat(target, now);
+		}
 	}
 
 	public disable(playerEntityId: string): void {
@@ -245,25 +309,12 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 		if (this.character.isDead) {
 			this.clearTarget();
 			this.transitionTo(ClassicNpcBehaviorState.IDLE);
-			this.syncLastKnownLife();
 			return;
 		}
 
 		const now = Date.now();
 		this.resolveReactiveTarget(now);
-
-		const currentTarget = Option.of(this.behaviorStateEcs.targetEntityId)
-			.map((entityId) => this.getTargetCandidateById(entityId))
-			.raw();
-
-		if (this.isAggressiveBehavior() && currentTarget == null) {
-			const aggressiveTarget = this.findNearestPlayer(
-				this.behaviorStateEcs.config.aggroRange,
-			);
-			if (aggressiveTarget) {
-				this.beginCombat(aggressiveTarget, now);
-			}
-		}
+		this.resolveProactiveTarget(now);
 
 		const target = Option.of(this.behaviorStateEcs.targetEntityId)
 			.map((entityId) => this.getTargetCandidateById(entityId))
@@ -275,7 +326,6 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 		) {
 			this.clearTarget();
 			this.transitionTo(ClassicNpcBehaviorState.RETURN);
-			this.syncLastKnownLife();
 			return;
 		}
 
@@ -295,7 +345,6 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 		) {
 			this.clearTarget();
 			this.transitionTo(ClassicNpcBehaviorState.RETURN);
-			this.syncLastKnownLife();
 			return;
 		}
 
@@ -389,7 +438,5 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 				}
 				break;
 		}
-
-		this.syncLastKnownLife();
 	}
 }

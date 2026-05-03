@@ -3,11 +3,17 @@ import { ComponentEcs } from '#/ecs';
 export enum WorldEventType {
 	EntityJump = 'entity:jump',
 	EntityDeath = 'entity:death',
+	EntityDamaged = 'entity:damaged',
 	EntityFallVoid = 'entity:fall_void',
 	EntityEnterTrigger = 'entity:enter_trigger',
 	EntityExitTrigger = 'entity:exit_trigger',
 	InventoryItemGiven = 'inventory:item_given',
 	InventoryItemReceived = 'inventory:item_received',
+}
+
+export interface EntityDamagedPayload {
+	attackerId: string;
+	amount: number;
 }
 
 type Unsubscribe = () => void;

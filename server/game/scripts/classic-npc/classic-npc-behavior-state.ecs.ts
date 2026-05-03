@@ -5,7 +5,6 @@ import { actionsSchema } from '#/schema/actions.schema';
 import type { NPCState } from '#/state/game.state';
 import type { IVec3 } from '#/utils/math.util';
 import type { ClassicNpcConfigDB } from '$/models/ClassicNPC.model';
-import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import {
 	ClassicNpcBehaviorState,
 	ClassicNpcType,
@@ -23,7 +22,6 @@ export class ClassicNPCBehaviorStateEcs extends ComponentEcs {
 	public attackUntilAt = 0;
 	public nextAttackAt = 0;
 	public nextPatrolAt = 0;
-	public lastKnownLife: number;
 	private readonly queuedActions: Array<z.infer<typeof actionsSchema>> = [];
 
 	constructor({
@@ -38,7 +36,6 @@ export class ClassicNPCBehaviorStateEcs extends ComponentEcs {
 		super();
 		this.sharedState = state;
 		this.spawnPoint = { ...spawnPoint };
-		this.lastKnownLife = state.character.life;
 		this.config = {
 			...DEFAULT_CLASSIC_NPC_CONFIG,
 			...(config
@@ -60,14 +57,6 @@ export class ClassicNPCBehaviorStateEcs extends ComponentEcs {
 	onStart(): void {
 		this.sharedState.npcType = ClassicNpcType.CLASSIC;
 		this.sharedState.behaviorState = this.currentState;
-
-		this.world
-			.getEntity(this.parent)
-			.map((entity) => entity.get(CharacterBodyServerEcs))
-			.collapse()
-			.ifSome((character) => {
-				this.lastKnownLife = character.characterState.life;
-			});
 	}
 
 	public setState(state: ClassicNpcBehaviorState): void {
