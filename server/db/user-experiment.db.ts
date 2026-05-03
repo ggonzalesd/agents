@@ -166,9 +166,9 @@ export const createExperimentForUser = async (
 			userId,
 			experimentKey,
 			phases: {
-				create: catalogEntry.phases.map((phase) => ({
+				create: catalogEntry.phases.map((phase, index) => ({
 					phaseKey: phase.key,
-					phaseIndex: phase.index,
+					phaseIndex: index,
 				})),
 			},
 		},

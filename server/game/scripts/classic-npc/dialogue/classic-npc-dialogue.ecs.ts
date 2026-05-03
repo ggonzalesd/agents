@@ -9,6 +9,7 @@ import {
 	type DialogueStartPayload,
 	type DialogueUnavailablePayload,
 } from '#/schema/dialogue.schema';
+import type { NPCState } from '#/state/game.state';
 
 import { ClassicNPCStateMachineEcs } from '../classic-npc-state-machine.ecs';
 import type {
@@ -25,30 +26,28 @@ import type {
 
 export class ClassicNpcDialogueEcs extends ComponentEcs {
 	private readonly config: DialogueConfig;
+	private readonly npcState: NPCState;
 	private room: Room = null!;
 
-	// sesiones activas: playerEntityId → session
 	private readonly sessions = new Map<string, DialogueSession>();
-
-	// índice secuencial para pickStrategy 'sequential'
 	private sequentialIndex = 0;
-
-	// conversaciones deshabilitadas en runtime
 	private readonly disabledConversations = new Set<string>();
-
-	// jugadores que completaron cada conversación (para reusable: false)
 	private readonly completedBy = new Map<string, Set<string>>();
+	private readonly completedOneShots = new Set<string>();
 
-	constructor(config: DialogueConfig, room: Room) {
+	constructor(config: DialogueConfig, room: Room, npcState: NPCState) {
 		super();
 		this.config = config;
 		this.room = room;
+		this.npcState = npcState;
 
 		for (const c of config.conversations) {
 			if (c.enabled === false) {
 				this.disabledConversations.add(c.id);
 			}
 		}
+
+		this.updateHasOneShotDialogue();
 	}
 
 	private getStateMachine(): ClassicNPCStateMachineEcs | null {
@@ -219,7 +218,10 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 
 		conversation.onEnd?.(ctx);
 
-		if (!conversation.reusable) {
+		if (conversation.oneShot) {
+			this.completedOneShots.add(conversation.id);
+			this.updateHasOneShotDialogue();
+		} else if (!conversation.reusable) {
 			const set = this.completedBy.get(conversation.id) ?? new Set<string>();
 			set.add(playerEntityId);
 			this.completedBy.set(conversation.id, set);
@@ -237,26 +239,41 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 	}
 
 	private pickConversation(playerEntityId: string): DialogueConversation | null {
+		const oneShotAvailable = this.config.conversations.filter((c) => {
+			if (!c.oneShot) return false;
+			if (this.completedOneShots.has(c.id)) return false;
+			if (this.disabledConversations.has(c.id)) return false;
+			return true;
+		});
+
+		if (oneShotAvailable.length > 0) {
+			return this.pickFromPool(oneShotAvailable);
+		}
+
 		const available = this.config.conversations.filter((c) => {
 			if (this.disabledConversations.has(c.id)) return false;
+			if (c.oneShot) return false;
 			if (c.reusable) return true;
 			return !this.completedBy.get(c.id)?.has(playerEntityId);
 		});
 
 		if (available.length === 0) return null;
 
+		return this.pickFromPool(available);
+	}
+
+	private pickFromPool(pool: DialogueConversation[]): DialogueConversation {
 		if (this.config.pickStrategy === 'sequential') {
-			const conv = available[this.sequentialIndex % available.length];
+			const conv = pool[this.sequentialIndex % pool.length];
 			this.sequentialIndex++;
 			return conv;
 		}
 
 		if (this.config.pickStrategy === 'weighted' && this.config.weights) {
-			return this.pickWeighted(available);
+			return this.pickWeighted(pool);
 		}
 
-		// random (default)
-		return available[Math.floor(Math.random() * available.length)];
+		return pool[Math.floor(Math.random() * pool.length)];
 	}
 
 	private pickWeighted(available: DialogueConversation[]): DialogueConversation {
@@ -275,6 +292,13 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 		}
 
 		return available[available.length - 1];
+	}
+
+	private updateHasOneShotDialogue(): void {
+		const hasOneShot = this.config.conversations.some(
+			(c) => c.oneShot && !this.completedOneShots.has(c.id) && !this.disabledConversations.has(c.id),
+		);
+		this.npcState.hasOneShotDialogue = hasOneShot;
 	}
 
 	private resolveStartStatement(

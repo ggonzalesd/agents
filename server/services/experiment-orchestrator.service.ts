@@ -468,10 +468,13 @@ export const resolveCurrentPhaseFromWorld = async ({
 		});
 
 		const catalogEntry = getExperimentByKey(experimentKey);
-		const isLastPhase =
-			catalogEntry !== null
-				? currentPhase.phaseIndex === catalogEntry.phases.length - 1
-				: true;
+
+		if (!catalogEntry) {
+			throw HttpError.server('Experiment catalog entry not found');
+		}
+
+		const currentCatalogIndex = currentPhase.phaseIndex;
+		const isLastPhase = currentCatalogIndex === catalogEntry.phases.length - 1;
 
 		if (isLastPhase) {
 			await tx.userExperiment.update({
@@ -483,7 +486,8 @@ export const resolveCurrentPhaseFromWorld = async ({
 				},
 			});
 		} else {
-			const nextPhaseIndex = currentPhase.phaseIndex + 1;
+			const nextPhaseIndex = currentCatalogIndex + 1;
+
 			const nextPhase = experiment.phases.find(
 				(phase) => phase.phaseIndex === nextPhaseIndex,
 			);

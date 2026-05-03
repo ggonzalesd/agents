@@ -19,6 +19,7 @@ export const dialogueConversationSchema = z.object({
 	reusable: z.boolean(),
 	resumable: z.boolean(),
 	enabled: z.boolean().optional().default(true),
+	oneShot: z.boolean().optional().default(false),
 });
 
 export const dialogueConfigSchema = z.object({

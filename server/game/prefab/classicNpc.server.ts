@@ -80,7 +80,7 @@ export const classicNpcServerFactoryGenerator =
 			[ClassicNPCStateMachineEcs.name]: new ClassicNPCStateMachineEcs(),
 			[ClassicNPCActionProcessEcs.name]: new ClassicNPCActionProcessEcs(),
 			...(dialogueConfig && room
-				? { [ClassicNpcDialogueEcs.name]: new ClassicNpcDialogueEcs(dialogueConfig, room) }
+				? { [ClassicNpcDialogueEcs.name]: new ClassicNpcDialogueEcs(dialogueConfig, room, state) }
 				: {}),
 		},
 	});

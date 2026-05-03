@@ -44,6 +44,10 @@ export class NpcServerBehavior extends ComponentEcs {
 
 		gameState.npcs.set(parent.name, this.state);
 
+		this.callOnDelete(() => {
+			gameState.npcs.delete(parent.name);
+		});
+
 		this.character = parent
 			.get(CharacterBodyServerEcs)
 			.unwrap('CharacterBodyServerEcs not found');

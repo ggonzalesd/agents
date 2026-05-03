@@ -6,6 +6,7 @@
       "rootStatementId": "s_root",
       "reusable": true,
       "resumable": false,
+      "oneShot": true,
       "statements": {
         "s_root": {
           "id": "s_root",

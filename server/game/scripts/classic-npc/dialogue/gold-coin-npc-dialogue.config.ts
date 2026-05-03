@@ -4,7 +4,7 @@ import type { Room } from 'colyseus';
 import type { DialogueConfig } from './dialogue.types';
 import { loadDialogueConfig } from './dialogue-config.builder';
 
-const COIN_STATEMENT_IDS = ['s_coin_route_a', 's_coin_route_b', 's_coin_route_c'] as const;
+const COIN_OPTION_IDS = ['o_coin_a_end', 'o_coin_b_end', 'o_coin_c_end'] as const;
 
 export function buildGoldCoinDialogueConfig(
 	onCoinGiven: (playerEntityId: string) => void,
@@ -15,13 +15,13 @@ export function buildGoldCoinDialogueConfig(
 		'server/game/data/dialogues/gold-coin-npc.json',
 	);
 
-	const statementHooks = Object.fromEntries(
-		COIN_STATEMENT_IDS.map((stmtId) => [
-			stmtId,
+	const optionHooks = Object.fromEntries(
+		COIN_OPTION_IDS.map((optId) => [
+			optId,
 			{
-				onAsk: (ctx: { playerEntityId: string; statementId: string }) => {
+				onSelect: (ctx: { playerEntityId: string; optionId: string }) => {
 					room.broadcast('dialogue:debug', {
-						message: `[gold-coin] Entregando moneda al jugador "${ctx.playerEntityId}" vía ruta "${ctx.statementId}"`,
+						message: `[gold-coin] Entregando moneda al jugador "${ctx.playerEntityId}" vía opción "${ctx.optionId}"`,
 						type: 'info',
 					});
 					onCoinGiven(ctx.playerEntityId);
@@ -31,6 +31,6 @@ export function buildGoldCoinDialogueConfig(
 	);
 
 	return loadDialogueConfig(jsonPath, {
-		statements: statementHooks,
+		options: optionHooks,
 	});
 }

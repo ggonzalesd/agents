@@ -8,6 +8,7 @@ import { NpcPathRenderEcs } from '../scripts/common/npc-path-render.ecs';
 import { VFXListenerEcs } from '../scripts/common/vfx-listener.ecs';
 import { Character3DEcs } from '../scripts/player/character3D.ecs';
 import { ClassicNpcDialogueClientEcs } from '../scripts/classic-npc/classic-npc-dialogue-client.ecs';
+import { DialogueIndicatorEcs } from '../scripts/classic-npc/dialogue-indicator.ecs';
 
 export const npcClientFactoryGenerator =
 	(world: WorldEcs) =>
@@ -27,6 +28,7 @@ export const npcClientFactoryGenerator =
 				[MessageRenderEcs.name]: new MessageRenderEcs(),
 				[NpcPathRenderEcs.name]: new NpcPathRenderEcs(state),
 				[VFXListenerEcs.name]: new VFXListenerEcs(state.movement),
+				[DialogueIndicatorEcs.name]: new DialogueIndicatorEcs(),
 				...(hasDialogue ? { [ClassicNpcDialogueClientEcs.name]: new ClassicNpcDialogueClientEcs() } : {}),
 			},
 		});
