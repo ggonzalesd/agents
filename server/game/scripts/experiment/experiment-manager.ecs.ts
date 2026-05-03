@@ -125,13 +125,13 @@ export class ExperimentManagerEcs extends ComponentEcs {
 		const flow = this.phaseFlows.get(userId);
 		if (!flow) return;
 
+		this.unmountPhaseForUser(userId);
+
 		this.showPhaseMessage(userId, 'Fallaste', reason, PHASE_MESSAGE_FAIL_MS);
 
 		const deferKey1 = `phase-fail-${userId}-${Date.now()}`;
 		flow.deferKeys.push(deferKey1);
 		this.defer.defer(PHASE_MESSAGE_FAIL_MS, () => {
-			this.unmountPhaseForUser(userId);
-
 			this.showPhaseMessage(userId, 'Again', '', PHASE_MESSAGE_AGAIN_MS);
 
 			const deferKey2 = `phase-again-${userId}-${Date.now()}`;
