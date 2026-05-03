@@ -21,6 +21,8 @@
 	import {
 		phaseCountdownEvent,
 		awaitingFeedbackEvent,
+		phaseMessageEvent,
+		type PhaseMessageEvent,
 	} from '@/game/scripts/experiment/experiment-hud-events.store';
 	import { GameInput } from '@/utils/input.utils';
 	import { InputMode } from '@/utils/inputMode';
@@ -38,6 +40,8 @@
 	let feedbackComment = $state('');
 	let feedbackTextareaEl = $state<HTMLTextAreaElement | null>(null);
 	let phaseCountdown = $state<number | null>(null);
+	let phaseMessage = $state<PhaseMessageEvent | null>(null);
+	let phaseMessageTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	const worldEcsContext = getContext<Option<WorldEcs>>(WorldEcs.name);
 	const debugContext = getDebugContext();
@@ -165,6 +169,7 @@
 	feedbackComment = '';
 	gameInputContext.setMode(InputMode.GAME);
 	debugContext.success('Feedback enviado. Experimento completado.');
+	handleStopExperiment(activeExperiment!.experimentKey);
 	}
 
 	onMount(() => {
@@ -199,6 +204,18 @@
 			void tick().then(() => feedbackTextareaEl?.focus());
 		});
 
+		const unsubPhaseMessage = phaseMessageEvent.subscribe((event) => {
+			if (!event) return;
+			if (myUserId !== null && event.userId !== myUserId) return;
+
+			phaseMessage = event;
+			if (phaseMessageTimeout) clearTimeout(phaseMessageTimeout);
+			phaseMessageTimeout = setTimeout(() => {
+				phaseMessage = null;
+				phaseMessageTimeout = null;
+			}, event.durationMs);
+		});
+
 		let pollInterval: ReturnType<typeof setInterval> | null = null;
 		const clockInterval = setInterval(() => {
 			nowMs = Date.now();
@@ -221,7 +238,9 @@
 		return () => {
 			unsubCountdown();
 			unsubFeedback();
+			unsubPhaseMessage();
 			if (countdownInterval) clearInterval(countdownInterval);
+			if (phaseMessageTimeout) clearTimeout(phaseMessageTimeout);
 			clearInterval(clockInterval);
 			if (pollInterval) clearInterval(pollInterval);
 		};
@@ -394,6 +413,19 @@
 		<span class="text-[8rem] font-black leading-none text-white drop-shadow-[0_0_40px_rgba(0,0,0,0.9)]">
 			{phaseCountdown === 0 ? '¡YA!' : phaseCountdown}
 		</span>
+	</div>
+{/if}
+
+{#if phaseMessage}
+	<div class="pointer-events-none absolute inset-0 z-30 flex flex-col items-center justify-center">
+		<span class="text-[8rem] font-black leading-none text-white drop-shadow-[0_0_40px_rgba(0,0,0,0.9)]">
+			{phaseMessage.title}
+		</span>
+		{#if phaseMessage.subtitle}
+			<span class="mt-4 text-2xl font-semibold text-zinc-200 drop-shadow-[0_0_20px_rgba(0,0,0,0.9)]">
+				{phaseMessage.subtitle}
+			</span>
+		{/if}
 	</div>
 {/if}
 

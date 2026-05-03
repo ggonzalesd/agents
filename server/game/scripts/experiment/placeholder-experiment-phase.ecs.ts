@@ -4,7 +4,7 @@ import type { ExperimentRuntimeEcs } from './experiment-runtime.ecs';
 import { ExperimentPhaseEcs } from './experiment-phase.ecs';
 
 export class PlaceholderExperimentPhaseEcs extends ExperimentPhaseEcs {
-	constructor(definition: ExperimentPhaseDefinition, runtime: ExperimentRuntimeEcs | null = null) {
+	constructor(definition: ExperimentPhaseDefinition, runtime: ExperimentRuntimeEcs) {
 		super(definition, runtime);
 	}
 }

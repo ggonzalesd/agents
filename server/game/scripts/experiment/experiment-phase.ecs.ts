@@ -8,13 +8,13 @@ type Unsubscribe = () => void;
 
 export class ExperimentPhaseEcs extends ComponentEcs {
 	public readonly definition: ExperimentPhaseDefinition;
-	public runtimeUserId: string = '';
-	protected runtime: ExperimentRuntimeEcs | null = null;
+	public readonly runtime: ExperimentRuntimeEcs;
+	private _isMounted = false;
 	protected unsubs: Unsubscribe[] = [];
 
 	constructor(
 		definition: ExperimentPhaseDefinition,
-		runtime: ExperimentRuntimeEcs | null = null,
+		runtime: ExperimentRuntimeEcs,
 	) {
 		super();
 		this.definition = definition;
@@ -29,14 +29,28 @@ export class ExperimentPhaseEcs extends ComponentEcs {
 		return this.definition.componentKey;
 	}
 
-	onStart(): void {
+	public get isMounted(): boolean {
+		return this._isMounted;
+	}
+
+	public mountPhase(): void {
+		if (this._isMounted) return;
+		this._isMounted = true;
 		this.onMountPhase();
 	}
 
-	onDelete(): void {
+	public unmountPhase(): void {
+		if (!this._isMounted) return;
+		this._isMounted = false;
 		this.onUnmountPhase();
 		this.unsubs.forEach((u) => u());
 		this.unsubs = [];
+	}
+
+	onStart(): void {}
+
+	onDelete(): void {
+		this.unmountPhase();
 		super.onDelete();
 	}
 
@@ -46,12 +60,7 @@ export class ExperimentPhaseEcs extends ComponentEcs {
 		entityName: string,
 		handler: (payload: T) => void,
 	): void {
-		console.log(`Subscribing to event ${type} for entity ${entityName}`);
 		const unsub = bus.on<T>(type, (name, payload) => {
-			console.log(
-				`Received event ${type} for entity ${name} with payload:`,
-				payload,
-			);
 			if (name === entityName) handler(payload);
 		});
 		this.unsubs.push(unsub);
@@ -60,6 +69,4 @@ export class ExperimentPhaseEcs extends ComponentEcs {
 	protected onMountPhase(): void {}
 
 	protected onUnmountPhase(): void {}
-
-	public onRestartPhase(): void {}
 }

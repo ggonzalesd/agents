@@ -1,5 +1,3 @@
-import { resolve } from 'path';
-
 import { ItemState } from '#/state/inventory.state';
 import type { ExperimentPhaseDefinition } from '#/experiments/guia-experimentacion-v4';
 
@@ -12,6 +10,7 @@ import { WorldEventBusEcs, WorldEventType } from '../../world-event-bus.ecs';
 import { ServerDataEcs } from '../../serverData.ecs';
 import { ExperimentPhaseEcs } from '../experiment-phase.ecs';
 import type { ExperimentRuntimeEcs } from '../experiment-runtime.ecs';
+import { ExperimentManagerEcs } from '../experiment-manager.ecs';
 
 const NPC_IDENTIFIER = 'gold-coin-merchant-npc';
 const NPC_SKIN_URL = 'https://mc-heads.net/avatar/MHF_Steve/64';
@@ -30,8 +29,6 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 
 	protected onMountPhase(): void {
 		this.resolved = false;
-
-		if (!this.runtime) return;
 
 		const bus = this.world.get(WorldEventBusEcs).raw();
 		if (!bus) return;
@@ -58,11 +55,10 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 		}
 	}
 
-	public onRestartPhase(): void {
-		this.resolved = false;
-	}
-
-	private spawnNpc(userId: string, room: Parameters<typeof buildGoldCoinDialogueConfig>[1]): void {
+	private spawnNpc(
+		userId: string,
+		room: Parameters<typeof buildGoldCoinDialogueConfig>[1],
+	): void {
 		const slotPos = getSlotPosition(userId);
 		const pos = slotPos
 			? { x: slotPos.x + 3, y: slotPos.y, z: slotPos.z + 3 }
@@ -81,12 +77,15 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 			id: npcName,
 			name: npcName,
 			display: 'Aldeano',
-			description: 'Un aldeano que puede darte una moneda de oro si te lo ganas.',
+			description:
+				'Un aldeano que puede darte una moneda de oro si te lo ganas.',
 			skin: NPC_SKIN_URL,
 			pos,
 			life: 100,
 			maxLife: 100,
 			config: {
+				id: npcName,
+				npcId: npcName,
 				behaviorType: ClassicNpcBehaviorType.PASSIVE,
 				aggroRange: 0,
 				attackRange: 0,
@@ -115,7 +114,10 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 		const playerEntityOp = this.world.getEntity(playerEntityId);
 		if (playerEntityOp.isNone()) return;
 
-		const playerInventory = playerEntityOp.unwrap('').get(InventoryServerEcs).raw();
+		const playerInventory = playerEntityOp
+			.unwrap('')
+			.get(InventoryServerEcs)
+			.raw();
 		if (!playerInventory) return;
 
 		const freeSlot = playerInventory.getAvailableSlot();
@@ -127,7 +129,11 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 		);
 
 		for (const client of room.clients) {
-			const identifier = (client.userData?.userInfo as { agent?: { identifier?: string } } | undefined)?.agent?.identifier;
+			const identifier = (
+				(client.userData as any)?.userInfo as
+					| { agent?: { identifier?: string } }
+					| undefined
+			)?.agent?.identifier;
 			if (identifier === playerEntityId) {
 				client.send('inventory:item_received', {
 					item: { type: COIN_ITEM_TYPE, quantity: 1 },
@@ -147,6 +153,8 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 	private handleCoinReceived(): void {
 		if (this.resolved) return;
 		this.resolved = true;
-		void this.runtime?.resolveCurrentPhase();
+		this.world.get(ExperimentManagerEcs).ifSome((manager) => {
+			manager.handlePhaseSuccess(this.runtime.userId);
+		});
 	}
 }

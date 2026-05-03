@@ -4,8 +4,10 @@ import { ColyseusClientEcs } from '../colyseus-client.ecs';
 import {
 	awaitingFeedbackEvent,
 	phaseCountdownEvent,
+	phaseMessageEvent,
 	type AwaitingFeedbackEvent,
 	type PhaseCountdownEvent,
+	type PhaseMessageEvent,
 } from './experiment-hud-events.store';
 
 export class ExperimentHudListenerEcs extends ComponentEcs {
@@ -26,6 +28,10 @@ export class ExperimentHudListenerEcs extends ComponentEcs {
 
 				room.onMessage('experiment:awaiting-feedback', (data: AwaitingFeedbackEvent) => {
 					awaitingFeedbackEvent.set(data);
+				});
+
+				room.onMessage('experiment:phase:message', (data: PhaseMessageEvent) => {
+					phaseMessageEvent.set(data);
 				});
 			}),
 		);

@@ -7,7 +7,7 @@ import { CharacterBodyServerEcs } from '../../entity/CharacterBodyServer.ecs';
 import { ServerDataEcs } from '../../serverData.ecs';
 import { MapLoaderEcs } from '../../world/map-loader.ecs';
 import { DynamicPathfinder } from '../../world/dynamic-pathfinder';
-import { ExperimentPhaseEcs } from '../experiment-phase.ecs';
+import type { ExperimentPhaseEcs } from '../experiment-phase.ecs';
 import { ExperimentRuntimeEcs } from '../experiment-runtime.ecs';
 import { PlaceholderExperimentPhaseEcs } from '../placeholder-experiment-phase.ecs';
 import { RequestGoldCoinPhaseEcs } from '../phases/request-gold-coin.phase.ecs';
@@ -29,12 +29,12 @@ type PhaseFactory = (
 	runtime: ExperimentRuntimeEcs,
 ) => ExperimentPhaseEcs;
 
-const phaseFactories = new Map<string, PhaseFactory>([
-	[
-		'request-gold-coin',
-		(def, runtime) => new RequestGoldCoinPhaseEcs(def, runtime),
-	],
-]);
+const phaseFactories: {
+	[string: string]: PhaseFactory;
+} = {
+	'request-gold-coin': (def, runtime) =>
+		new RequestGoldCoinPhaseEcs(def, runtime),
+};
 
 export class NpcsSinLlmsExperimentRuntimeEcs extends ExperimentRuntimeEcs {
 	private slotRelease: (() => void) | null = null;
@@ -95,7 +95,12 @@ export class NpcsSinLlmsExperimentRuntimeEcs extends ExperimentRuntimeEcs {
 				treeServerFactory({ world, name, pos }),
 			);
 			loader.registerInstanceFactory('box', ({ world, name, pos, metadata }) =>
-				boxServerFactory({ world, name, pos, skin: (metadata.skin as BoxSkin) ?? 'box_stacked' }),
+				boxServerFactory({
+					world,
+					name,
+					pos,
+					skin: (metadata.skin as BoxSkin) ?? 'box_stacked',
+				}),
 			);
 			loader.registerInstanceFactory('item', ({ world, name, pos, metadata }) =>
 				itemServerFactory({
@@ -177,7 +182,7 @@ export class NpcsSinLlmsExperimentRuntimeEcs extends ExperimentRuntimeEcs {
 	protected createPhaseComponent(
 		definition: ExperimentPhaseDefinition,
 	): ExperimentPhaseEcs {
-		const factory = phaseFactories.get(definition.componentKey);
+		const factory = phaseFactories[definition.componentKey];
 		return factory
 			? factory(definition, this)
 			: new PlaceholderExperimentPhaseEcs(definition, this);
