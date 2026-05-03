@@ -35,10 +35,15 @@ export class Item3DEcs extends ComponentEcs {
 
 		const model = getItemModel(this.state.item.type);
 		if (model) {
-			preloadGLB(model.path).then((glb) => {
-				this.meshContainer.add(glb[0].scene);
-				this.meshContainer.scale.setScalar(model.scale);
-			});
+			preloadGLB(model.path)
+				.then(([glb]) => {
+					const clone = glb.scene.clone(true);
+					this.meshContainer.add(clone);
+					this.meshContainer.scale.setScalar(model.scale);
+				})
+				.catch((err) => {
+					console.warn(`[Item3DEcs] Failed to load model for "${this.state.item.type}":`, err);
+				});
 		}
 	}
 

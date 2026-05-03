@@ -3,7 +3,6 @@ import * as RAPIER from '@dimforge/rapier3d-compat';
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { ServerDataEcs } from './serverData.ecs';
 import { classicNpcServerFactoryGenerator } from '../prefab/classicNpc.server';
-import { itemServerFactory } from '../prefab/item.server';
 import { npcServerFactoryGenerator } from '../prefab/npc.server';
 import { boxServerFactory } from '../prefab/box.server';
 import { triggerZoneServerFactory } from '../prefab/trigger-zone.server';
@@ -62,22 +61,6 @@ export class ServerManagerEcs extends ComponentEcs {
 			});
 			this.world.addEntity(box);
 		});
-
-		// Random Object
-		const types = ['sword', 'potion', 'cookie', 'seeds', 'coin'] as const;
-
-		for (let i = 0; i < 10; i++) {
-			const item = itemServerFactory({
-				world: this.world,
-				name: `item1_${Math.random().toString(36).substring(7)}`,
-				pos: { x: 0, y: 5, z: Math.random() * 10 - 5 },
-				stats: {
-					amount: 1,
-					type: types[Math.floor(Math.random() * types.length)],
-				},
-			});
-			this.world.addEntity(item);
-		}
 
 		// Trigger zone en el lobby
 		const trigger = triggerZoneServerFactory({
