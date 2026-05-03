@@ -33,6 +33,9 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 	// índice secuencial para pickStrategy 'sequential'
 	private sequentialIndex = 0;
 
+	// conversaciones deshabilitadas en runtime
+	private readonly disabledConversations = new Set<string>();
+
 	// jugadores que completaron cada conversación (para reusable: false)
 	private readonly completedBy = new Map<string, Set<string>>();
 
@@ -40,6 +43,12 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 		super();
 		this.config = config;
 		this.room = room;
+
+		for (const c of config.conversations) {
+			if (c.enabled === false) {
+				this.disabledConversations.add(c.id);
+			}
+		}
 	}
 
 	private getStateMachine(): ClassicNPCStateMachineEcs | null {
@@ -184,6 +193,18 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 		return this.sessions.has(playerEntityId);
 	}
 
+	public enableConversation(conversationId: string): void {
+		this.disabledConversations.delete(conversationId);
+	}
+
+	public disableConversation(conversationId: string): void {
+		this.disabledConversations.add(conversationId);
+	}
+
+	public isConversationEnabled(conversationId: string): boolean {
+		return !this.disabledConversations.has(conversationId);
+	}
+
 	// ── Internos ───────────────────────────────────────────────────────────────
 
 	private endDialogue(playerEntityId: string, conversation: DialogueConversation): void {
@@ -217,6 +238,7 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 
 	private pickConversation(playerEntityId: string): DialogueConversation | null {
 		const available = this.config.conversations.filter((c) => {
+			if (this.disabledConversations.has(c.id)) return false;
 			if (c.reusable) return true;
 			return !this.completedBy.get(c.id)?.has(playerEntityId);
 		});
