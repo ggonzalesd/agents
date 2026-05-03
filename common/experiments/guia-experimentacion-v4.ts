@@ -27,12 +27,12 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 				title: 'Fase 1: Pedir una moneda de oro',
 				description: 'Habla con el aldeano y convéncelo de que te entregue una moneda de oro. Hay varias formas de lograrlo.',
 			},
-			// {
-			// 	key: 'defeat-villain-npc-2',
-			// 	componentKey: 'defeat-villain-npc',
-			// 	title: 'Fase 2: Vencer a un NPC villano',
-			// 	description: 'Derrota al NPC villano que aparecerá en el escenario.',
-			// },
+			{
+				key: 'defeat-villain-npc-2',
+				componentKey: 'defeat-villain-npc',
+				title: 'Fase 2: Vencer a un NPC villano',
+				description: 'Derrota al NPC villano que aparecerá en el escenario.',
+			},
 			// {
 			// 	key: 'help-hunt-deer-3',
 			// 	componentKey: 'help-hunt-deer',
@@ -51,12 +51,13 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 			// 	title: 'Fase 5: Escoltar al NPC',
 			// 	description: 'Escolta al NPC desde el punto A hasta el punto B sin que sufra daño.',
 			// },
-			// {
-			// 	key: 'trade-sword-potion-6',
-			// 	componentKey: 'trade-sword-potion',
-			// 	title: 'Fase 6: Intercambio de objetos',
-			// 	description: 'Intercambia una espada por una poción con el NPC.',
-			// },
+			{
+				key: 'trade-item-6',
+				componentKey: 'trade-item',
+				title: 'Fase 6: Intercambio de objetos',
+				description: 'Consigue una espada de una caja y cámbiala por una poción con el mercader.',
+				config: { giveItem: 'sword', receiveItem: 'potion' },
+			},
 			// {
 			// 	key: 'follow-npc-7',
 			// 	componentKey: 'follow-npc',
