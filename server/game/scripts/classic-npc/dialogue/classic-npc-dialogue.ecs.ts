@@ -204,6 +204,10 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 		return !this.disabledConversations.has(conversationId);
 	}
 
+	public updateVariables(vars: Record<string, string>): void {
+		this.config.variables = () => vars;
+	}
+
 	// ── Internos ───────────────────────────────────────────────────────────────
 
 	private endDialogue(playerEntityId: string, conversation: DialogueConversation): void {
@@ -316,6 +320,16 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 		return this.config.conversations.find((c) => c.id === conversationId) ?? null;
 	}
 
+	private resolveText(text: string): string {
+		if (!this.config.variables) return text;
+		const vars = this.config.variables();
+		let result = text;
+		for (const [key, value] of Object.entries(vars)) {
+			result = result.replaceAll(`%${key}%`, value);
+		}
+		return result;
+	}
+
 	private buildStatementPayload(
 		session: DialogueSession,
 		conversation: DialogueConversation,
@@ -326,7 +340,7 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 		const options = Object.values(statement.options).map(
 			(opt: DialogueOption, index: number) => ({
 				id: opt.id,
-				text: opt.text,
+				text: this.resolveText(opt.text),
 				index,
 			}),
 		);
@@ -335,7 +349,7 @@ export class ClassicNpcDialogueEcs extends ComponentEcs {
 			npcEntityId: this.parent!,
 			conversationId: session.conversationId,
 			statementId: session.currentStatementId,
-			text: statement.text,
+			text: this.resolveText(statement.text),
 			options,
 		};
 	}

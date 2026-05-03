@@ -75,12 +75,13 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 				title: 'Fase 9: Entregar un mensaje',
 				description: 'Lleva el mensaje del NPC a otro NPC en el escenario.',
 			},
-			// {
-			// 	key: 'collect-special-item-10',
-			// 	componentKey: 'collect-special-item',
-			// 	title: 'Fase 10: Recolectar objeto especial',
-			// 	description: 'Encuentra y entrega el objeto específico que el NPC te solicita.',
-			// },
+			{
+				key: 'collect-special-item-10',
+				componentKey: 'collect-item',
+				title: 'Fase 10: Recolectar objeto especial',
+				description: 'Encuentra y entrega el objeto específico que el NPC te solicita.',
+				config: { targetItem: 'seeds', requiredAmount: 3, dropItems: ['seeds', 'coin', 'cookie'] },
+			},
 		],
 	},
 	{

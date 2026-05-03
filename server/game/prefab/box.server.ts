@@ -11,6 +11,7 @@ interface BoxServerFactoryProps {
 	name: string;
 	pos: IVec3;
 	skin?: BoxSkin;
+	dropItems?: string[];
 }
 
 export const boxServerFactory = ({
@@ -18,6 +19,7 @@ export const boxServerFactory = ({
 	name,
 	pos,
 	skin = 'box_stacked',
+	dropItems,
 }: BoxServerFactoryProps) => {
 	const state = new BoxState(pos, skin);
 
@@ -41,7 +43,7 @@ export const boxServerFactory = ({
 					cuboidHalfExtents: { x: 0.45, y: 0.45, z: 0.45 },
 				},
 			),
-			[BoxServerBehavior.name]: new BoxServerBehavior({ state }),
+			[BoxServerBehavior.name]: new BoxServerBehavior({ state, dropItems }),
 		},
 	});
 };

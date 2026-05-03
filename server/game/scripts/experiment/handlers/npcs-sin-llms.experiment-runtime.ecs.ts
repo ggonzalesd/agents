@@ -12,6 +12,7 @@ import { ExperimentRuntimeEcs } from '../experiment-runtime.ecs';
 import { PlaceholderExperimentPhaseEcs } from '../placeholder-experiment-phase.ecs';
 import { RequestGoldCoinPhaseEcs } from '../phases/request-gold-coin.phase.ecs';
 import { DeliverMessagePhaseEcs } from '../phases/deliver-message.phase.ecs';
+import { CollectItemPhaseEcs } from '../phases/collect-item.phase.ecs';
 import { treeServerFactory } from '$/game/prefab/tree.server';
 import { boxServerFactory } from '$/game/prefab/box.server';
 import { itemServerFactory } from '$/game/prefab/item.server';
@@ -37,6 +38,8 @@ const phaseFactories: {
 		new RequestGoldCoinPhaseEcs(def, runtime),
 	'deliver-message': (def, runtime) =>
 		new DeliverMessagePhaseEcs(def, runtime),
+	'collect-item': (def, runtime) =>
+		new CollectItemPhaseEcs(def, runtime),
 };
 
 export class NpcsSinLlmsExperimentRuntimeEcs extends ExperimentRuntimeEcs {

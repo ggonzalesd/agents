@@ -62,8 +62,11 @@ export type DialogueConversation = Omit<DialogueConversationData, 'statements'> 
 	statements: Record<StatementId, DialogueStatement>;
 };
 
+export type DialogueVariablesFn = () => Record<string, string>;
+
 export type DialogueConfig = Omit<DialogueConfigData, 'conversations'> & {
 	conversations: DialogueConversation[];
+	variables?: DialogueVariablesFn;
 };
 
 export type DialogueSession = {

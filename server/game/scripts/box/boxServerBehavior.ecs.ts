@@ -15,11 +15,13 @@ export class BoxServerBehavior extends ComponentEcs {
 	private static readonly DROP_HEIGHT = 3;
 
 	public state: BoxState;
+	private readonly customDropItems: string[] | null;
 	private character: CharacterBodyServerEcs = null!;
 	private serverData: ServerDataEcs = null!;
-	constructor({ state }: { state: BoxState }) {
+	constructor({ state, dropItems }: { state: BoxState; dropItems?: string[] }) {
 		super();
 		this.state = state;
+		this.customDropItems = dropItems?.length ? dropItems : null;
 	}
 
 	onStart(): void {
@@ -55,8 +57,9 @@ export class BoxServerBehavior extends ComponentEcs {
 			z: position.z,
 		});
 
+		const dropPool = this.customDropItems ?? BOX_DROP_ITEMS;
 		const itemType =
-			BOX_DROP_ITEMS[Math.floor(Math.random() * BOX_DROP_ITEMS.length)];
+			dropPool[Math.floor(Math.random() * dropPool.length)];
 		const angle = Math.random() * Math.PI * 2;
 		const radius =
 			BOX_DROP_MIN_RADIUS +
