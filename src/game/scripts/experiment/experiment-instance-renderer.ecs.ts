@@ -23,6 +23,17 @@ interface InstanceRemovePayload {
 type InstanceRenderer = (payload: InstanceCreatePayload) => THREE.Object3D;
 
 const instanceRenderers: Record<string, InstanceRenderer> = {
+	rock: ({ x, y, z }) => {
+		const model = models.largeRocks.values[Math.floor(Math.random() * models.largeRocks.values.length)];
+		const glb = loadGLB(`${models.largeRocks.path}${model}`);
+		const obj = new THREE.Object3D();
+		obj.add(glb.scene.clone());
+		const scale = Math.random() * 0.2 + 0.3;
+		obj.scale.set(scale, scale, scale);
+		obj.rotation.set(0, Math.random() * 2 * Math.PI, 0);
+		obj.position.set(x, y, z);
+		return obj;
+	},
 	tree: ({ x, y, z }) => {
 		const model = models.trees.values[Math.floor(Math.random() * models.trees.values.length)];
 		const glb = loadGLB(`${models.trees.path}${model}`);

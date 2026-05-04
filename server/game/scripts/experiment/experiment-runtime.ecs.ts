@@ -6,7 +6,7 @@ import type { SubmitExperimentFeedbackRequest } from '#/schema/experiment.schema
 import * as ExperimentService from '$/services/experiment-orchestrator.service';
 
 import { ServerDataEcs } from '../serverData.ecs';
-import { ExperimentPhaseEcs } from './experiment-phase.ecs';
+import type { ExperimentPhaseEcs } from './experiment-phase.ecs';
 import { ExperimentManagerEcs } from './experiment-manager.ecs';
 
 export abstract class ExperimentRuntimeEcs extends ComponentEcs {

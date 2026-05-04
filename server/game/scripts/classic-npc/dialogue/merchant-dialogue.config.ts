@@ -1,4 +1,4 @@
-import { resolve } from 'path';
+import { resolve } from 'node:path';
 import type { Room } from 'colyseus';
 
 import { ItemState } from '#/state/inventory.state';

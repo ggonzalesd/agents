@@ -55,6 +55,14 @@ export class ExperimentPlatformManagerEcs extends ComponentEcs {
 				room.onMessage('experiment:platform:remove', (data: PlatformRemovePayload) => {
 					this.removePlatform(data.userId);
 				});
+
+				room.onMessage('escort:floor:create', (data: { id: string; x: number; y: number; z: number; width: number; depth: number }) => {
+					this.createFloor(data);
+				});
+
+				room.onMessage('escort:floor:remove', (data: { id: string }) => {
+					this.removePlatform(data.id);
+				});
 			}),
 		);
 
@@ -84,5 +92,18 @@ export class ExperimentPlatformManagerEcs extends ComponentEcs {
 
 		this.scene.remove(mesh);
 		this.meshes.delete(userId);
+	}
+
+	private createFloor(data: { id: string; x: number; y: number; z: number; width: number; depth: number }): void {
+		this.removePlatform(data.id);
+
+		const geometry = new THREE.BoxGeometry(data.width, 1, data.depth);
+		const mesh = new THREE.Mesh(geometry, PLATFORM_MATERIAL);
+		mesh.position.set(data.x, data.y, data.z);
+		mesh.receiveShadow = true;
+		mesh.castShadow = false;
+
+		this.scene.add(mesh);
+		this.meshes.set(data.id, mesh);
 	}
 }

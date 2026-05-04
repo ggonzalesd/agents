@@ -9,7 +9,7 @@ export class FollowPositionOption implements IFollowOption {
 	done: boolean = false;
 	private settled = false;
 
-	pathfinder: WorldPathfinderEcs;
+	pathfinder: IPathfinder;
 	followPath: FollowPathEcs;
 	position: { x: number; z: number };
 	pivotPosition?: { x: number; z: number } | null;

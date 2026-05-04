@@ -14,7 +14,7 @@ import {
 	experimentStateApiResponseSchema,
 	experimentListApiResponseSchema,
 	experimentAdminActiveApiResponseSchema,
-	submitExperimentFeedbackRequestSchema,
+	type submitExperimentFeedbackRequestSchema,
 } from '#/schema/experiment.schema';
 
 import {

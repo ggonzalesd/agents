@@ -1,7 +1,7 @@
 import type { z } from 'zod';
 
 import { ComponentEcs } from '#/ecs';
-import { actionsSchema } from '#/schema/actions.schema';
+import type { actionsSchema } from '#/schema/actions.schema';
 import type { NPCState } from '#/state/game.state';
 import type { IVec3 } from '#/utils/math.util';
 import type { ClassicNpcConfigDB } from '$/models/ClassicNPC.model';

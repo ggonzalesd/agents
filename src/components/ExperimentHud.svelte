@@ -7,6 +7,7 @@
 	import { WorldEcs } from '#/ecs/World.ecs';
 	import { Option } from '#/utils/Option';
 	import type { GameState } from '#/state/game.state';
+	import type { Room } from 'colyseus.js';
 	import type { ExperimentListItem, ExperimentStateResponse } from '#/schema/experiment.schema';
 
 	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';

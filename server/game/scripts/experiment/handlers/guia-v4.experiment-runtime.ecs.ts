@@ -7,7 +7,7 @@ import { CharacterBodyServerEcs } from '../../entity/CharacterBodyServer.ecs';
 import { ServerDataEcs } from '../../serverData.ecs';
 import { MapLoaderEcs } from '../../world/map-loader.ecs';
 import { DynamicPathfinder } from '../../world/dynamic-pathfinder';
-import { ExperimentPhaseEcs } from '../experiment-phase.ecs';
+import type { ExperimentPhaseEcs } from '../experiment-phase.ecs';
 import { ExperimentRuntimeEcs } from '../experiment-runtime.ecs';
 import { PlaceholderExperimentPhaseEcs } from '../placeholder-experiment-phase.ecs';
 import { JumpOrDieExperimentPhaseEcs } from '../phases/jump-or-die.phase.ecs';

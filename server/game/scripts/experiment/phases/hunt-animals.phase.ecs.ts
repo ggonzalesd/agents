@@ -118,7 +118,7 @@ export class HuntAnimalsPhaseEcs extends ExperimentPhaseEcs {
 	}
 
 	private spawnSingleDeer(userId: string): void {
-		const deerCatalog = ANIMAL_SPAWN_CATALOG['deer'];
+		const deerCatalog = ANIMAL_SPAWN_CATALOG.deer;
 		if (!deerCatalog) return;
 
 		const variant = deerCatalog.variants[this.deerCounter % deerCatalog.variants.length];

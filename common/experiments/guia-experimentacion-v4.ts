@@ -45,12 +45,12 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 			// 	title: 'Fase 4: Recolectar manzanas verdes',
 			// 	description: 'Ayuda al NPC a obtener 5 manzanas verdes.',
 			// },
-			// {
-			// 	key: 'escort-npc-5',
-			// 	componentKey: 'escort-npc',
-			// 	title: 'Fase 5: Escoltar al NPC',
-			// 	description: 'Escolta al NPC desde el punto A hasta el punto B sin que sufra daño.',
-			// },
+			{
+				key: 'escort-npc-5',
+				componentKey: 'escort-npc',
+				title: 'Fase 5: Escoltar al NPC',
+				description: 'Escolta al NPC a través del laberinto hasta el final sin que sufra daño.',
+			},
 			{
 				key: 'trade-item-6',
 				componentKey: 'trade-item',

@@ -1,5 +1,4 @@
 import { ItemState } from '#/state/inventory.state';
-import type { ExperimentPhaseDefinition } from '#/experiments/guia-experimentacion-v4';
 
 import { classicNpcServerFactoryGenerator } from '../../../prefab/classicNpc.server';
 import { ClassicNpcBehaviorType } from '$/models/ClassicNPC.model';
@@ -9,7 +8,6 @@ import { InventoryServerEcs } from '../../entity/InventoryServer.ecs';
 import { WorldEventBusEcs, WorldEventType } from '../../world-event-bus.ecs';
 import { ServerDataEcs } from '../../serverData.ecs';
 import { ExperimentPhaseEcs } from '../experiment-phase.ecs';
-import type { ExperimentRuntimeEcs } from '../experiment-runtime.ecs';
 import { ExperimentManagerEcs } from '../experiment-manager.ecs';
 
 const NPC_IDENTIFIER = 'gold-coin-merchant-npc';
@@ -19,13 +17,6 @@ const COIN_ITEM_TYPE = 'coin';
 export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 	private resolved = false;
 	private npcName: string | null = null;
-
-	constructor(
-		definition: ExperimentPhaseDefinition,
-		runtime: ExperimentRuntimeEcs,
-	) {
-		super(definition, runtime);
-	}
 
 	protected onMountPhase(): void {
 		this.resolved = false;

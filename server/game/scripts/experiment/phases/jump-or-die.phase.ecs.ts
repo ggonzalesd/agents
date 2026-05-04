@@ -1,8 +1,5 @@
-import type { ExperimentPhaseDefinition } from '#/experiments/guia-experimentacion-v4';
-
 import { WorldEventBusEcs, WorldEventType } from '../../world-event-bus.ecs';
 import { ExperimentPhaseEcs } from '../experiment-phase.ecs';
-import type { ExperimentRuntimeEcs } from '../experiment-runtime.ecs';
 import { ANIMAL_SPAWN_CATALOG } from '../../animal/animal-spawn.catalog';
 import { animalServerFactoryGenerator } from '../../../prefab/animal.server';
 import { getSlotPosition } from '$/services/slot-allocator.service';
@@ -13,13 +10,6 @@ export class JumpOrDieExperimentPhaseEcs extends ExperimentPhaseEcs {
 	private resolved = false;
 	private failed = false;
 	private wolfName: string | null = null;
-
-	constructor(
-		definition: ExperimentPhaseDefinition,
-		runtime: ExperimentRuntimeEcs,
-	) {
-		super(definition, runtime);
-	}
 
 	protected onMountPhase(): void {
 		this.resolved = false;
@@ -61,7 +51,7 @@ export class JumpOrDieExperimentPhaseEcs extends ExperimentPhaseEcs {
 		const slotPos = getSlotPosition(userId);
 		if (!slotPos) return;
 
-		const wolfCatalog = ANIMAL_SPAWN_CATALOG['wolf'];
+		const wolfCatalog = ANIMAL_SPAWN_CATALOG.wolf;
 		const wolfVariant = wolfCatalog?.variants[0];
 		if (!wolfVariant) return;
 

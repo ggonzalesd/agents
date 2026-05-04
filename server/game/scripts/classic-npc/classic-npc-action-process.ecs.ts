@@ -2,7 +2,7 @@ import type { z } from 'zod';
 
 import { ComponentEcs, type EntityEcs } from '#/ecs';
 import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
-import { actionsSchema } from '#/schema/actions.schema';
+import type { actionsSchema } from '#/schema/actions.schema';
 import { Option } from '#/utils/Option';
 import { ITEM_REGISTRY } from '#/state/item-registry';
 import { FollowEntityOption } from '../entity/follow-path/follow-entity.class';

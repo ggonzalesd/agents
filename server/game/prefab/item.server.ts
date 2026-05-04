@@ -1,5 +1,5 @@
 import { EntityEcs, type WorldEcs } from '#/ecs';
-import { ComponentEcs } from '#/ecs/Component.ecs';
+import type { ComponentEcs } from '#/ecs/Component.ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import { ItemEntityState } from '#/state/inventory.state';
 import type { IVec3 } from '#/utils/math.util';

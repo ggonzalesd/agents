@@ -116,7 +116,7 @@ export class PlayerClientBehavior extends ComponentEcs {
 
 		// Handle NPC dialogue interaction with F key
 		if (this.input.down('KeyF')) {
-			const selectedEntityId = this.uiClient.game['dialogueNpcEntityId' as never] as string | null;
+			const _selectedEntityId = this.uiClient.game['dialogueNpcEntityId' as never] as string | null;
 			// Check if any nearby NPC has dialogue available via stacker
 			this.world.stacker.dispatch(
 				'dialogue-interact',

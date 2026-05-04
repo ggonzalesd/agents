@@ -16,6 +16,7 @@ import { CollectItemPhaseEcs } from '../phases/collect-item.phase.ecs';
 import { DefeatVillainNpcPhaseEcs } from '../phases/defeat-villain-npc.phase.ecs';
 import { TradeItemPhaseEcs } from '../phases/trade-item.phase.ecs';
 import { HuntAnimalsPhaseEcs } from '../phases/hunt-animals.phase.ecs';
+import { EscortNpcPhaseEcs } from '../phases/escort-npc.phase.ecs';
 import { treeServerFactory } from '$/game/prefab/tree.server';
 import { boxServerFactory } from '$/game/prefab/box.server';
 import { itemServerFactory } from '$/game/prefab/item.server';
@@ -49,6 +50,8 @@ const phaseFactories: {
 		new TradeItemPhaseEcs(def, runtime),
 	'hunt-animals': (def, runtime) =>
 		new HuntAnimalsPhaseEcs(def, runtime),
+	'escort-npc': (def, runtime) =>
+		new EscortNpcPhaseEcs(def, runtime),
 };
 
 export class NpcsSinLlmsExperimentRuntimeEcs extends ExperimentRuntimeEcs {

@@ -215,7 +215,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		}
 	}
 
-	private respawn(): void {
+	public respawn(): void {
 		const sp = this.config.respawnPoint ?? CharacterBodyServerEcs.SPAWN_POINT;
 		this.body.setTranslation({ x: sp.x, y: sp.y, z: sp.z }, true);
 		this.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
