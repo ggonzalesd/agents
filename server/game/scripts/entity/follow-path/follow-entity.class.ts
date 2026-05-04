@@ -1,13 +1,13 @@
 import type { EntityEcs } from '#/ecs';
 import { posRealToGrid } from '#/utils/map.utils';
-import type { WorldPathfinderEcs } from '../../world/world-grid.ecs';
+import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 import { CharacterBodyServerEcs } from '../CharacterBodyServer.ecs';
 import type { IFollowOption } from './follow-option.interface';
 import type { FollowPathEcs } from './follow-path.ecs';
 import { StopMovementOption } from './stop-movement.class';
 
 export class FollowEntityOption implements IFollowOption {
-	private pathfinder: WorldPathfinderEcs;
+	private pathfinder: IPathfinder;
 	private followPath: FollowPathEcs;
 
 	private updatePathTimer = Infinity;
@@ -24,7 +24,7 @@ export class FollowEntityOption implements IFollowOption {
 	character: CharacterBodyServerEcs = null!;
 
 	constructor(props: {
-		pathfinder: WorldPathfinderEcs;
+		pathfinder: IPathfinder;
 		followPath: FollowPathEcs;
 		target: EntityEcs;
 		entity: EntityEcs;
@@ -154,12 +154,10 @@ export class FollowEntityOption implements IFollowOption {
 		);
 
 		this.pathfinder
-			.getPathFromAtoB(currentGridPos, targetGridPos)
-			.then(({ result }) => {
-				if (this.cancelled) return;
+		.getPathFromAtoB(currentGridPos, targetGridPos)
+		.then(({ result }) => {
+			if (this.cancelled) return;
 				if (result.length === 0) {
-					this.fail(`No path available to ${this.target.name}.`);
-					this.stop();
 					return;
 				}
 				this.followPath.path = result;

@@ -1,6 +1,7 @@
 import type { z } from 'zod';
 
 import { ComponentEcs, type EntityEcs } from '#/ecs';
+import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 import { actionsSchema } from '#/schema/actions.schema';
 import { Option } from '#/utils/Option';
 import { ITEM_REGISTRY } from '#/state/item-registry';
@@ -13,6 +14,7 @@ import { MovementServerEcs } from '../entity/MovementServer.ecs';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { ServerDataEcs } from '../serverData.ecs';
 import { WorldPathfinderEcs } from '../world/world-grid.ecs';
+import { EntityPathfinderEcs } from '../entity/entity-pathfinder.ecs';
 import { ClassicNPCBehaviorStateEcs } from './classic-npc-behavior-state.ecs';
 
 type ClassicNpcAction = z.infer<typeof actionsSchema>;
@@ -35,6 +37,16 @@ export class ClassicNPCActionProcessEcs extends ComponentEcs {
 		this.serverData = this.world
 			.get(ServerDataEcs)
 			.unwrap('ServerDataEcs not found');
+	}
+
+	private resolvePathfinder(): Option<IPathfinder> {
+		const entityPathfinder = this.entityParent
+			.get(EntityPathfinderEcs)
+			.map((c) => c.pathfinder);
+
+		if (entityPathfinder.isSome()) return entityPathfinder;
+
+		return this.world.get(WorldPathfinderEcs).map((w) => w as IPathfinder);
 	}
 
 	private getEquippedDamage(): number {
@@ -123,13 +135,13 @@ export class ClassicNPCActionProcessEcs extends ComponentEcs {
 			Option.zip({
 				target: this.world.getEntity(action.entityId),
 				followPath: this.entityParent.get(FollowPathEcs),
-				pathfinder: this.world.get(WorldPathfinderEcs),
+				pathfinder: this.resolvePathfinder(),
 			}).ifSome((zipped) => {
 				zipped.followPath.option = new FollowEntityOption({
 					...zipped,
 					entity: this.entityParent,
 				});
-			});
+		});
 			return;
 		}
 
@@ -137,7 +149,7 @@ export class ClassicNPCActionProcessEcs extends ComponentEcs {
 			Option.zip({
 				target: this.world.getEntity(action.entityId),
 				followPath: this.entityParent.get(FollowPathEcs),
-				pathfinder: this.world.get(WorldPathfinderEcs),
+				pathfinder: this.resolvePathfinder(),
 			}).ifSome((zipped) => {
 				zipped.followPath.option = new FollowEntityOption({
 					...zipped,
@@ -153,7 +165,7 @@ export class ClassicNPCActionProcessEcs extends ComponentEcs {
 			Option.zip({
 				target: this.world.getEntity(action.entityId),
 				followPath: this.entityParent.get(FollowPathEcs),
-				pathfinder: this.world.get(WorldPathfinderEcs),
+				pathfinder: this.resolvePathfinder(),
 			}).ifSome((zipped) => {
 				zipped.followPath.option = new FollowEntityOption({
 					...zipped,
@@ -167,8 +179,10 @@ export class ClassicNPCActionProcessEcs extends ComponentEcs {
 
 		if (action.type === 'move-to-point') {
 			this.entityParent.get(FollowPathEcs).ifSome((followPath) => {
+				const pathfinderOpt = this.resolvePathfinder();
+				if (pathfinderOpt.isNone()) return;
 				followPath.option = new FollowPositionOption({
-					pathfinder: this.world.getUnsafe(WorldPathfinderEcs),
+					pathfinder: pathfinderOpt.unwrap(),
 					followPath,
 					position: { x: action.x, z: action.z },
 					entity: this.entityParent,

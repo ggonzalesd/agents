@@ -6,6 +6,7 @@ import { ServerDataEcs } from '../../serverData.ecs';
 import { WorldEventBusEcs, WorldEventType } from '../../world-event-bus.ecs';
 import { ExperimentPhaseEcs } from '../experiment-phase.ecs';
 import { ExperimentManagerEcs } from '../experiment-manager.ecs';
+import type { NpcsSinLlmsExperimentRuntimeEcs } from '../handlers/npcs-sin-llms.experiment-runtime.ecs';
 
 const VILLAIN_NPC_ID = 'villain-npc';
 const VILLAIN_SKIN = 'kanye';
@@ -86,6 +87,9 @@ export class DefeatVillainNpcPhaseEcs extends ExperimentPhaseEcs {
 		const npcName = `${VILLAIN_NPC_ID}-${userId}`;
 		this.villainNpcName = npcName;
 
+		const pathfinder =
+			(this.runtime as NpcsSinLlmsExperimentRuntimeEcs).experimentPathfinder ?? undefined;
+
 		const factory = classicNpcServerFactoryGenerator(this.world);
 		const npcEntity = factory({
 			id: npcName,
@@ -109,6 +113,7 @@ export class DefeatVillainNpcPhaseEcs extends ExperimentPhaseEcs {
 				patrolRadius: 0,
 				extraConfig: {},
 			},
+			pathfinder,
 			room,
 		});
 

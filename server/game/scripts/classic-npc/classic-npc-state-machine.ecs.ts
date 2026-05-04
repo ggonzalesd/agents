@@ -289,7 +289,9 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 			const target = this.findNearestAnimal(
 				this.behaviorStateEcs.config.aggroRange,
 			);
-			if (target) this.beginCombat(target, now);
+			if (target) {
+				this.beginCombat(target, now);
+			}
 		}
 	}
 
@@ -390,6 +392,7 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 
 			case ClassicNpcBehaviorState.CHASE:
 				if (!target) {
+					this.clearTarget();
 					this.transitionTo(ClassicNpcBehaviorState.RETURN);
 					break;
 				}
@@ -401,6 +404,7 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 
 			case ClassicNpcBehaviorState.ATTACK:
 				if (!target) {
+					this.clearTarget();
 					this.transitionTo(ClassicNpcBehaviorState.RETURN);
 					break;
 				}
@@ -422,6 +426,7 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 
 			case ClassicNpcBehaviorState.FLEE:
 				if (!target) {
+					this.clearTarget();
 					this.transitionTo(ClassicNpcBehaviorState.RETURN);
 					break;
 				}

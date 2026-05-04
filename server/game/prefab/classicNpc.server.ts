@@ -1,5 +1,6 @@
 import { EntityEcs, type WorldEcs } from '#/ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
+import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 import { NPCState } from '#/state/game.state';
 import type { IVec3 } from '#/utils/math.util';
 import type { ClassicNpcConfigDB } from '$/models/ClassicNPC.model';
@@ -8,6 +9,7 @@ import { ClassicNPCBehaviorStateEcs } from '../scripts/classic-npc/classic-npc-b
 import { ClassicNPCStateMachineEcs } from '../scripts/classic-npc/classic-npc-state-machine.ecs';
 import { ClassicNpcDialogueEcs } from '../scripts/classic-npc/dialogue/classic-npc-dialogue.ecs';
 import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';
+import { EntityPathfinderEcs } from '../scripts/entity/entity-pathfinder.ecs';
 import { FollowPathEcs } from '../scripts/entity/follow-path/follow-path.ecs';
 import { NpcPathDebugSyncEcs } from '../scripts/entity/follow-path/npc-path-debug-sync.ecs';
 import { InventoryServerEcs } from '../scripts/entity/InventoryServer.ecs';
@@ -30,6 +32,7 @@ export const classicNpcServerFactoryGenerator =
 		maxLife,
 		dialogueConfig,
 		room,
+		pathfinder,
 	}: {
 		name: string;
 		display: string;
@@ -42,6 +45,7 @@ export const classicNpcServerFactoryGenerator =
 		maxLife?: number;
 		dialogueConfig?: DialogueConfig;
 		room?: Room;
+		pathfinder?: IPathfinder;
 	}) => {
 		const state = new NPCState(pos, skin ?? name, life, maxLife, 'CLASSIC');
 		if (dialogueConfig) state.hasDialogue = true;
@@ -81,6 +85,9 @@ export const classicNpcServerFactoryGenerator =
 			[ClassicNPCActionProcessEcs.name]: new ClassicNPCActionProcessEcs(),
 			...(dialogueConfig && room
 				? { [ClassicNpcDialogueEcs.name]: new ClassicNpcDialogueEcs(dialogueConfig, room, state) }
+				: {}),
+			...(pathfinder
+				? { [EntityPathfinderEcs.name]: new EntityPathfinderEcs(pathfinder) }
 				: {}),
 		},
 	});

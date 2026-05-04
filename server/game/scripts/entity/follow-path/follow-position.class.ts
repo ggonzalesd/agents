@@ -1,6 +1,6 @@
 import type { EntityEcs } from '#/ecs';
 import { posRealToGrid } from '#/utils/map.utils';
-import type { WorldPathfinderEcs } from '../../world/world-grid.ecs';
+import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 import { CharacterBodyServerEcs } from '../CharacterBodyServer.ecs';
 import type { IFollowOption } from './follow-option.interface';
 import type { FollowPathEcs } from './follow-path.ecs';
@@ -19,7 +19,7 @@ export class FollowPositionOption implements IFollowOption {
 	character: CharacterBodyServerEcs = null!;
 
 	constructor(props: {
-		pathfinder: WorldPathfinderEcs;
+		pathfinder: IPathfinder;
 		followPath: FollowPathEcs;
 		position: { x: number; z: number };
 		entity: EntityEcs;

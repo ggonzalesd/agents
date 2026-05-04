@@ -60,11 +60,11 @@ export class DynamicPathfinder implements IPathfinder {
     ): Promise<{ result: [number, number][] }> {
         const grid = this.pathGrid;
 
-        if (grid.length < start[1] || grid[0].length < start[0]) {
+        if (start[0] < 0 || start[1] < 0 || start[0] >= grid[0].length || start[1] >= grid.length) {
             return { result: [] };
         }
 
-        if (grid.length < end[1] || grid[0].length < end[0]) {
+        if (end[0] < 0 || end[1] < 0 || end[0] >= grid[0].length || end[1] >= grid.length) {
             return { result: [] };
         }
 

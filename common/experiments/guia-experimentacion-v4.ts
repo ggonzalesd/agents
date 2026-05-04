@@ -33,12 +33,12 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 				title: 'Fase 2: Vencer a un NPC villano',
 				description: 'Derrota al NPC villano que aparecerá en el escenario.',
 			},
-			// {
-			// 	key: 'help-hunt-deer-3',
-			// 	componentKey: 'help-hunt-deer',
-			// 	title: 'Fase 3: Ayudar al NPC a cazar ciervos',
-			// 	description: 'Ayuda al NPC cazador a matar 3 ciervos.',
-			// },
+			{
+				key: 'hunt-animals-3',
+				componentKey: 'hunt-animals',
+				title: 'Fase 3: Ayudar al NPC a cazar ciervos',
+				description: 'Trabaja con el NPC cazador para eliminar 10 ciervos.',
+			},
 			// {
 			// 	key: 'collect-apples-4',
 			// 	componentKey: 'collect-apples',
