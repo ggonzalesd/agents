@@ -3,7 +3,11 @@ import { animalServerFactoryGenerator } from '../../../prefab/animal.server';
 import { ClassicNpcBehaviorType } from '$/models/ClassicNPC.model';
 import { getSlotPosition } from '$/services/slot-allocator.service';
 import { ServerDataEcs } from '../../serverData.ecs';
-import { WorldEventBusEcs, WorldEventType, type EntityDamagedPayload } from '../../world-event-bus.ecs';
+import {
+	WorldEventBusEcs,
+	WorldEventType,
+	type EntityDamagedPayload,
+} from '../../world-event-bus.ecs';
 import { ExperimentPhaseEcs } from '../experiment-phase.ecs';
 import { ExperimentManagerEcs } from '../experiment-manager.ecs';
 import type { NpcsSinLlmsExperimentRuntimeEcs } from '../handlers/npcs-sin-llms.experiment-runtime.ecs';
@@ -15,7 +19,7 @@ const NPC_SKIN = 'kanye';
 const MAX_ACTIVE_DEER = 6;
 const DEER_SPAWN_RADIUS = 8;
 const RESPAWN_INTERVAL_MS = 6000;
-const REQUIRED_KILLS = 10;
+const REQUIRED_KILLS = 2; // TODO: change to 10
 
 export class HuntAnimalsPhaseEcs extends ExperimentPhaseEcs {
 	private npcName: string | null = null;
@@ -46,10 +50,13 @@ export class HuntAnimalsPhaseEcs extends ExperimentPhaseEcs {
 		if (!bus) return;
 
 		this.unsubs.push(
-			bus.on<EntityDamagedPayload>(WorldEventType.EntityDamaged, (entityName, payload) => {
-				if (!this.spawnedDeerNames.includes(entityName)) return;
-				this.lastAttackerMap.set(entityName, payload.attackerId);
-			}),
+			bus.on<EntityDamagedPayload>(
+				WorldEventType.EntityDamaged,
+				(entityName, payload) => {
+					if (!this.spawnedDeerNames.includes(entityName)) return;
+					this.lastAttackerMap.set(entityName, payload.attackerId);
+				},
+			),
 		);
 
 		this.unsubs.push(
@@ -69,7 +76,10 @@ export class HuntAnimalsPhaseEcs extends ExperimentPhaseEcs {
 				if (idx !== -1) this.spawnedDeerNames.splice(idx, 1);
 				this.lastAttackerMap.delete(entityName);
 
-				if (attackerId === this.npcName || attackerId === this.runtime.entityName) {
+				if (
+					attackerId === this.npcName ||
+					attackerId === this.runtime.entityName
+				) {
 					this.killCount++;
 					if (this.killCount >= REQUIRED_KILLS) {
 						this.handlePhaseSuccess();
@@ -121,7 +131,8 @@ export class HuntAnimalsPhaseEcs extends ExperimentPhaseEcs {
 		const deerCatalog = ANIMAL_SPAWN_CATALOG.deer;
 		if (!deerCatalog) return;
 
-		const variant = deerCatalog.variants[this.deerCounter % deerCatalog.variants.length];
+		const variant =
+			deerCatalog.variants[this.deerCounter % deerCatalog.variants.length];
 
 		const slotPos = getSlotPosition(userId);
 		const basePos = slotPos ?? { x: 0, y: 0, z: 0 };
@@ -137,7 +148,8 @@ export class HuntAnimalsPhaseEcs extends ExperimentPhaseEcs {
 		const deerName = `hunt-deer-${userId}-${this.deerCounter++}`;
 		const factory = animalServerFactoryGenerator(this.world);
 		const pathfinder =
-			(this.runtime as NpcsSinLlmsExperimentRuntimeEcs).experimentPathfinder ?? undefined;
+			(this.runtime as NpcsSinLlmsExperimentRuntimeEcs).experimentPathfinder ??
+			undefined;
 
 		const deerEntity = factory({
 			name: deerName,
@@ -176,7 +188,8 @@ export class HuntAnimalsPhaseEcs extends ExperimentPhaseEcs {
 
 		const factory = classicNpcServerFactoryGenerator(this.world);
 		const pathfinder =
-			(this.runtime as NpcsSinLlmsExperimentRuntimeEcs).experimentPathfinder ?? undefined;
+			(this.runtime as NpcsSinLlmsExperimentRuntimeEcs).experimentPathfinder ??
+			undefined;
 
 		const npcEntity = factory({
 			id: npcName,

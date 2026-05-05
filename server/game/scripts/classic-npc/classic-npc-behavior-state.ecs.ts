@@ -5,6 +5,7 @@ import type { actionsSchema } from '#/schema/actions.schema';
 import type { NPCState } from '#/state/game.state';
 import type { IVec3 } from '#/utils/math.util';
 import type { ClassicNpcConfigDB } from '$/models/ClassicNPC.model';
+import { ClassicNpcBehaviorType } from '$/models/ClassicNPC.model';
 import {
 	ClassicNpcBehaviorState,
 	ClassicNpcType,
@@ -14,7 +15,7 @@ import {
 
 export class ClassicNPCBehaviorStateEcs extends ComponentEcs {
 	public readonly sharedState: NPCState;
-	public readonly config: ClassicNpcRuntimeConfig;
+	public config: ClassicNpcRuntimeConfig;
 	public currentState = ClassicNpcBehaviorState.IDLE;
 	public targetEntityId: string | null = null;
 	public patrolTarget: { x: number; z: number } | null = null;
@@ -62,6 +63,10 @@ export class ClassicNPCBehaviorStateEcs extends ComponentEcs {
 	public setState(state: ClassicNpcBehaviorState): void {
 		this.currentState = state;
 		this.sharedState.behaviorState = state;
+	}
+
+	public setBehaviorType(type: ClassicNpcBehaviorType): void {
+		this.config.behaviorType = type;
 	}
 
 	public queueAction(action: z.infer<typeof actionsSchema>): void {

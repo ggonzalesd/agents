@@ -2,6 +2,9 @@ import { ComponentEcs, type EntityEcs } from '#/ecs';
 import { Option } from '#/utils/Option';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { AnimalStateEcs } from '../animal/animal-state.ecs';
+import { TreeServerBehavior } from '../tree/treeServerBehavior.ecs';
+import { BoxServerBehavior } from '../box/boxServerBehavior.ecs';
+import { ItemServerBehavior } from '../item/itemServerBehavior.ecs';
 import { ClassicNPCBehaviorStateEcs } from './classic-npc-behavior-state.ecs';
 import { ClassicNpcBehaviorType } from '$/models/ClassicNPC.model';
 import { ClassicNpcBehaviorState } from './classic-npc.types';
@@ -27,6 +30,12 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 	private unsubscribeDamage: (() => void) | null = null;
 	private pendingAttackerId: string | null = null;
 	private _disabled = false;
+
+	// COLLECTOR behavior fields
+	private harvestInterestUntil = 0;
+	private harvestTargetId: string | null = null;
+	private collectTargetId: string | null = null;
+	private harvestUntilAt = 0;
 
 	onStart(): void {
 		this.entityParent = this.world
@@ -134,6 +143,20 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 				z: this.behaviorStateEcs.spawnPoint.z,
 			});
 		}
+
+		if (state === ClassicNpcBehaviorState.COLLECT && this.collectTargetId) {
+			this.behaviorStateEcs.queueAction({
+				type: 'move-close-to-entity',
+				entityId: this.collectTargetId,
+			});
+		}
+
+		if (state === ClassicNpcBehaviorState.HARVEST && this.harvestTargetId) {
+			this.behaviorStateEcs.queueAction({
+				type: 'move-close-to-entity',
+				entityId: this.harvestTargetId,
+			});
+		}
 	}
 
 	private pickPatrolTarget(): { x: number; z: number } {
@@ -202,6 +225,69 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 			.filter(({ entity, component }) => {
 				if (entity.name === this.parent || component.isDead) return false;
 				return entity.get(AnimalStateEcs).raw() != null;
+			})
+			.map(({ entity, component }) => {
+				const targetPos = component.body.translation();
+				return {
+					entity,
+					distance: Math.hypot(targetPos.x - myPos.x, targetPos.z - myPos.z),
+				};
+			})
+			.filter((candidate) => candidate.distance <= maxDistance)
+			.sort((left, right) => left.distance - right.distance);
+
+		return candidates[0] ?? null;
+	}
+
+	private findNearestItem(maxDistance: number): TargetCandidate | null {
+		const myPos = this.character.body.translation();
+		const candidates = this.world
+			.getFromEntitiesWith(CharacterBodyServerEcs)
+			.filter(({ entity }) => {
+				if (entity.name === this.parent) return false;
+				return entity.get(ItemServerBehavior).raw() != null;
+			})
+			.map(({ entity, component }) => {
+				const targetPos = component.body.translation();
+				return {
+					entity,
+					distance: Math.hypot(targetPos.x - myPos.x, targetPos.z - myPos.z),
+				};
+			})
+			.filter((candidate) => candidate.distance <= maxDistance)
+			.sort((left, right) => left.distance - right.distance);
+
+		return candidates[0] ?? null;
+	}
+
+	private findNearestBox(maxDistance: number): TargetCandidate | null {
+		const myPos = this.character.body.translation();
+		const candidates = this.world
+			.getFromEntitiesWith(CharacterBodyServerEcs)
+			.filter(({ entity, component }) => {
+				if (entity.name === this.parent || component.isDead) return false;
+				return entity.get(BoxServerBehavior).raw() != null;
+			})
+			.map(({ entity, component }) => {
+				const targetPos = component.body.translation();
+				return {
+					entity,
+					distance: Math.hypot(targetPos.x - myPos.x, targetPos.z - myPos.z),
+				};
+			})
+			.filter((candidate) => candidate.distance <= maxDistance)
+			.sort((left, right) => left.distance - right.distance);
+
+		return candidates[0] ?? null;
+	}
+
+	private findNearestTree(maxDistance: number): TargetCandidate | null {
+		const myPos = this.character.body.translation();
+		const candidates = this.world
+			.getFromEntitiesWith(CharacterBodyServerEcs)
+			.filter(({ entity }) => {
+				if (entity.name === this.parent) return false;
+				return entity.get(TreeServerBehavior).raw() != null;
 			})
 			.map(({ entity, component }) => {
 				const targetPos = component.body.translation();
@@ -291,6 +377,40 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 			);
 			if (target) {
 				this.beginCombat(target, now);
+			}
+		}
+
+		if (type === ClassicNpcBehaviorType.COLLECTOR) {
+			const aggroRange = this.behaviorStateEcs.config.aggroRange;
+
+			// 1. Items en suelo (mayor prioridad)
+			const item = this.findNearestItem(aggroRange);
+			if (item) {
+				this.collectTargetId = item.entity.name;
+				this.transitionTo(ClassicNpcBehaviorState.COLLECT);
+				return;
+			}
+
+			// 2. Cajas
+			const box = this.findNearestBox(aggroRange);
+			if (box) {
+				this.harvestTargetId = box.entity.name;
+				this.harvestUntilAt =
+					now + this.behaviorStateEcs.config.attackDurationSec * 1000;
+				this.transitionTo(ClassicNpcBehaviorState.HARVEST);
+				return;
+			}
+
+			// 3. Árboles (sí no hay cooldown global)
+			if (this.harvestInterestUntil < now) {
+				const tree = this.findNearestTree(aggroRange);
+				if (tree) {
+					this.harvestTargetId = tree.entity.name;
+					this.harvestUntilAt =
+						now + this.behaviorStateEcs.config.attackDurationSec * 1000;
+					this.transitionTo(ClassicNpcBehaviorState.HARVEST);
+					return;
+				}
 			}
 		}
 	}
@@ -442,6 +562,64 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 					this.transitionTo(ClassicNpcBehaviorState.IDLE);
 				}
 				break;
+
+			case ClassicNpcBehaviorState.COLLECT: {
+				if (!this.collectTargetId) {
+					this.transitionTo(ClassicNpcBehaviorState.IDLE);
+					break;
+				}
+
+				const collectTarget = this.getTargetCandidateById(this.collectTargetId);
+				if (!collectTarget) {
+					this.collectTargetId = null;
+					this.transitionTo(ClassicNpcBehaviorState.IDLE);
+					break;
+				}
+
+				if (collectTarget.distance <= 1.5) {
+					this.behaviorStateEcs.queueAction({
+						type: 'pick-item',
+						itemId: this.collectTargetId,
+						slot: 0,
+					});
+					this.collectTargetId = null;
+					this.transitionTo(ClassicNpcBehaviorState.IDLE);
+				}
+				break;
+			}
+
+			case ClassicNpcBehaviorState.HARVEST: {
+				if (!this.harvestTargetId) {
+					this.transitionTo(ClassicNpcBehaviorState.IDLE);
+					break;
+				}
+
+				if (now > this.harvestUntilAt) {
+					this.harvestInterestUntil = now + 10_000;
+					this.harvestTargetId = null;
+					this.transitionTo(ClassicNpcBehaviorState.IDLE);
+					break;
+				}
+
+				const harvestTarget = this.getTargetCandidateById(this.harvestTargetId);
+				if (!harvestTarget) {
+					this.harvestTargetId = null;
+					this.transitionTo(ClassicNpcBehaviorState.IDLE);
+					break;
+				}
+
+				if (harvestTarget.distance <= 2) {
+					if (now >= this.behaviorStateEcs.nextAttackAt) {
+						this.behaviorStateEcs.nextAttackAt =
+							now + this.behaviorStateEcs.config.attackCooldownMs;
+						this.behaviorStateEcs.queueAction({
+							type: 'attack-entity',
+							entityId: this.harvestTargetId,
+						});
+					}
+				}
+				break;
+			}
 		}
 	}
 }

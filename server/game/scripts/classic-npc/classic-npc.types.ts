@@ -14,6 +14,8 @@ export enum ClassicNpcBehaviorState {
 	ATTACK = 'ATTACK',
 	FLEE = 'FLEE',
 	RETURN = 'RETURN',
+	COLLECT = 'COLLECT',
+	HARVEST = 'HARVEST',
 }
 
 export type ClassicNpcRuntimeConfig = Omit<ClassicNpcConfigDB, 'id' | 'npcId'>;

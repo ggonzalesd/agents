@@ -39,12 +39,12 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 				title: 'Fase 3: Ayudar al NPC a cazar ciervos',
 				description: 'Trabaja con el NPC cazador para eliminar 10 ciervos.',
 			},
-			// {
-			// 	key: 'collect-apples-4',
-			// 	componentKey: 'collect-apples',
-			// 	title: 'Fase 4: Recolectar manzanas verdes',
-			// 	description: 'Ayuda al NPC a obtener 5 manzanas verdes.',
-			// },
+			{
+				key: 'collect-apples-4',
+				componentKey: 'collect-apples',
+				title: 'Fase 4: Recolectar manzanas verdes',
+				description: 'Ayuda al NPC a obtener 5 manzanas verdes de los árboles.',
+			},
 			{
 				key: 'escort-npc-5',
 				componentKey: 'escort-npc',
