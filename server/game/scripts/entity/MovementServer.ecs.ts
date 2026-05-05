@@ -29,6 +29,7 @@ export class MovementServerEcs extends ComponentEcs {
 
 	public direction: IVec3 = { x: 0, y: 0, z: 0 };
 	public clientDirection: IVec2 = { x: 0, y: 0 };
+	public walkSpeed = 6;
 
 	private serverData: ServerDataEcs = null!;
 
@@ -70,7 +71,7 @@ export class MovementServerEcs extends ComponentEcs {
 		const vel = this.character.body.linvel();
 
 		if (this.movementState.isMoving) {
-			const speed = isGround ? 6 : 3;
+			const speed = isGround ? this.walkSpeed : this.walkSpeed / 2;
 
 			const newVel = vec3Add(vec3Scale(this.direction, speed), vec3Up(vel.y));
 			this.character.body.setLinvel(vec3ToRapier(newVel), true);

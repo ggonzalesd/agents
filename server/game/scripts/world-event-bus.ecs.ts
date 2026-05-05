@@ -27,7 +27,7 @@ export class WorldEventBusEcs extends ComponentEcs {
 		entityName: string,
 		payload?: unknown,
 	): void {
-		console.log(`[WorldEventBus] emit ${type} → ${entityName}`);
+		// console.log(`[WorldEventBus] emit ${type} → ${entityName}`);
 		const set = this.handlers.get(type);
 		console.log(this.handlers);
 		if (!set) return;

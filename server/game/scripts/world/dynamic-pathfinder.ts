@@ -71,6 +71,12 @@ export class DynamicPathfinder implements IPathfinder {
         return this.worker.run({ grid, start, end });
     }
 
+    isWalkable(x: number, y: number): boolean {
+        if (y < 0 || y >= this.pathGrid.length) return false;
+        if (x < 0 || x >= this.pathGrid[0].length) return false;
+        return this.pathGrid[y][x] === 0;
+    }
+
     dispose(): void {
         void this.worker.destroy();
     }
