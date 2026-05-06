@@ -62,7 +62,13 @@ export const animalServerFactoryGenerator =
 					},
 				},
 			),
-			[MovementServerEcs.name]: new MovementServerEcs(state.movement),
+			[MovementServerEcs.name]: (() => {
+				const movement = new MovementServerEcs(state.movement);
+				if (profile.walkSpeed !== undefined) {
+					movement.walkSpeed = profile.walkSpeed;
+				}
+				return movement;
+			})(),
 			[FollowPathEcs.name]: new FollowPathEcs(),
 			[AnimalProfileEcs.name]: new AnimalProfileEcs(profile),
 			[AnimalStateEcs.name]: new AnimalStateEcs(pos),

@@ -71,7 +71,7 @@ const DONKEY_MODEL_CONFIG: CharacterModelConfig = {
 
 const WOLF_MODEL_CONFIG: CharacterModelConfig = {
 	path: '/3d/lobo.glb',
-	scale: 0.425,
+	scale: 0.85,
 	rotationY: Math.PI / 2,
 	positionY: -0.3,
 	useSkinTexture: false,
@@ -88,7 +88,7 @@ const WOLF_MODEL_CONFIG: CharacterModelConfig = {
 
 const BULL_BROWN_MODEL_CONFIG: CharacterModelConfig = {
 	path: '/3d/toro-marron.glb',
-	scale: 0.5,
+	scale: 0.75,
 	rotationY: Math.PI / 2,
 	positionY: -0.3,
 	useSkinTexture: false,
@@ -105,7 +105,7 @@ const BULL_BROWN_MODEL_CONFIG: CharacterModelConfig = {
 
 const BULL_BLACK_MODEL_CONFIG: CharacterModelConfig = {
 	path: '/3d/toro-negro.glb',
-	scale: 0.5,
+	scale: 0.75,
 	rotationY: Math.PI / 2,
 	positionY: -0.3,
 	useSkinTexture: false,

@@ -37,6 +37,7 @@ export interface AnimalProfileProps {
 	panicDurationMs: number;
 	counterAttackRadius: number;
 	stareAfterAttackMs: number;
+	walkSpeed?: number;
 	hunt?: AnimalHuntConfig;
 	charge?: AnimalChargeConfig;
 	drop?: AnimalDropConfig;

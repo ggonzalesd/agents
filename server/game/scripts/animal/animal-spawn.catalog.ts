@@ -7,10 +7,8 @@ import type {
 } from './animal-profile.ecs';
 
 const COMMON_RESPAWN_DELAY_MS = 10_000;
-const WOLF_EVENT_INTERVAL_MS = 10 * 1000;
-// const WOLF_EVENT_INTERVAL_MS = 5 * 60 * 1000;
-const BULL_EVENT_INTERVAL_MS = 2 * 60 * 1000;
-// const BULL_EVENT_INTERVAL_MS = 10 * 60 * 1000;
+const WOLF_EVENT_INTERVAL_MS = 5 * 60 * 1000;
+const BULL_EVENT_INTERVAL_MS = 10 * 60 * 1000;
 
 const RARE_EVENT_CHANCE = 0.5;
 const MEAT_DROP = { itemType: 'meat', quantity: 1, chance: 1 } as const;
@@ -87,6 +85,7 @@ const wolfProfile: AnimalProfileProps = {
 	panicDurationMs: 2000,
 	counterAttackRadius: 2.0,
 	stareAfterAttackMs: 400,
+	walkSpeed: 9,
 	drop: MEAT_DROP,
 	hunt: {
 		huntRadius: 15,
@@ -115,6 +114,7 @@ const bullProfile = (skin: 'bull-brown' | 'bull-black'): AnimalProfileProps => {
 		panicDurationMs: 1000,
 		counterAttackRadius: 2.75,
 		stareAfterAttackMs: 500,
+		walkSpeed: 7.5,
 		drop: {
 			itemType: 'meat',
 			quantity: isBullBlack ? 2 : 1,
