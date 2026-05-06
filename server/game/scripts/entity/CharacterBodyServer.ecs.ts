@@ -24,6 +24,7 @@ interface CharacterBodyConfig {
 	capsuleHalfHeight?: number;
 	respawnPoint?: IVec3;
 	deathBehavior?: 'respawn' | 'delete';
+	isSensor?: boolean;
 }
 
 interface DamageContext {
@@ -83,9 +84,19 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 						cuboidHalfExtents.y,
 						cuboidHalfExtents.z,
 					).setFriction(2.0);
+
+		if (this.config.isSensor) {
+			colliderDesc
+				.setSensor(true)
+				.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS)
+				.setActiveCollisionTypes(RAPIER.ActiveCollisionTypes.ALL);
+		}
+
 		this.collider = this.physic.createCollider(colliderDesc, this.body);
 
-		this.collider.setRestitution(0.5);
+		if (!this.config.isSensor) {
+			this.collider.setRestitution(0.5);
+		}
 
 		if (this.config.bodyType !== 'fixed') {
 			this.body.lockRotations(true, true);

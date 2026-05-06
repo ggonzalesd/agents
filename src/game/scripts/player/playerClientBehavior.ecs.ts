@@ -114,6 +114,16 @@ export class PlayerClientBehavior extends ComponentEcs {
 			}).bind(this),
 		);
 
+		// Handle attack with left click in GAME mode
+		this.world.stacker.dispatch(
+			'attack-click',
+			(() => {
+				if (this.room.connection.isOpen) {
+					this.room.send('client:action', { type: 'attack' });
+				}
+			}).bind(this),
+		);
+
 		// Handle NPC dialogue interaction with F key
 		if (this.input.down('KeyF')) {
 			const _selectedEntityId = this.uiClient.game['dialogueNpcEntityId' as never] as string | null;

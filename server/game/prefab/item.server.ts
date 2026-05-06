@@ -6,6 +6,7 @@ import type { IVec3 } from '#/utils/math.util';
 import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';
 import { ItemServerBehavior } from '../scripts/item/itemServerBehavior.ecs';
 import { ItemLifetimeEcs } from '../scripts/item/item-lifetime.ecs';
+import { ItemPickupSensorEcs } from '../scripts/item/itemPickupSensor.ecs';
 
 interface ItemServerFactoryProps {
 	world: WorldEcs;
@@ -40,6 +41,7 @@ export const itemServerFactory = ({
 			'cuboid',
 		),
 		[ItemServerBehavior.name]: new ItemServerBehavior({ state }),
+		[ItemPickupSensorEcs.name]: new ItemPickupSensorEcs(),
 	};
 
 	if (lifetime !== undefined) {

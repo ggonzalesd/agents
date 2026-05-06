@@ -106,8 +106,19 @@ export class RenderClientEcs extends ComponentEcs {
 
 		window.addEventListener('click', bindedClickListener);
 
+		const attackClickListener = (event: MouseEvent) => {
+			if (event.button !== 0) return;
+			const inputMode = this.world.get(UIClientEcs).map((ui) => ui.input.mode).raw();
+			if (inputMode === InputMode.GAME) {
+				this.world.stacker.stackLoss('attack-click', undefined);
+			}
+		};
+
+		window.addEventListener('mousedown', attackClickListener);
+
 		this.callOnDelete(() => {
 			window.removeEventListener('click', bindedClickListener);
+			window.removeEventListener('mousedown', attackClickListener);
 		});
 
 		for (let i = 0; i < defaultMap.grid.length; i++) {
