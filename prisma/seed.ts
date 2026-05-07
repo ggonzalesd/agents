@@ -381,6 +381,23 @@ async function main() {
 			enabled: true,
 		},
 	});
+
+	await prisma.experimentAssignment.upsert({
+		where: {
+			userId_experimentKey: {
+				userId: player1.player.id,
+				experimentKey: 'NPCS-CON-LLMS',
+			},
+		},
+		create: {
+			userId: player1.player.id,
+			experimentKey: 'NPCS-CON-LLMS',
+			enabled: true,
+		},
+		update: {
+			enabled: true,
+		},
+	});
 }
 
 main()

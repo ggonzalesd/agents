@@ -14,6 +14,7 @@ import { ExperimentManagerEcs } from '../scripts/experiment/experiment-manager.e
 import { WorldEventBusEcs } from '../scripts/world-event-bus.ecs';
 import { GuiaV4ExperimentRuntimeEcs } from '../scripts/experiment/handlers/guia-v4.experiment-runtime.ecs';
 import { NpcsSinLlmsExperimentRuntimeEcs } from '../scripts/experiment/handlers/npcs-sin-llms.experiment-runtime.ecs';
+import { NpcsConLlmsExperimentRuntimeEcs } from '../scripts/experiment/handlers/npcs-con-llms.experiment-runtime.ecs';
 
 export const worldServerFactory = ({
 	state,
@@ -35,6 +36,8 @@ export const worldServerFactory = ({
 				new GuiaV4ExperimentRuntimeEcs(actor, entityName),
 			'NPCS-SIN-LLMS': (actor, entityName) =>
 				new NpcsSinLlmsExperimentRuntimeEcs(actor, entityName),
+			'NPCS-CON-LLMS': (actor, entityName) =>
+				new NpcsConLlmsExperimentRuntimeEcs(actor, entityName),
 		}),
 		[WorldPathfinderEcs.name]: new WorldPathfinderEcs(),
 		[MapLoaderEcs.name]: new MapLoaderEcs(),
