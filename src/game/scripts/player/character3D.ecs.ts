@@ -223,6 +223,7 @@ export class Character3DEcs extends ComponentEcs {
 
 		this.oneShotAction?.fadeOut(CROSSFADE_SECONDS);
 		this.currentLoopAction?.fadeOut(CROSSFADE_SECONDS);
+		this.currentLoopAction = null;
 
 		action.reset().setEffectiveWeight(1).fadeIn(CROSSFADE_SECONDS).play();
 		this.oneShotAction = action;
