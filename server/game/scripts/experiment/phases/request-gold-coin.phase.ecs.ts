@@ -16,10 +16,12 @@ const COIN_ITEM_TYPE = 'coin';
 
 export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 	private resolved = false;
+	private coinGiven = false;
 	private npcName: string | null = null;
 
 	protected onMountPhase(): void {
 		this.resolved = false;
+		this.coinGiven = false;
 
 		const bus = this.world.get(WorldEventBusEcs).raw();
 		if (!bus) return;
@@ -58,10 +60,17 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 		const npcName = `${NPC_IDENTIFIER}-${userId}`;
 
 		const onCoinGiven = (playerEntityId: string): void => {
+			this.coinGiven = true;
 			this.giveCoinToPlayer(playerEntityId, npcName, room);
 		};
 
-		const dialogueConfig = buildGoldCoinDialogueConfig(onCoinGiven, room);
+		const onDialogueEnd = (): void => {
+			if (!this.coinGiven && !this.resolved) {
+				this.handlePhaseFailure('No recibiste la moneda de oro.');
+			}
+		};
+
+		const dialogueConfig = buildGoldCoinDialogueConfig(onCoinGiven, room, onDialogueEnd);
 
 		const factory = classicNpcServerFactoryGenerator(this.world);
 		const npcEntity = factory({
@@ -93,6 +102,14 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 
 		this.world.addEntity(npcEntity);
 		this.npcName = npcName;
+	}
+
+	private handlePhaseFailure(reason: string): void {
+		if (this.resolved) return;
+		this.resolved = true;
+		this.world.get(ExperimentManagerEcs).ifSome((manager) => {
+			manager.handlePhaseFailure(this.runtime.userId, reason);
+		});
 	}
 
 	private giveCoinToPlayer(

@@ -69,7 +69,7 @@ export class AnimalHuntBehaviorEcs extends ComponentEcs {
 		const now = Date.now();
 		const myPos = this.character.body.translation();
 		const { huntRadius, huntCooldownMs, preySpecies, huntPlayers, huntNpcs } = huntConfig;
-		const { counterAttackRadius, attackDamage } = this.profile.profile;
+		const { counterAttackRadius, attackDamage, knockbackMultiplier } = this.profile.profile;
 
 		const target = this.findClosestPrey(myPos, huntRadius, preySpecies, huntPlayers, huntNpcs);
 
@@ -97,7 +97,7 @@ export class AnimalHuntBehaviorEcs extends ComponentEcs {
 					targetPos.z - myPos.z,
 					targetPos.x - myPos.x,
 				);
-				this.character.attack(target.name, attackDamage);
+				this.character.attack(target.name, attackDamage, knockbackMultiplier);
 				this.lastAttackAt = now;
 			}
 		}

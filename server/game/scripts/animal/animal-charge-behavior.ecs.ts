@@ -69,7 +69,7 @@ export class AnimalChargeBehaviorEcs extends ComponentEcs {
 		const now = Date.now();
 		const myPos = this.character.body.translation();
 		const { chargeRadius, chargeRecoverMs } = chargeConfig;
-		const { counterAttackRadius, attackDamage } = this.profile.profile;
+		const { counterAttackRadius, attackDamage, knockbackMultiplier } = this.profile.profile;
 
 		const target = this.findClosestThreat(myPos, chargeRadius);
 
@@ -100,7 +100,7 @@ export class AnimalChargeBehaviorEcs extends ComponentEcs {
 					targetPos.z - myPos.z,
 					targetPos.x - myPos.x,
 				);
-				this.character.attack(target.name, attackDamage);
+				this.character.attack(target.name, attackDamage, knockbackMultiplier);
 				this.lastAttackAt = now;
 			}
 		}

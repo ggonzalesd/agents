@@ -19,6 +19,7 @@ import { HuntAnimalsPhaseEcs } from '../phases/hunt-animals.phase.ecs';
 import { CollectApplesPhaseEcs } from '../phases/collect-apples.phase.ecs';
 import { EscortNpcPhaseEcs } from '../phases/escort-npc.phase.ecs';
 import { FollowNpcPhaseEcs } from '../phases/follow-npc.phase.ecs';
+import { SurviveBullPhaseEcs } from '../phases/survive-bull.phase.ecs';
 import { treeServerFactory } from '$/game/prefab/tree.server';
 import { boxServerFactory } from '$/game/prefab/box.server';
 import { itemServerFactory } from '$/game/prefab/item.server';
@@ -58,6 +59,8 @@ const phaseFactories: {
 		new EscortNpcPhaseEcs(def, runtime),
 	'follow-npc': (def, runtime) =>
 		new FollowNpcPhaseEcs(def, runtime),
+	'survive-bull': (def, runtime) =>
+		new SurviveBullPhaseEcs(def, runtime),
 };
 
 export class NpcsSinLlmsExperimentRuntimeEcs extends ExperimentRuntimeEcs {

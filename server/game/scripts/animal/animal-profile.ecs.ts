@@ -38,6 +38,7 @@ export interface AnimalProfileProps {
 	counterAttackRadius: number;
 	stareAfterAttackMs: number;
 	walkSpeed?: number;
+	knockbackMultiplier?: number;
 	hunt?: AnimalHuntConfig;
 	charge?: AnimalChargeConfig;
 	drop?: AnimalDropConfig;

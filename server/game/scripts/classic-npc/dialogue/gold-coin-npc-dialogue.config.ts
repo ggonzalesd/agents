@@ -1,14 +1,16 @@
 import { resolve } from 'node:path';
 import type { Room } from 'colyseus';
 
-import type { DialogueConfig } from './dialogue.types';
+import type { DialogueConfig, ConversationEventCtx } from './dialogue.types';
 import { loadDialogueConfig } from './dialogue-config.builder';
 
 const COIN_OPTION_IDS = ['o_coin_a_end', 'o_coin_b_end', 'o_coin_c_end'] as const;
+const CONVERSATION_ID = 'gold-coin-main';
 
 export function buildGoldCoinDialogueConfig(
 	onCoinGiven: (playerEntityId: string) => void,
 	room: Room,
+	onDialogueEnd?: (ctx: ConversationEventCtx) => void,
 ): DialogueConfig {
 	const jsonPath = resolve(
 		process.cwd(),
@@ -31,6 +33,13 @@ export function buildGoldCoinDialogueConfig(
 	);
 
 	return loadDialogueConfig(jsonPath, {
+		conversations: onDialogueEnd
+			? {
+					[CONVERSATION_ID]: {
+						onEnd: onDialogueEnd,
+					},
+				}
+			: undefined,
 		options: optionHooks,
 	});
 }

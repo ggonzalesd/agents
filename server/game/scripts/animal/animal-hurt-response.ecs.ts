@@ -87,13 +87,13 @@ export class AnimalHurtResponseEcs extends ComponentEcs {
 		const dz = targetPos.z - myPos.z;
 		const distance = Math.hypot(dx, dz);
 
-		const { canCounterAttack, counterAttackRadius, stareAfterAttackMs, attackDamage } =
+		const { canCounterAttack, counterAttackRadius, stareAfterAttackMs, attackDamage, knockbackMultiplier } =
 			this.profile.profile;
 
 		if (canCounterAttack && distance <= counterAttackRadius) {
 			this.followPath.option = new StopMovementOption();
 			this.character.characterState.rotationY = -Math.atan2(dz, dx);
-			this.character.attack(attacker.name, attackDamage);
+			this.character.attack(attacker.name, attackDamage, knockbackMultiplier);
 			this.animalState.counterAttackDone = true;
 			this.animalState.mode = 'stare';
 			this.animalState.stareUntil = now + stareAfterAttackMs;

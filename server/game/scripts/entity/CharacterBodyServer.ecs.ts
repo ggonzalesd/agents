@@ -240,6 +240,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 	public attack(
 		targetId?: string,
 		damage: number = CharacterBodyServerEcs.ATTACK_DAMAGE,
+		knockbackMultiplier: number = 1,
 	): void {
 		if (this.isDead) return;
 		const position = this.body.translation();
@@ -294,9 +295,9 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 
 			body.body.applyImpulse(
 				{
-					x: Math.cos(rotationY) * 5,
-					y: 2,
-					z: -Math.sin(rotationY) * 5,
+					x: Math.cos(rotationY) * 5 * knockbackMultiplier,
+					y: 2 * knockbackMultiplier,
+					z: -Math.sin(rotationY) * 5 * knockbackMultiplier,
 				},
 				true,
 			);

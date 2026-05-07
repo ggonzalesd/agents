@@ -22,11 +22,18 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 		description:
 			'Experimento de interacción con NPCs clásicos sin uso de modelos de lenguaje.',
 		phases: [
-			{
+			/* 			{
 				key: 'follow-npc-7',
 				componentKey: 'follow-npc',
 				title: 'Fase 7: Seguir al NPC',
 				description: 'Sigue al NPC durante su recorrido sin perderlo de vista.',
+			}, */
+			{
+				key: 'survive-bull-11',
+				componentKey: 'survive-bull',
+				title: 'Fase 11: Sobrevivir al toro',
+				description:
+					'Sobrevive durante 30 segundos contra un toro negro agresivo que no para de atacar.',
 			},
 			{
 				key: 'request-gold-coin-1',
