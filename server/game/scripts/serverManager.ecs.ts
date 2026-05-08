@@ -4,9 +4,6 @@ import { ComponentEcs } from '#/ecs/Component.ecs';
 import { ServerDataEcs } from './serverData.ecs';
 import { classicNpcServerFactoryGenerator } from '../prefab/classicNpc.server';
 import { npcServerFactoryGenerator } from '../prefab/npc.server';
-import { boxServerFactory } from '../prefab/box.server';
-import { triggerZoneServerFactory } from '../prefab/trigger-zone.server';
-import type { IVec3 } from '#/utils/math.util';
 
 import * as ClassicNPCRepository from '$/db/classic-npc.db';
 import * as NPCRepository from '$/db/npc.db';
@@ -17,19 +14,7 @@ import { InventoryServerEcs } from '../scripts/entity/InventoryServer.ecs';
 import { MapLoaderEcs } from './world/map-loader.ecs';
 import { buildMerchantDialogueConfig } from '../scripts/classic-npc/dialogue/merchant-dialogue.config';
 
-import type { BoxSkin } from '#/state/box.state';
-import { WorldEventBusEcs, WorldEventType } from './world-event-bus.ecs';
-
-const BOX_SPAWNS: { pos: IVec3; skin: BoxSkin }[] = [
-	{ pos: { x: 4, y: 0, z: 3 }, skin: 'box_stacked' },
-	{ pos: { x: -3, y: 0, z: -5 }, skin: 'crate' },
-	{ pos: { x: 6, y: 0, z: -4 }, skin: 'box_stacked' },
-	{ pos: { x: -5, y: 0, z: 6 }, skin: 'crate' },
-	{ pos: { x: 7, y: 0, z: 2 }, skin: 'box_stacked' },
-	{ pos: { x: -6, y: 0, z: -3 }, skin: 'crate' },
-	{ pos: { x: 3, y: 0, z: -7 }, skin: 'box_stacked' },
-	{ pos: { x: -4, y: 0, z: 4 }, skin: 'crate' },
-];
+import { floatingTextServerFactory } from '../prefab/floating-text.server';
 
 export class ServerManagerEcs extends ComponentEcs {
 	onStart(): void {
@@ -50,37 +35,6 @@ export class ServerManagerEcs extends ComponentEcs {
 
 		// Cargar el mapa del lobby a través de MapLoaderEcs para mantener el estándar
 		mapLoader.mountMap('lobby', defaultMap, { x: 0, y: 0, z: 0 });
-
-		BOX_SPAWNS.forEach(({ pos, skin }, index) => {
-			console.log(`Spawning box-${index} at`, pos, 'skin:', skin);
-			const box = boxServerFactory({
-				world: this.world,
-				name: `box-${index}`,
-				pos,
-				skin,
-			});
-			this.world.addEntity(box);
-		});
-
-		// Trigger zone en el lobby
-		const trigger = triggerZoneServerFactory({
-			world: this.world,
-			name: 'trigger-lobby-1',
-			pos: { x: 0, y: 1, z: 0 },
-			radius: 3,
-			height: 5,
-			color: 0xff0000,
-		});
-		this.world.addEntity(trigger);
-
-		this.world.get(WorldEventBusEcs).ifSome((bus) => {
-			bus.on(WorldEventType.EntityEnterTrigger, (entityName, payload) => {
-				console.log(
-					` = = = = = = ${entityName} entered trigger with payload:`,
-					payload,
-				);
-			});
-		});
 
 		const npcServerFactory = npcServerFactoryGenerator(this.world);
 		const classicNpcServerFactory = classicNpcServerFactoryGenerator(
@@ -180,5 +134,30 @@ export class ServerManagerEcs extends ComponentEcs {
 
 			console.log('ServerManagerEcs cleaned up');
 		});
+
+		// ── Textos flotantes de ejemplo en el lobby ──────────────────────────────
+
+		// 1. Texto grande: bienvenida
+		this.world.addEntity(
+			floatingTextServerFactory({
+				world: this.world,
+				name: 'floating-text-welcome',
+				pos: { x: 0, y: 2, z: -5 },
+				text: '¡Bienvenido al lobby!',
+				fontSize: 36,
+			}),
+		);
+
+		// 3. Colores personalizados: violeta sobre oscuro
+		this.world.addEntity(
+			floatingTextServerFactory({
+				world: this.world,
+				name: 'floating-text-custom-colors',
+				pos: { x: -5, y: 2, z: 0 },
+				text: 'Lobby de prueba',
+				foreground: '#c4b5fd',
+				background: '#1e1b4b',
+			}),
+		);
 	}
 }

@@ -7,6 +7,7 @@ import { InventoryState, ItemEntityState } from './inventory.state';
 import { CharacterBodyState } from './character-body.state';
 import { MovementState } from './movement.state';
 import { TriggerZoneState } from './trigger-zone.state';
+import { FloatingTextState } from './floating-text.state';
 
 export class GridPointState extends Schema {
 	@type('int32')
@@ -93,4 +94,7 @@ export class GameState extends Schema {
 
 	@type({ map: TriggerZoneState })
 	public triggerZones = new MapSchema<TriggerZoneState>();
+
+	@type({ map: FloatingTextState })
+	public floatingTexts = new MapSchema<FloatingTextState>();
 }
