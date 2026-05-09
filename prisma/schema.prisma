@@ -110,10 +110,11 @@ model InventoryItem {
 }
 
 model NPC {
-  id          String @id @db.Uuid
-  description String @db.Text
-  skinKey     String @db.Text
-  model       String @db.VarChar(255)
+  id          String  @id @db.Uuid
+  description String  @db.Text
+  skinKey     String  @db.Text
+  model       String  @db.VarChar(255)
+  slug        String? @unique @db.VarChar(100)
 
   entity         Entity           @relation(fields: [id], references: [id])
   LongTermMemory LongTermMemory[]

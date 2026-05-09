@@ -236,7 +236,7 @@ export class ClassicNPCActionProcessEcs extends ComponentEcs {
 			return;
 		}
 
-		if (action.type === 'consume-item') {
+		if (action.type === 'eat-item') {
 			this.entityParent.get(InventoryServerEcs).ifSome((inventory) => {
 				const result = inventory.consumeItem(action.slot);
 				if (result.success) {

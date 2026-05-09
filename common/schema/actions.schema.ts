@@ -137,9 +137,16 @@ const actionLookAtEntitySchema = z.object({
 	entityId: z.string(),
 });
 
+// (🎁) Give item to another entity action schema
+const actionGiveItemToSchema = z.object({
+	type: z.literal('give-item-to'),
+	slot: z.number().int().min(0).max(35),
+	targetEntityId: z.string(),
+});
+
 // (🍎) Consume item action schema
 const actionConsumeItemSchema = z.object({
-	type: z.literal('consume-item'),
+	type: z.literal('eat-item'),
 	slot: z.number().int().min(0).max(35),
 });
 
@@ -202,6 +209,7 @@ export const actionsSchema = z.union([
 	actionDropItemSchema,
 	actionMoveItemSchema,
 	actionSplitItemSchema,
+	actionGiveItemToSchema,
 	actionAttackSchema,
 	actionAttackEntitySchema,
 	actionAttackUntilResolvedSchema,

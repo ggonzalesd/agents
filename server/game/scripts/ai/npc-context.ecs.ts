@@ -136,9 +136,9 @@ export class NPCContextEcs extends ComponentEcs {
 			'## Conocimiento del Mundo',
 			...(hasBoxes
 				? [
-					'- Las cajas (Display=box) son destructibles: golpéalas repetidamente con "attack-entity" hasta destruirlas para obtener un ítem.',
-					'- Las cajas pueden soltar espada, poción, galleta, semillas o moneda.',
-				]
+						'- Las cajas (Display=box) son destructibles: golpéalas repetidamente con "attack-entity" hasta destruirlas para obtener un ítem.',
+						'- Las cajas pueden soltar espada, poción, galleta, semillas o moneda.',
+					]
 				: []),
 			'- Los árboles (Display=tree) tienen 25% de probabilidad de soltar una apple por golpe. No se destruyen, puedes golpearlos múltiples veces.',
 			'- Los animales pueden soltar meat al morir. Cuando mueren desaparecen del mundo; no reviven de inmediato.',
@@ -151,7 +151,7 @@ export class NPCContextEcs extends ComponentEcs {
 			'- El slot 0 es el arma equipada: el ítem en ese slot se usa al atacar y aumenta el daño causado.',
 			'- Si el slot 0 está vacío, atacas con el daño base (sin bonificación).',
 			'- Usa "move-item" para mover ítems entre slots. Por ejemplo, para equipar una espada que está en slot 3, muévela al slot 0.',
-			'- Las armas (sword) aumentan el daño al atacar. Los consumibles (apple, meat, potion, galleta) curan vida al usarlos con "consume-item".',
+			'- Las armas (sword) aumentan el daño al atacar. Los consumibles (apple, meat, potion, galleta) curan vida al usarlos con "eat-item".',
 		].join('\n');
 	}
 
@@ -175,8 +175,9 @@ export class NPCContextEcs extends ComponentEcs {
 			`{"type": "pick-item", "itemId": string, "slot": i32(0...35)} // needs to be in close entities (2 meters)`,
 			`{"type": "drop-item", "slot": i32(0...9)}`,
 			`{"type": "move-item", "fromSlot": i32(0...35), "toSlot": i32(0...35)} // move or swap items between slots. Slot 0 is the equipped weapon slot`,
+			`{"type": "give-item-to", "slot": i32(0...35), "targetEntityId": string} // give an item from your inventory directly to another NPC or player. Target must be within 2 meters. Does NOT drop it on the floor.`,
 
-			`{"type": "consume-item", "slot": i32(0...35)} // consume a consumable item from inventory (food heals, potions heal, weapons/materials can't be consumed)`,
+			`{"type": "eat-item", "slot": i32(0...35)} // eat/use a consumable from your own inventory to heal yourself (food, potions). Only affects you.`,
 
 			`{"type": "attack", "entityId": string} // attack using current facing direction, needs target within 2 meters in front`,
 			`{"type": "attack-entity", "entityId": string} // auto-aims at target then attacks. Use this to reliably hit a specific entity (agent, box, tree, etc)`,
@@ -402,7 +403,17 @@ export class NPCContextEcs extends ComponentEcs {
 			failedActions: 0,
 		};
 
-		const npcIdentifier = this.parent ?? 'Unknown';
+		const parentId = this.parent ?? 'Unknown';
+		const npcIdentifier = this.world
+			.getEntity(this.parent)
+			.map((e) => e.getUnsafe(RecordEcs))
+			.map((r) =>
+				r
+					.getRecord<{ id: string; identifier: string; model: string }>('db')
+					.map((db) => db.identifier)
+					.orElse(parentId),
+			)
+			.orElse(parentId);
 
 		const recentMessages = this.lastMessages.toStringContext();
 		const recentEvents = this.eventQueue
@@ -498,7 +509,17 @@ export class NPCContextEcs extends ComponentEcs {
 
 		const lines = response.split('\n');
 
-		const npcIdentifier = this.parent ?? 'Unknown';
+		const parentId = this.parent ?? 'Unknown';
+		const npcIdentifier = this.world
+			.getEntity(this.parent)
+			.map((e) => e.getUnsafe(RecordEcs))
+			.map((r) =>
+				r
+					.getRecord<{ id: string; identifier: string; model: string }>('db')
+					.map((db) => db.identifier)
+					.orElse(parentId),
+			)
+			.orElse(parentId);
 
 		for (const line of lines) {
 			const trimmed = line.trim();

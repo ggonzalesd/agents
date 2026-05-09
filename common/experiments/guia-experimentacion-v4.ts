@@ -22,19 +22,6 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 		description:
 			'Experimento de interacción con NPCs clásicos sin uso de modelos de lenguaje.',
 		phases: [
-			/* 			{
-				key: 'follow-npc-7',
-				componentKey: 'follow-npc',
-				title: 'Fase 7: Seguir al NPC',
-				description: 'Sigue al NPC durante su recorrido sin perderlo de vista.',
-			}, */
-			{
-				key: 'survive-bull-11',
-				componentKey: 'survive-bull',
-				title: 'Fase 11: Sobrevivir al toro',
-				description:
-					'Sobrevive durante 30 segundos contra un toro negro agresivo que no para de atacar.',
-			},
 			{
 				key: 'request-gold-coin-1',
 				componentKey: 'request-gold-coin',
@@ -54,12 +41,12 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 				title: 'Fase 3: Ayudar al NPC a cazar ciervos',
 				description: 'Trabaja con el NPC cazador para eliminar 10 ciervos.',
 			},
-			/* 			{
+			{
 				key: 'collect-apples-4',
 				componentKey: 'collect-apples',
 				title: 'Fase 4: Recolectar manzanas verdes',
 				description: 'Ayuda al NPC a obtener 5 manzanas verdes de los árboles.',
-			}, */
+			},
 			{
 				key: 'escort-npc-5',
 				componentKey: 'escort-npc',
@@ -75,12 +62,19 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 					'Consigue una espada de una caja y cámbiala por una poción con el mercader.',
 				config: { giveItem: 'sword', receiveItem: 'potion' },
 			},
-			// {
-			// 	key: 'defend-npc-boss-8',
-			// 	componentKey: 'defend-npc-boss',
-			// 	title: 'Fase 8: Defender al NPC del jefe',
-			// 	description: 'Defiende al NPC del Toro Negro durante 1 minuto y medio.',
-			// },
+			{
+				key: 'follow-npc-7',
+				componentKey: 'follow-npc',
+				title: 'Fase 7: Seguir al NPC',
+				description: 'Sigue al NPC durante su recorrido sin perderlo de vista.',
+			},
+			{
+				key: 'survive-bull-11',
+				componentKey: 'survive-bull',
+				title: 'Fase 11: Sobrevivir al toro',
+				description:
+					'Sobrevive durante 30 segundos contra un toro negro agresivo que no para de atacar.',
+			},
 			{
 				key: 'deliver-message-9',
 				componentKey: 'deliver-message',
@@ -176,8 +170,7 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 				key: 'request-gather-items-10',
 				componentKey: 'request-gather-items',
 				title: 'Fase 10: Pedir al NPC que consiga 3 ítems',
-				description:
-					'Pide al NPC que consiga 1 carne, 1 poción y 1 manzana.',
+				description: 'Pide al NPC que consiga 1 carne, 1 poción y 1 manzana.',
 				config: {
 					requiredItems: ['meat', 'potion', 'apple'],
 				},

@@ -24,6 +24,14 @@ export class CloseEntitiesContextAI implements IContextAI {
 		const closeEntities = this.world
 			.getFromEntitiesWith(CharacterBodyServerEcs)
 			.filter(({ entity }) => entity.name !== this.parentId)
+			.filter(({ entity }) => !entity.deleted)
+			.filter(({ entity }) => {
+				const stats = entity
+					.get(RecordEcs)
+					.map((r) => r.getUnsafeRecord<{ type?: string; kind?: string }>('stats'))
+					.raw();
+				return stats?.type == null && stats?.kind == null;
+			})
 		.map((other) => {
 			const record = other.entity.get(RecordEcs);
 
@@ -39,6 +47,12 @@ export class CloseEntitiesContextAI implements IContextAI {
 			};
 		})
 			.map((other) => {
+				if (!this.character.body.isValid()) return {
+					...other,
+					distance: Infinity,
+					position: { x: 0, z: 0 },
+				};
+
 				const myPosition = this.character.body.translation();
 				const otherPosition = other.component.body.translation();
 

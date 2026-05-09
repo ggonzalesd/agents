@@ -1,5 +1,6 @@
 import { EntityEcs, type WorldEcs } from '#/ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
+import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 import { NPCState } from '#/state/game.state';
 import type { IVec3 } from '#/utils/math.util';
 import { NPCActionProcessEcs } from '../scripts/ai/npc-action-process.ecs';
@@ -7,6 +8,7 @@ import { NPCContextEcs } from '../scripts/ai/npc-context.ecs';
 import { NPCEventQueueEcs } from '../scripts/ai/npc-event-queue.ecs';
 
 import { CharacterBodyServerEcs } from '../scripts/entity/CharacterBodyServer.ecs';
+import { EntityPathfinderEcs } from '../scripts/entity/entity-pathfinder.ecs';
 import { FollowPathEcs } from '../scripts/entity/follow-path/follow-path.ecs';
 import { NpcPathDebugSyncEcs } from '../scripts/entity/follow-path/npc-path-debug-sync.ecs';
 import { InventoryServerEcs } from '../scripts/entity/InventoryServer.ecs';
@@ -21,20 +23,24 @@ export const npcServerFactoryGenerator =
 		pos,
 		description,
 		id,
+		identifier,
 		model,
 		skin,
 		life,
 		maxLife,
+		pathfinder,
 	}: {
 		name: string;
 		display: string;
 		pos: IVec3;
 		description: string;
 		id: string;
+		identifier: string;
 		model: string;
 		skin?: string;
 		life?: number;
 		maxLife?: number;
+		pathfinder?: IPathfinder;
 	}) => {
 		const state = new NPCState(pos, skin ?? name, life, maxLife, 'AI');
 		state.hasInventory = true;
@@ -47,6 +53,7 @@ export const npcServerFactoryGenerator =
 				[RecordEcs.name]: new RecordEcs({
 					db: {
 						id,
+						identifier,
 						model,
 					},
 					stats: {
@@ -68,9 +75,12 @@ export const npcServerFactoryGenerator =
 				[MovementServerEcs.name]: new MovementServerEcs(state.movement),
 				[FollowPathEcs.name]: new FollowPathEcs(),
 				[NpcPathDebugSyncEcs.name]: new NpcPathDebugSyncEcs(state),
-				[InventoryServerEcs.name]: new InventoryServerEcs(state.inventory),
+			[InventoryServerEcs.name]: new InventoryServerEcs(state.inventory),
+			...(pathfinder
+				? { [EntityPathfinderEcs.name]: new EntityPathfinderEcs(pathfinder) }
+				: {}),
 
-				// NPC specific AI components
+			// NPC specific AI components
 				[NPCContextEcs.name]: new NPCContextEcs(),
 				[NPCActionProcessEcs.name]: new NPCActionProcessEcs(),
 				[NpcServerBehavior.name]: new NpcServerBehavior({

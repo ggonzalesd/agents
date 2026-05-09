@@ -9,6 +9,7 @@ export enum WorldEventType {
 	EntityExitTrigger = 'entity:exit_trigger',
 	InventoryItemGiven = 'inventory:item_given',
 	InventoryItemReceived = 'inventory:item_received',
+	InventoryItemConsumed = 'inventory:item_consumed',
 }
 
 export interface EntityDamagedPayload {

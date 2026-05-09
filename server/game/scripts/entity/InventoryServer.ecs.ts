@@ -9,6 +9,7 @@ import type { IContextAI } from '../context-ai/context.interface';
 
 import { CharacterBodyServerEcs } from './CharacterBodyServer.ecs';
 import { type ConsumeResult, applyItemEffects } from './item-effect.handler';
+import { WorldEventBusEcs, WorldEventType } from '../world-event-bus.ecs';
 
 export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 	constructor(public inventoryState: InventoryState) {
@@ -176,12 +177,18 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 			return;
 		}
 
-		this.inventoryState.items.set(
-			newId.toString(),
-			itemServerBehavior.state.item.clone(),
-		);
+		const pickedItem = itemServerBehavior.state.item.clone();
+
+		this.inventoryState.items.set(newId.toString(), pickedItem);
 
 		this.world.deleteEntity(itemEntity);
+
+		this.world.get(WorldEventBusEcs).ifSome((bus) => {
+			bus.emit(WorldEventType.InventoryItemReceived, this.parent ?? '', {
+				item: { type: pickedItem.type, quantity: pickedItem.quantity },
+				giverEntityId: null,
+			});
+		});
 	}
 
 	public pickItemEntityByCollision(itemEntityId: string): boolean {
@@ -214,6 +221,14 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 		if (freeSlot === null) return { success: false };
 
 		target.takeItemFromOther(this, fromSlot, freeSlot);
+
+		this.world.get(WorldEventBusEcs).ifSome((bus) => {
+			bus.emit(WorldEventType.InventoryItemReceived, target.parent ?? '', {
+				item: { type: item.type, quantity: item.quantity },
+				giverEntityId: this.parent ?? '',
+			});
+		});
+
 		return { success: true, item };
 	}
 
@@ -243,6 +258,11 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 		const result = applyItemEffects(parentEntity, item);
 
 		if (result.success) {
+			this.world.get(WorldEventBusEcs).ifSome((bus) => {
+				bus.emit(WorldEventType.InventoryItemConsumed, this.parent ?? '', {
+					item: { type: item.type },
+				});
+			});
 			if (item.quantity <= 1) {
 				this.inventoryState.items.delete(strSlot);
 			} else {

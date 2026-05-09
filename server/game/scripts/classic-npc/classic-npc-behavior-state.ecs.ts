@@ -5,7 +5,7 @@ import type { actionsSchema } from '#/schema/actions.schema';
 import type { NPCState } from '#/state/game.state';
 import type { IVec3 } from '#/utils/math.util';
 import type { ClassicNpcConfigDB } from '$/models/ClassicNPC.model';
-import { ClassicNpcBehaviorType } from '$/models/ClassicNPC.model';
+import type { ClassicNpcBehaviorType } from '$/models/ClassicNPC.model';
 import {
 	ClassicNpcBehaviorState,
 	ClassicNpcType,
@@ -41,16 +41,16 @@ export class ClassicNPCBehaviorStateEcs extends ComponentEcs {
 			...DEFAULT_CLASSIC_NPC_CONFIG,
 			...(config
 				? {
-					behaviorType: config.behaviorType,
-					aggroRange: config.aggroRange,
-					attackRange: config.attackRange,
-					detectionRange: config.detectionRange,
-					attackDurationSec: config.attackDurationSec,
-					attackCooldownMs: config.attackCooldownMs,
-					fleeHealthPercent: config.fleeHealthPercent,
-					patrolRadius: config.patrolRadius,
-					extraConfig: config.extraConfig,
-				}
+						behaviorType: config.behaviorType,
+						aggroRange: config.aggroRange,
+						attackRange: config.attackRange,
+						detectionRange: config.detectionRange,
+						attackDurationSec: config.attackDurationSec,
+						attackCooldownMs: config.attackCooldownMs,
+						fleeHealthPercent: config.fleeHealthPercent,
+						patrolRadius: config.patrolRadius,
+						extraConfig: config.extraConfig,
+					}
 				: {}),
 		};
 	}

@@ -225,7 +225,7 @@
 		if (!item) return;
 		const def = ITEM_REGISTRY[item.type];
 		if (!def?.consumable) return;
-		sendAction({ type: 'consume-item', slot: Number(slotId) });
+		sendAction({ type: 'eat-item', slot: Number(slotId) });
 	}
 
 	function handleTargetDragOver(e: DragEvent, target: TransferTarget) {

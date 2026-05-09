@@ -91,6 +91,7 @@ async function createNPC(props: {
 	model: string;
 	skinKey: string;
 	description?: string;
+	slug?: string;
 }) {
 	const agent = await prisma.agent.upsert({
 		where: {
@@ -134,11 +135,13 @@ async function createNPC(props: {
 			description: props.description || '',
 			model: props.model,
 			skinKey: props.skinKey,
+			slug: props.slug ?? null,
 		},
 		update: {
 			description: props.description || '',
 			model: props.model,
 			skinKey: props.skinKey,
+			slug: props.slug ?? undefined,
 		},
 	});
 
@@ -398,6 +401,24 @@ async function main() {
 			enabled: true,
 		},
 	});
+
+	// Agente NPC para NPCS-CON-LLMS — Fase 1: Pedir una poción
+	const npcPhase1ConLlm = await createNPC({
+		display: 'Guardián de Pociones',
+		identifier: 'guard-p1llm',
+		slug: `${player1.agent.identifier}-npc-1`,
+		model: 'gpt-5.4-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un guardián tranquilo que custodia pociones de salud.',
+			'Ayudas a los demás sin esperar nada a cambio',
+			// 'Tienes una poción en el inventario.',
+			// 'Solo la entregas a quien tenga una buena razón o sea amable.',
+			// 'Si el jugador es grosero o no argumenta, niégate con naturalidad.',
+			'Habla en español. Sé breve y natural.',
+		].join(' '),
+	});
+	console.log(`Created LLM NPC (fase 1 con-llm): ${npcPhase1ConLlm.agent.identifier}`);
 }
 
 main()

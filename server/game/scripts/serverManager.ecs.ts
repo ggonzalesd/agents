@@ -3,7 +3,6 @@ import * as RAPIER from '@dimforge/rapier3d-compat';
 import { ComponentEcs } from '#/ecs/Component.ecs';
 import { ServerDataEcs } from './serverData.ecs';
 import { classicNpcServerFactoryGenerator } from '../prefab/classicNpc.server';
-import { npcServerFactoryGenerator } from '../prefab/npc.server';
 
 import * as ClassicNPCRepository from '$/db/classic-npc.db';
 import * as NPCRepository from '$/db/npc.db';
@@ -36,7 +35,6 @@ export class ServerManagerEcs extends ComponentEcs {
 		// Cargar el mapa del lobby a través de MapLoaderEcs para mantener el estándar
 		mapLoader.mountMap('lobby', defaultMap, { x: 0, y: 0, z: 0 });
 
-		const npcServerFactory = npcServerFactoryGenerator(this.world);
 		const classicNpcServerFactory = classicNpcServerFactoryGenerator(
 			this.world,
 		);
@@ -48,7 +46,8 @@ export class ServerManagerEcs extends ComponentEcs {
 		Promise.all([
 			NPCRepository.getAllNPCs({}),
 			ClassicNPCRepository.getAllClassicNPCs({}),
-		]).then(([npcs, classicNpcs]) => {
+		]).then(([_npcs, classicNpcs]) => {
+			/*
 			npcs.forEach(async (one) => {
 				console.log('Spawning NPC:', one.npc.model);
 
@@ -84,6 +83,7 @@ export class ServerManagerEcs extends ComponentEcs {
 
 				this.world.addEntity(npc);
 			});
+			*/
 
 			classicNpcs.forEach(async (one) => {
 				console.log('Spawning Classic NPC:', one.agent.identifier);

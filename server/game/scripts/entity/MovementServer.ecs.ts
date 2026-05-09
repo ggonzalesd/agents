@@ -68,7 +68,8 @@ export class MovementServerEcs extends ComponentEcs {
 		const moveDirection = vec3dLerp(this.direction, clientVector, umbral);
 		vec3Set(this.direction, moveDirection);
 
-		const vel = this.character.body.linvel();
+		const linvel = this.character.body.linvel();
+		const vel: IVec3 = { x: linvel.x, y: linvel.y, z: linvel.z };
 
 		if (this.movementState.isMoving) {
 			const speed = isGround ? this.walkSpeed : this.walkSpeed / 2;
@@ -95,6 +96,7 @@ export class MovementServerEcs extends ComponentEcs {
 
 	public isGround() {
 		const position = this.character.body.translation();
+		const myColliderHandle = this.character.collider.handle;
 		const ray = new RAPIER.Ray(position, new RAPIER.Vector3(0, -1.25, 0));
 		return (
 			this.physic.castRay(
@@ -105,7 +107,7 @@ export class MovementServerEcs extends ComponentEcs {
 				undefined,
 				undefined,
 				undefined,
-				(c) => c !== this.character.collider,
+				(c) => c.handle !== myColliderHandle,
 			) != null
 		);
 	}

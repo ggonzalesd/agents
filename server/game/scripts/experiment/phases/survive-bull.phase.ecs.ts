@@ -16,7 +16,7 @@ const BULL_SKIN = 'bull-black';
 const BULL_DISPLAY = 'Toro Negro';
 const BULL_LIFE = 90_000;
 const BULL_SPAWN_RADIUS = 10;
-const SURVIVE_DURATION_MS = 30_000;
+const SURVIVE_DURATION_MS = 10_000;
 
 const NPC_IDENTIFIER = 'survive-bull-npc';
 const NPC_SKIN = 'kanye';
@@ -25,7 +25,7 @@ const NPC_LIFE = 100;
 const bullExperimentProfile: AnimalProfileProps = {
 	populationKey: 'bull',
 	species: 'bull-black',
-	attackDamage: 5,
+	attackDamage: 2,
 	canFlee: false,
 	canCounterAttack: true,
 	homeRadius: 50,

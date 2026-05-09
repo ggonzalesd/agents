@@ -173,7 +173,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 
 				break;
 			}
-			case 'consume-item': {
+			case 'eat-item': {
 				const slot = (message as any)?.slot as number | undefined;
 
 			if (slot != null) {

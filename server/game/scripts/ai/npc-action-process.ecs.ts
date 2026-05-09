@@ -1,9 +1,11 @@
 import { ComponentEcs, type EntityEcs } from '#/ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
+import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 import { Option } from '#/utils/Option';
 import { FollowEntityOption } from '../entity/follow-path/follow-entity.class';
 import { FollowPathEcs } from '../entity/follow-path/follow-path.ecs';
 import { MovementServerEcs } from '../entity/MovementServer.ecs';
+import { EntityPathfinderEcs } from '../entity/entity-pathfinder.ecs';
 import { ServerDataEcs } from '../serverData.ecs';
 import { WorldPathfinderEcs } from '../world/world-grid.ecs';
 import { NPCContextEcs } from './npc-context.ecs';
@@ -64,6 +66,16 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			}
 			this.attackUntilResolvedTimers.clear();
 		});
+	}
+
+	private resolvePathfinder(): IPathfinder {
+		const entityPathfinder = this.entityParent
+			.get(EntityPathfinderEcs)
+			.map((c) => c.pathfinder);
+		if (entityPathfinder.isSome()) return entityPathfinder.unwrap('');
+		return this.world
+			.get(WorldPathfinderEcs)
+			.unwrap('No pathfinder available for NPCActionProcessEcs');
 	}
 
 	private scheduleAttackUntilResolvedAttempt(
@@ -180,7 +192,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			Option.zip({
 				target: this.world.getEntity(props.entityId),
 				followPath: this.entityParent.get(FollowPathEcs),
-				pathfinder: this.world.get(WorldPathfinderEcs),
+				pathfinder: Option.some(this.resolvePathfinder()),
 			}).ifSome((zipped) => {
 				zipped.followPath.option = new FollowEntityOption({
 					...zipped,
@@ -358,7 +370,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			Option.zip({
 				target: this.world.getEntity(action.entityId),
 				followPath: this.entityParent.get(FollowPathEcs),
-				pathfinder: this.world.get(WorldPathfinderEcs),
+				pathfinder: Option.some(this.resolvePathfinder()),
 			}).ifSome((zipped) => {
 				zipped.followPath.option = new FollowEntityOption({
 					...zipped,
@@ -380,7 +392,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			Option.zip({
 				target,
 				followPath: this.entityParent.get(FollowPathEcs),
-				pathfinder: this.world.get(WorldPathfinderEcs),
+				pathfinder: Option.some(this.resolvePathfinder()),
 			}).ifSome((zipped) => {
 				const onComplete = () => {
 					this.pushNpcEvent(
@@ -420,7 +432,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			Option.zip({
 				target,
 				followPath: this.entityParent.get(FollowPathEcs),
-				pathfinder: this.world.get(WorldPathfinderEcs),
+				pathfinder: Option.some(this.resolvePathfinder()),
 			}).ifSome((zipped) => {
 				zipped.followPath.option = new FollowEntityOption({
 					...zipped,
@@ -449,7 +461,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 					.map((entity) => entity.getUnsafe(FollowPathEcs))
 					.ifSome((f) => {
 						f.option = new FollowPositionOption({
-							pathfinder: this.world.getUnsafe(WorldPathfinderEcs),
+							pathfinder: this.resolvePathfinder(),
 							followPath: f,
 							position: { x: action.x, z: action.z },
 							entity: this.entityParent,
@@ -509,7 +521,15 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				LLMService.embed([action.value])
 					.then((embeddings) =>
 						LTMRepository.retrieveLongTermMemory({
-							npcIdentifier: this.entityParent.name,
+							npcIdentifier:
+								this.entityParent
+									.get(RecordEcs)
+									.map((r) =>
+										r.getRecord<{ id: string; identifier: string; model: string }>('db')
+											.map((db) => db.identifier)
+											.orElse(this.entityParent.name),
+									)
+									.orElse(this.entityParent.name),
 							queryEmbedding: embeddings[0],
 							limit: action.limit,
 							importance: action.importance,
@@ -536,8 +556,11 @@ export class NPCActionProcessEcs extends ComponentEcs {
 			}
 
 			if (action.type === 'drop-item') {
-				this.entityParent.get(InventoryServerEcs).ifSome((inventory) => {
+				this.entityParent.get(InventoryServerEcs)
+				.ifSome((inventory) => {
 					inventory.dropItem(action.slot);
+				}).ifNone(() => {
+					console.warn('Cannot drop item, inventory not found');
 				});
 			}
 
@@ -553,7 +576,76 @@ export class NPCActionProcessEcs extends ComponentEcs {
 				});
 			}
 
-			if (action.type === 'consume-item') {
+			if (action.type === 'give-item-to') {
+			Option.zip({
+				selfBody: this.entityParent.get(CharacterBodyServerEcs),
+				selfInventory: this.entityParent.get(InventoryServerEcs),
+				targetEntity: this.world.getEntity(action.targetEntityId),
+			}).ifSome(({ selfBody, selfInventory, targetEntity }) => {
+				const targetBody = targetEntity.get(CharacterBodyServerEcs).raw();
+				if (targetBody) {
+					const myPos = selfBody.body.translation();
+					const targetPos = targetBody.body.translation();
+					const distance = Math.hypot(
+						targetPos.x - myPos.x,
+						targetPos.z - myPos.z,
+					);
+
+					if (distance > 2) {
+						this.pushNpcEvent(
+							`No pudiste dar el ítem a ${action.targetEntityId}: está demasiado lejos (${distance.toFixed(1)}m).`,
+							{
+								type: 'inventory:give-failed',
+								targetEntityId: action.targetEntityId,
+								slot: action.slot,
+								reason: 'too-far',
+								distance,
+							},
+						);
+						return;
+					}
+				}
+
+				const targetInventory = targetEntity.get(InventoryServerEcs).raw();
+				if (!targetInventory) {
+					this.pushNpcEvent(
+						`No pudiste dar el ítem a ${action.targetEntityId}: no tiene inventario.`,
+						{
+							type: 'inventory:give-failed',
+							targetEntityId: action.targetEntityId,
+							slot: action.slot,
+							reason: 'no-inventory',
+						},
+					);
+					return;
+				}
+
+				const result = selfInventory.giveItemTo(targetInventory, action.slot);
+				if (result.success) {
+					this.pushNpcEvent(
+						`Le diste un ítem (slot ${action.slot}) a ${action.targetEntityId}.`,
+						{
+							type: 'inventory:gave-item',
+							targetEntityId: action.targetEntityId,
+							slot: action.slot,
+							itemType: result.item?.type,
+						},
+					);
+				} else {
+					this.pushNpcEvent(
+						`No pudiste dar el ítem a ${action.targetEntityId}: slot vacío o inventario lleno.`,
+						{
+							type: 'inventory:give-failed',
+							targetEntityId: action.targetEntityId,
+							slot: action.slot,
+							reason: 'give-failed',
+						},
+					);
+				}
+			});
+		}
+
+		if (action.type === 'eat-item') {
 				this.entityParent.get(InventoryServerEcs).ifSome((inventory) => {
 					const result = inventory.consumeItem(action.slot);
 					if (result.success) {

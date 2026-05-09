@@ -29,9 +29,13 @@ type PhaseFactory = (
 ) => ExperimentPhaseEcs;
 
 // Las fases LLM se registrarán aquí a medida que se implementen
+import { RequestPotionPhaseEcs } from '../phases/request-potion.phase.ecs';
+
 const phaseFactories: {
 	[string: string]: PhaseFactory;
-} = {};
+} = {
+	'request-potion': (def, runtime) => new RequestPotionPhaseEcs(def, runtime),
+};
 
 export class NpcsConLlmsExperimentRuntimeEcs extends ExperimentRuntimeEcs {
 	private slotRelease: (() => void) | null = null;
