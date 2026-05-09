@@ -419,6 +419,23 @@ async function main() {
 		].join(' '),
 	});
 	console.log(`Created LLM NPC (fase 1 con-llm): ${npcPhase1ConLlm.agent.identifier}`);
+
+	// Agente NPC para NPCS-CON-LLMS — Fase 2: Provocar y vencer al NPC
+	const npcPhase2ConLlm = await createNPC({
+		display: 'Rufián',
+		identifier: 'ruffian-p2llm',
+		slug: `${player1.agent.identifier}-npc-2`,
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un rufián arrogante y temperamental.',
+			'No toleras los insultos ni las provocaciones.',
+			'Si alguien te falta al respeto o te provoca repetidamente, pierdes los estribos y atacas sin dudarlo.',
+			'Al principio respondes con advertencias y sarcasmo, pero si la provocación continúa, atacas físicamente.',
+			'Habla en español. Sé brusco, intimidante y breve.',
+		].join(' '),
+	});
+	console.log(`Created LLM NPC (fase 2 con-llm): ${npcPhase2ConLlm.agent.identifier}`);
 }
 
 main()
