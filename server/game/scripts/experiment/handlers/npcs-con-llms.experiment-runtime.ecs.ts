@@ -32,6 +32,7 @@ type PhaseFactory = (
 import { RequestPotionPhaseEcs } from '../phases/request-potion.phase.ecs';
 import { ProvokeDefeatNpcPhaseEcs } from '../phases/provoke-defeat-npc.phase.ecs';
 import { HuntAnimalsLlmPhaseEcs } from '../phases/hunt-animals-llm.phase.ecs';
+import { CollectRedApplesPhaseEcs } from '../phases/collect-red-apples.phase.ecs';
 
 const phaseFactories: {
 	[string: string]: PhaseFactory;
@@ -39,6 +40,7 @@ const phaseFactories: {
 	'request-potion': (def, runtime) => new RequestPotionPhaseEcs(def, runtime),
 	'provoke-defeat-npc': (def, runtime) => new ProvokeDefeatNpcPhaseEcs(def, runtime),
 	'hunt-animals-llm': (def, runtime) => new HuntAnimalsLlmPhaseEcs(def, runtime),
+	'collect-red-apples': (def, runtime) => new CollectRedApplesPhaseEcs(def, runtime),
 };
 
 export class NpcsConLlmsExperimentRuntimeEcs extends ExperimentRuntimeEcs {

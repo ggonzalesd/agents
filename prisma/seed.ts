@@ -454,6 +454,25 @@ async function main() {
 		].join(' '),
 	});
 	console.log(`Created LLM NPC (fase 3 con-llm): ${npcPhase3ConLlm.agent.identifier}`);
+
+	// Agente NPC para NPCS-CON-LLMS — Fase 4: Ayudar al NPC a obtener 5 manzanas rojas
+	const npcPhase4ConLlm = await createNPC({
+		display: 'Recolector',
+		identifier: 'collector-p4llm',
+		slug: `${player1.agent.identifier}-npc-4`,
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un recolector hábil y observador.',
+			'Tu objetivo es recolectar 5 manzanas rojas (apple) golpeando árboles.',
+			'Cuando veas un árbol cerca, acércate con move-close-to-entity y golpéalo con attack-until-resolved.',
+			'Los árboles sueltan manzanas al suelo cuando los golpeas. Recógelas con pick-item.',
+			'Solo las manzanas rojas (apple) cuentan. Las manzanas verdes (green_apple) no sirven.',
+			'El jugador puede indicarte dónde hay árboles o darte instrucciones. Obedécelas.',
+			'Habla en español. Sé conciso y práctico.',
+		].join(' '),
+	});
+	console.log(`Created LLM NPC (fase 4 con-llm): ${npcPhase4ConLlm.agent.identifier}`);
 }
 
 main()
