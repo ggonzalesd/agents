@@ -37,6 +37,7 @@ import { ConvinceEscortNpcPhaseEcs } from '../phases/convince-escort-npc.phase.e
 import { NegotiateItemPhaseEcs } from '../phases/negotiate-item.phase.ecs';
 import { FollowDynamicInstructionsPhaseEcs } from '../phases/follow-dynamic-instructions.phase.ecs';
 import { CoordinateSurviveBullPhaseEcs } from '../phases/coordinate-survive-bull.phase.ecs';
+import { RequestDeliverInfoPhaseEcs } from '../phases/request-deliver-info.phase.ecs';
 
 const phaseFactories: {
 	[string: string]: PhaseFactory;
@@ -49,6 +50,7 @@ const phaseFactories: {
 	'negotiate-item': (def, runtime) => new NegotiateItemPhaseEcs(def, runtime),
 	'follow-dynamic-instructions': (def, runtime) => new FollowDynamicInstructionsPhaseEcs(def, runtime),
 	'coordinate-survive-bull': (def, runtime) => new CoordinateSurviveBullPhaseEcs(def, runtime),
+	'request-deliver-info': (def, runtime) => new RequestDeliverInfoPhaseEcs(def, runtime),
 };
 
 export class NpcsConLlmsExperimentRuntimeEcs extends ExperimentRuntimeEcs {

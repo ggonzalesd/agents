@@ -544,6 +544,44 @@ async function main() {
 		].join(' '),
 	});
 	console.log(`Created LLM NPC (fase 8 con-llm): ${npcPhase8ConLlm.agent.identifier}`);
+
+// Agente NPC para NPCS-CON-LLMS — Fase 9: Informante (entrega información)
+	const npcPhase9Informer = await createNPC({
+		display: 'Informante',
+		identifier: 'informer-p9llm',
+		slug: `${player1.agent.identifier}-npc-9`,
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un funcionario corrupto y codicioso.',
+			'Tienes información valiosa que no das gratis. Exiges un soborno: el jugador debe darte monedas (coin) usando give-item-to.',
+			'Si el jugador te ofrece monedas, revelas que la capitana Marta llegó al puerto con los suministros.',
+			'Si el jugador no te ofrece nada o insiste sin pagar, das información falsa o engañosa.',
+			'No repitas la misma información varias veces.',
+			'Habla en español. Sé breve, directo y corrupto.',
+		].join(' '),
+	});
+	console.log(`Created LLM NPC (fase 9 con-llm, informante): ${npcPhase9Informer.agent.identifier}`);
+
+	// Agente NPC para NPCS-CON-LLMS — Fase 9: Verificador (valida información)
+	const npcPhase9Verifier = await createNPC({
+		display: 'Verificador',
+		identifier: 'verifier-p9llm',
+		slug: `${player1.agent.identifier}-npc-9b`,
+		model: 'gpt-4.1-mini',
+		skinKey: 'knight',
+		description: [
+			'Eres un estudioso reservado y cauto.',
+			'Estás esperando un mensaje importante, pero no revelas qué información buscas ni quién la enviaría.',
+			'Cuando alguien se acerque, preguntas si trae noticias, pero sin dar pistas sobre el contenido esperado.',
+			'Internamente sabes que la respuesta correcta es: la capitana Marta llegó al puerto con los suministros.',
+			'Si el jugador menciona la capitana Marta y los suministros, usa send-signal con key "ok".',
+			'Si la información es incorrecta, vaga o tras una conversación no demuestra saber la verdad, usa send-signal con key "fail".',
+			'Nunca menciones a Marta, los suministros ni el puerto directamente. Solo di que esperas noticias importantes.',
+			'Habla en español. Sé reservado y breve.',
+		].join(' '),
+	});
+	console.log(`Created LLM NPC (fase 9 con-llm, verificador): ${npcPhase9Verifier.agent.identifier}`);
 }
 
 main()

@@ -30,6 +30,7 @@ import { WorldEventBusEcs, WorldEventType } from '../world-event-bus.ecs';
 export class NPCActionProcessEcs extends ComponentEcs {
 	private static readonly CLOSE_TO_ENTITY_DISTANCE = 1.5;
 	private static readonly ATTACK_RANGE = 2;
+	private static readonly HEARING_RANGE = 10;
 	private attackUntilResolvedTimers = new Set<ReturnType<typeof setTimeout>>();
 
 	private pushNpcEvent(
@@ -269,9 +270,40 @@ export class NPCActionProcessEcs extends ComponentEcs {
 					message: action.content,
 				});
 
+				const speakerPos = this.entityParent
+					.get(CharacterBodyServerEcs)
+					.map((c) => c.body.translation())
+					.raw();
+
 				this.world
-					.getEntityLike({ context: NPCContextEcs, event: NPCEventQueueEcs })
-					.forEach(({ entity, components: { context, event } }) => {
+					.getEntityLike({ context: NPCContextEcs, event: NPCEventQueueEcs, character: CharacterBodyServerEcs })
+					.forEach(({ entity, components: { context, event, character } }) => {
+						if (this.parent === entity.name) {
+							context.lastMessages.addMessage(
+								action.content,
+								this.parent ?? 'Unknown',
+							);
+
+							event.pushEvent(
+								`${this.parent ?? 'Unknown'} says something.`,
+								{
+									from: this.parent,
+									message: action.content,
+								},
+								0,
+							);
+							return;
+						}
+
+						if (!speakerPos) return;
+
+						const listenerPos = character.body.translation();
+						const dx = listenerPos.x - speakerPos.x;
+						const dz = listenerPos.z - speakerPos.z;
+						const distance = Math.sqrt(dx * dx + dz * dz);
+
+						if (distance > NPCActionProcessEcs.HEARING_RANGE) return;
+
 						context.lastMessages.addMessage(
 							action.content,
 							this.parent ?? 'Unknown',
@@ -283,7 +315,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 								from: this.parent,
 								message: action.content,
 							},
-							this.parent === entity.name ? 0 : 10,
+							10,
 						);
 					});
 

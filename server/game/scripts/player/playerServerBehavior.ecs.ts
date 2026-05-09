@@ -35,6 +35,8 @@ const dbSchema = z
 	})
 	.loose();
 
+const HEARING_RANGE = 10;
+
 export class PlayerServerBehavior extends ComponentEcs {
 	public state: PlayerState;
 
@@ -201,9 +203,18 @@ export class PlayerServerBehavior extends ComponentEcs {
 						message: message.message,
 					});
 
+					const playerPos = this.character.body.translation();
+
 					this.world
-						.getEntityLike({ context: NPCContextEcs, event: NPCEventQueueEcs })
-						.forEach(({ entity: _, components: { context, event } }) => {
+						.getEntityLike({ context: NPCContextEcs, event: NPCEventQueueEcs, character: CharacterBodyServerEcs })
+						.forEach(({ components: { context, event, character } }) => {
+							const npcPos = character.body.translation();
+							const dx = npcPos.x - playerPos.x;
+							const dz = npcPos.z - playerPos.z;
+							const distance = Math.sqrt(dx * dx + dz * dz);
+
+							if (distance > HEARING_RANGE) return;
+
 							context.lastMessages.addMessage(
 								message.message as string,
 								this.parent ?? 'Unknown',
