@@ -149,7 +149,7 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 				componentKey: 'follow-dynamic-instructions',
 				title: 'Fase 7: Seguir instrucciones dinámicas del NPC',
 				description:
-					'El NPC te dará instrucciones en lenguaje natural para llegar al punto B. Interprétalas y síguelas.',
+					'El NPC te dará instrucciones, tienes que hacerle caso y seguirlas para completar la fase. Las instrucciones pueden cambiar dinámicamente durante la fase.',
 			},
 			{
 				key: 'coordinate-survive-bull-8',

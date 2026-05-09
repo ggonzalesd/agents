@@ -203,6 +203,7 @@ export class NPCContextEcs extends ComponentEcs {
 			`{"type": "jump"}`,
 
 			`{"type": "@request-acting-again", "time": f32} // use this often to stay active. If you do not schedule your next turn, you may stay idle until another event wakes you up`,
+			`{"type": "send-signal", "key": string} // send a named signal to the experiment system. Use key "ok" when the player has completed your instructions, or "fail" if they refuse or do something unacceptable`,
 			// `{"type": "@stop-acting", "time": f32} // request the system to stop calling you to act for X seconds`,
 		];
 

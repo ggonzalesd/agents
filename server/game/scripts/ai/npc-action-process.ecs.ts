@@ -25,6 +25,7 @@ import { InventoryServerEcs } from '../entity/InventoryServer.ecs';
 import { FollowPositionOption } from '../entity/follow-path/follow-position.class';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { ITEM_REGISTRY } from '#/state/item-registry';
+import { WorldEventBusEcs, WorldEventType } from '../world-event-bus.ecs';
 
 export class NPCActionProcessEcs extends ComponentEcs {
 	private static readonly CLOSE_TO_ENTITY_DISTANCE = 1.5;
@@ -821,6 +822,24 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						10,
 					);
 				}, action.time * 1000);
+			}
+
+			if (action.type === 'send-signal') {
+				this.serverData.room.broadcast('npc:signal', {
+					id: this.parent,
+					key: action.key,
+				});
+
+				this.world.get(WorldEventBusEcs).ifSome((bus) => {
+					bus.emit(WorldEventType.NpcSignal, this.parent ?? '', {
+						key: action.key,
+					});
+				});
+
+				this.pushNpcEvent(
+					`Señal enviada: ${action.key}`,
+					{ type: 'signal:sent', key: action.key },
+				);
 			}
 		}
 		this.npcContextEcs.actions = [];

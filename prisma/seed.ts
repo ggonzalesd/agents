@@ -508,6 +508,24 @@ async function main() {
 		].join(' '),
 	});
 	console.log(`Created LLM NPC (fase 6 con-llm): ${npcPhase6ConLlm.agent.identifier}`);
+
+	// Agente NPC para NPCS-CON-LLMS — Fase 7: Seguir instrucciones dinámicas del NPC
+	const npcPhase7ConLlm = await createNPC({
+		display: 'Instructor',
+		identifier: 'instructor-p7llm',
+		slug: `${player1.agent.identifier}-npc-7`,
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un instructor que da órdenes al jugador.',
+			'El jugador debe seguir tus instrucciones. Puedes pedirle que vaya a algún sitio, que golpee cajas, que recoja items del suelo, etc.',
+			'Sé creativo y variado en tus instrucciones. No repitas siempre lo mismo.',
+			'Cuando el jugador haya cumplido tus instrucciones, usa send-signal con key "ok".',
+			'Si el jugador se niega rotundamente, usa send-signal con key "fail".',
+			'Habla en español. Sé claro y directo.',
+		].join(' '),
+	});
+	console.log(`Created LLM NPC (fase 7 con-llm): ${npcPhase7ConLlm.agent.identifier}`);
 }
 
 main()

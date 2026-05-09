@@ -180,6 +180,12 @@ const actionCancelMissionSchema = z.object({
 	missionId: z.string(),
 });
 
+// (📡) Signal action schema
+const actionSendSignalSchema = z.object({
+	type: z.literal('send-signal'),
+	key: z.string().min(1).max(64),
+});
+
 // (🎬) MetaActions for npc control
 const actionRequestActingAgainSchema = z.object({
 	type: z.literal('@request-acting-again'),
@@ -223,5 +229,6 @@ export const actionsSchema = z.union([
 	actionAbandonMissionSchema,
 	actionCancelMissionSchema,
 
+	actionSendSignalSchema,
 	actionRequestActingAgainSchema,
 ]);

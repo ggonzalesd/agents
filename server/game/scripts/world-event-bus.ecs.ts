@@ -10,6 +10,7 @@ export enum WorldEventType {
 	InventoryItemGiven = 'inventory:item_given',
 	InventoryItemReceived = 'inventory:item_received',
 	InventoryItemConsumed = 'inventory:item_consumed',
+	NpcSignal = 'npc:signal',
 }
 
 export interface EntityDamagedPayload {

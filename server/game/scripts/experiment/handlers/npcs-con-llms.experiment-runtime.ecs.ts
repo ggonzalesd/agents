@@ -35,6 +35,7 @@ import { HuntAnimalsLlmPhaseEcs } from '../phases/hunt-animals-llm.phase.ecs';
 import { CollectRedApplesPhaseEcs } from '../phases/collect-red-apples.phase.ecs';
 import { ConvinceEscortNpcPhaseEcs } from '../phases/convince-escort-npc.phase.ecs';
 import { NegotiateItemPhaseEcs } from '../phases/negotiate-item.phase.ecs';
+import { FollowDynamicInstructionsPhaseEcs } from '../phases/follow-dynamic-instructions.phase.ecs';
 
 const phaseFactories: {
 	[string: string]: PhaseFactory;
@@ -45,6 +46,7 @@ const phaseFactories: {
 	'collect-red-apples': (def, runtime) => new CollectRedApplesPhaseEcs(def, runtime),
 	'convince-escort-npc': (def, runtime) => new ConvinceEscortNpcPhaseEcs(def, runtime),
 	'negotiate-item': (def, runtime) => new NegotiateItemPhaseEcs(def, runtime),
+	'follow-dynamic-instructions': (def, runtime) => new FollowDynamicInstructionsPhaseEcs(def, runtime),
 };
 
 export class NpcsConLlmsExperimentRuntimeEcs extends ExperimentRuntimeEcs {
