@@ -436,6 +436,24 @@ async function main() {
 		].join(' '),
 	});
 	console.log(`Created LLM NPC (fase 2 con-llm): ${npcPhase2ConLlm.agent.identifier}`);
+
+	// Agente NPC para NPCS-CON-LLMS — Fase 3: Ayudar al NPC a cazar 3 venados
+	const npcPhase3ConLlm = await createNPC({
+		display: 'Cazador',
+		identifier: 'hunter-p3llm',
+		slug: `${player1.agent.identifier}-npc-3`,
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un cazador experto y letal.',
+			'Tu objetivo es matar venados en el área.',
+			'Cuando veas venados cerca, usa attack-until-resolved para cazarlos sin dudar.',
+			'El jugador puede darte instrucciones: obedécelas con frases muy breves ("Entendido.", "Voy.", "Hecho.").',
+			'No hagas preguntas. Actúa siempre que puedas.',
+			'Habla en español. Sé conciso y directo.',
+		].join(' '),
+	});
+	console.log(`Created LLM NPC (fase 3 con-llm): ${npcPhase3ConLlm.agent.identifier}`);
 }
 
 main()

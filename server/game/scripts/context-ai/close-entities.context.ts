@@ -30,7 +30,7 @@ export class CloseEntitiesContextAI implements IContextAI {
 					.get(RecordEcs)
 					.map((r) => r.getUnsafeRecord<{ type?: string; kind?: string }>('stats'))
 					.raw();
-				return stats?.type == null && stats?.kind == null;
+				return stats?.type == null;
 			})
 		.map((other) => {
 			const record = other.entity.get(RecordEcs);
