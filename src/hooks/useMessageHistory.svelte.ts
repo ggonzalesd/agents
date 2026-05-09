@@ -14,6 +14,8 @@ export const useMessageHistory = () => {
 
 	const addMessage = (id: string, from: string, message: string, kind: 'talk' | 'thought' = 'talk') => {
 		update((messages) => {
+			if (messages.some((m) => m.id === id)) return messages;
+
 			const newMessage: MessageType = {
 				id,
 				from,
@@ -22,9 +24,7 @@ export const useMessageHistory = () => {
 				kind,
 			};
 
-			const newMessages = [...messages.slice(-99), newMessage];
-
-			return newMessages;
+			return [...messages.slice(-99), newMessage];
 		});
 	};
 

@@ -526,6 +526,24 @@ async function main() {
 		].join(' '),
 	});
 	console.log(`Created LLM NPC (fase 7 con-llm): ${npcPhase7ConLlm.agent.identifier}`);
+
+	// Agente NPC para NPCS-CON-LLMS — Fase 8: Coordinar supervivencia vs toro negro
+	const npcPhase8ConLlm = await createNPC({
+		display: 'Guardián',
+		identifier: 'guardian-p8llm',
+		slug: `${player1.agent.identifier}-npc-8`,
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un guardián valiente que protege al jugador.',
+			'Estás en una arena con un toro negro que embiste sin piedad.',
+			'Tu misión es coordinarte con el jugador para sobrevivir juntos.',
+			'Puedes usar move-follow-entity para seguir al jugador, move-to-position para moverte, attack-until-resolved para atacar al toro, y flee-from-entity para huir.',
+			'Protege al jugador y evita que el toro lo aplaste.',
+			'Habla en español. Sé valiente y estratégico.',
+		].join(' '),
+	});
+	console.log(`Created LLM NPC (fase 8 con-llm): ${npcPhase8ConLlm.agent.identifier}`);
 }
 
 main()

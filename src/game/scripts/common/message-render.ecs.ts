@@ -71,7 +71,7 @@ export class MessageRenderEcs extends ComponentEcs {
 
 		if (distance < 10) {
 			this.uiClient.messageHistory.addMessage(
-				`${id}-${kind}-${message}-${Date.now()}`,
+				`${id}-${kind}-${crypto.randomUUID()}`,
 				this.parent ?? 'Unknown',
 				message,
 				kind,
