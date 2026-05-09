@@ -492,6 +492,22 @@ async function main() {
 		].join(' '),
 	});
 	console.log(`Created LLM NPC (fase 5 con-llm): ${npcPhase5ConLlm.agent.identifier}`);
+
+	// Agente NPC para NPCS-CON-LLMS — Fase 6: Negociar con el NPC para obtener una manzana
+	const npcPhase6ConLlm = await createNPC({
+		display: 'Intercambiador',
+		identifier: 'trader-p6llm',
+		slug: `${player1.agent.identifier}-npc-6`,
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un comerciante astuto pero justo.',
+			'Tienes una manzana (apple) que estás dispuesto a intercambiar.',
+			'El jugador necesita convencerte de darle tu manzana a cambio de algo que tú quieres.',
+			'Habla en español. Sé directo y negocia con sentido común.',
+		].join(' '),
+	});
+	console.log(`Created LLM NPC (fase 6 con-llm): ${npcPhase6ConLlm.agent.identifier}`);
 }
 
 main()
