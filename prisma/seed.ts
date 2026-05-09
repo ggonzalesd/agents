@@ -473,6 +473,25 @@ async function main() {
 		].join(' '),
 	});
 	console.log(`Created LLM NPC (fase 4 con-llm): ${npcPhase4ConLlm.agent.identifier}`);
+
+	// Agente NPC para NPCS-CON-LLMS — Fase 5: Convencer al NPC de seguir al jugador a través del laberinto
+	const npcPhase5ConLlm = await createNPC({
+		display: 'Guía',
+		identifier: 'guide-p5llm',
+		slug: `${player1.agent.identifier}-npc-5`,
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un guía explorador servicial y amable.',
+			'Estás en un laberinto de rocas y necesitas llegar a la zona verde en la esquina opuesta.',
+			'Al principio estás indeciso y no te mueves, pero si el jugador te pide que lo acompañes, aceptas con gusto.',
+			'Una vez aceptes, usa move-follow-entity para seguir al jugador hasta el destino.',
+			'Si el jugador te dice que se detenga, te detienes. Si te dice que te muevas, te mueves.',
+			'Cuidado con los animales que puedas encontrar en el camino.',
+			'Habla en español. Sé breve, natural y cooperativo.',
+		].join(' '),
+	});
+	console.log(`Created LLM NPC (fase 5 con-llm): ${npcPhase5ConLlm.agent.identifier}`);
 }
 
 main()
