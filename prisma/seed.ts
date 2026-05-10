@@ -264,6 +264,194 @@ async function createClassicNPC(props: {
 	return result;
 }
 
+const SEED_USERS = [
+	{ username: 'angel', password: 'pass2026xdwas', display: 'Angel', identifier: 'angel-k7x2' },
+	{ username: 'aaron', password: 'pass223cdsthe', display: 'Aaron', identifier: 'aaron-m4p9' },
+	{ username: 'alejandro', password: 'passfsa2424', display: 'Alejandro', identifier: 'alejandro-r2v6' },
+	{ username: 'daniel', password: 'passasf315sa', display: 'Daniel', identifier: 'daniel-q8w3' },
+	{ username: 'paolo', password: 'pass123cgrgerh', display: 'Paolo', identifier: 'paolo-t5n7' },
+	{ username: 'tito', password: 'pass234234sa', display: 'Tito', identifier: 'tito-b1j4' },
+	{ username: 'josue', password: 'passgrm3ojm94c', display: 'Josue', identifier: 'josue-f3h8' },
+	{ username: 'nander', password: 'pass32rcfesdc', display: 'Nander', identifier: 'nander-d6c1' },
+	{ username: 'nayeli', password: 'passsdf23rcgrg', display: 'Nayeli', identifier: 'nayeli-g9s5' },
+	{ username: 'juan', password: 'passsdff432gce', display: 'Juan', identifier: 'juan-x2m7' },
+	{ username: 'alan', password: 'passlsmdf4i', display: 'Alan', identifier: 'alan-p4k8' },
+	{ username: 'antonioba', password: 'passmk3o84hfchjo4', display: 'Antonioba', identifier: 'antonioba-w1y3' },
+	{ username: 'antoniosa', password: 'passsdflkc2834', display: 'Antoniosa', identifier: 'antoniosa-v6z9' },
+	{ username: 'ayrton', password: 'passsdkfo25234', display: 'Ayrton', identifier: 'ayrton-l4q2' },
+	{ username: 'cente', password: 'passlmfdg3345', display: 'Cente', identifier: 'cente-u7e5' },
+	{ username: 'guessman', password: 'passdfgm345234', display: 'Guessman', identifier: 'guessman-j3a6' },
+
+	{ username: 'cristian', password: 'padfgdfggf2026', display: 'Cristian', identifier: 'cristian-k7x2' }
+];
+
+const NPC_PHASES = [
+	{
+		display: 'Guardián de Pociones',
+		identifierPrefix: 'guard-p1llm',
+		slugSuffix: 'npc-1',
+		model: 'gpt-5.4-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un guardián tranquilo que custodia pociones de salud.',
+			'Ayudas a los demás sin esperar nada a cambio',
+			'Habla en español. Sé breve y natural.',
+		],
+	},
+	{
+		display: 'Rufián',
+		identifierPrefix: 'ruffian-p2llm',
+		slugSuffix: 'npc-2',
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un rufián arrogante y temperamental.',
+			'No toleras los insultos ni las provocaciones.',
+			'Si alguien te falta al respeto o te provoca repetidamente, pierdes los estribos y atacas sin dudarlo.',
+			'Al principio respondes con advertencias y sarcasmo, pero si la provocación continúa, atacas físicamente.',
+			'Habla en español. Sé brusco, intimidante y breve.',
+		],
+	},
+	{
+		display: 'Cazador',
+		identifierPrefix: 'hunter-p3llm',
+		slugSuffix: 'npc-3',
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un cazador experto y letal.',
+			'Tu objetivo es matar venados en el área.',
+			'Cuando veas venados cerca, usa attack-until-resolved para cazarlos sin dudar.',
+			'El jugador puede darte instrucciones: obedécelas con frases muy breves ("Entendido.", "Voy.", "Hecho.").',
+			'No hagas preguntas. Actúa siempre que puedas.',
+			'Habla en español. Sé conciso y directo.',
+		],
+	},
+	{
+		display: 'Recolector',
+		identifierPrefix: 'collector-p4llm',
+		slugSuffix: 'npc-4',
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un recolector hábil y observador.',
+			'Tu objetivo es recolectar 5 manzanas rojas (apple) golpeando árboles.',
+			'Cuando veas un árbol cerca, acércate con move-close-to-entity y golpéalo con attack-until-resolved.',
+			'Los árboles sueltan manzanas al suelo cuando los golpeas. Recógelas con pick-item.',
+			'Solo las manzanas rojas (apple) cuentan. Las manzanas verdes (green_apple) no sirven.',
+			'El jugador puede indicarte dónde hay árboles o darte instrucciones. Obedécelas.',
+			'Habla en español. Sé conciso y práctico.',
+		],
+	},
+	{
+		display: 'Guía',
+		identifierPrefix: 'guide-p5llm',
+		slugSuffix: 'npc-5',
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un guía explorador servicial y amable.',
+			'Estás en un laberinto de rocas y necesitas llegar a la zona verde en la esquina opuesta.',
+			'Al principio estás indeciso y no te mueves, pero si el jugador te pide que lo acompañes, aceptas con gusto.',
+			'Una vez aceptes, usa move-follow-entity para seguir al jugador hasta el destino.',
+			'Si el jugador te dice que se detenga, te detienes. Si te dice que te muevas, te mueves.',
+			'Cuidado con los animales que puedas encontrar en el camino.',
+			'Habla en español. Sé breve, natural y cooperativo.',
+		],
+	},
+	{
+		display: 'Intercambiador',
+		identifierPrefix: 'trader-p6llm',
+		slugSuffix: 'npc-6',
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un comerciante astuto pero justo.',
+			'Tienes una manzana (apple) que estás dispuesto a intercambiar.',
+			'El jugador necesita convencerte de darle tu manzana a cambio de algo que tú quieres.',
+			'Habla en español. Sé directo y negocia con sentido común.',
+		],
+	},
+	{
+		display: 'Instructor',
+		identifierPrefix: 'instructor-p7llm',
+		slugSuffix: 'npc-7',
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un instructor que da órdenes al jugador.',
+			'El jugador debe seguir tus instrucciones. Puedes pedirle que vaya a algún sitio, que golpee cajas, que recoja items del suelo, etc.',
+			'Sé creativo y variado en tus instrucciones. No repitas siempre lo mismo.',
+			'Cuando el jugador haya cumplido tus instrucciones, usa send-signal con key "ok".',
+			'Si el jugador se niega rotundamente, usa send-signal con key "fail".',
+			'Habla en español. Sé claro y directo.',
+		],
+	},
+	{
+		display: 'Guardián',
+		identifierPrefix: 'guardian-p8llm',
+		slugSuffix: 'npc-8',
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un guardián valiente que protege al jugador.',
+			'Estás en una arena con un toro negro que embiste sin piedad.',
+			'Tu misión es coordinarte con el jugador para sobrevivir juntos.',
+			'Puedes usar move-follow-entity para seguir al jugador, move-to-position para moverte, attack-until-resolved para atacar al toro, y flee-from-entity para huir.',
+			'Protege al jugador y evita que el toro lo aplaste.',
+			'Habla en español. Sé valiente y estratégico.',
+		],
+	},
+	{
+		display: 'Informante',
+		identifierPrefix: 'informer-p9llm',
+		slugSuffix: 'npc-9',
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un funcionario corrupto y codicioso.',
+			'Tienes información valiosa que no das gratis. Exiges un soborno: el jugador debe darte monedas (coin) usando give-item-to.',
+			'Si el jugador te ofrece monedas, revelas que la capitana Marta llegó al puerto con los suministros.',
+			'Si el jugador no te ofrece nada o insiste sin pagar, das información falsa o engañosa.',
+			'No repitas la misma información varias veces.',
+			'Habla en español. Sé breve, directo y corrupto.',
+		],
+	},
+	{
+		display: 'Verificador',
+		identifierPrefix: 'verifier-p9llm',
+		slugSuffix: 'npc-9b',
+		model: 'gpt-4.1-mini',
+		skinKey: 'knight',
+		description: [
+			'Eres un estudioso reservado y cauto.',
+			'Estás esperando un mensaje importante, pero no revelas qué información buscas ni quién la enviaría.',
+			'Cuando alguien se acerque, preguntas si trae noticias, pero sin dar pistas sobre el contenido esperado.',
+			'Internamente sabes que la respuesta correcta es: la capitana Marta llegó al puerto con los suministros.',
+			'Si el jugador menciona la capitana Marta y los suministros, usa send-signal con key "ok".',
+			'Si la información es incorrecta, vaga o tras una conversación no demuestra saber la verdad, usa send-signal con key "fail".',
+			'Nunca menciones a Marta, los suministros ni el puerto directamente. Solo di que esperas noticias importantes.',
+			'Habla en español. Sé reservado y breve.',
+		],
+	},
+	{
+		display: 'Recolector',
+		identifierPrefix: 'gatherer-p10llm',
+		slugSuffix: 'npc-10',
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un aventurero dispuesto a ayudar, pero solo si te lo piden explícitamente.',
+			'No actúes por tu cuenta. Espera a que el jugador te pida algo antes de hacer cualquier cosa.',
+			'Si el jugador te pide que rompas cajas, acércate y atácalas con attack-entity o attack-until-resolved.',
+			'Si el jugador te pide que recojas un item, muévete cerca y recógelo con pick-up.',
+			'Si el jugador te pide que le des un item, úsalo give-item-to para entregárselo.',
+			'No rompas cajas ni recojas items sin que te lo pidan primero.',
+			'Habla en español. Sé conciso.',
+		],
+	},
+];
+
 async function main() {
 	// Seed Superadmin User
 	const superadminPlayer = await createPlayer({
@@ -600,6 +788,62 @@ async function main() {
 		].join(' '),
 	});
 	console.log(`Created LLM NPC (fase 10 con-llm, recolector): ${npcPhase10.agent.identifier}`);
+
+	for (const userData of SEED_USERS) {
+		const seedPlayer = await createPlayer({
+			username: userData.username,
+			password: userData.password,
+			display: userData.display,
+			identifier: userData.identifier,
+		});
+		console.log(`Created seed user: ${seedPlayer.player.username}`);
+
+		await prisma.experimentAssignment.upsert({
+			where: {
+				userId_experimentKey: {
+					userId: seedPlayer.player.id,
+					experimentKey: 'NPCS-SIN-LLMS',
+				},
+			},
+			create: {
+				userId: seedPlayer.player.id,
+				experimentKey: 'NPCS-SIN-LLMS',
+				enabled: true,
+			},
+			update: {
+				enabled: true,
+			},
+		});
+
+		await prisma.experimentAssignment.upsert({
+			where: {
+				userId_experimentKey: {
+					userId: seedPlayer.player.id,
+					experimentKey: 'NPCS-CON-LLMS',
+				},
+			},
+			create: {
+				userId: seedPlayer.player.id,
+				experimentKey: 'NPCS-CON-LLMS',
+				enabled: true,
+			},
+			update: {
+				enabled: true,
+			},
+		});
+
+		for (const phase of NPC_PHASES) {
+			const npc = await createNPC({
+				display: phase.display,
+				identifier: `${phase.identifierPrefix}-${userData.username}`,
+				slug: `${seedPlayer.agent.identifier}-${phase.slugSuffix}`,
+				model: phase.model,
+				skinKey: phase.skinKey,
+				description: phase.description.join(' '),
+			});
+			console.log(`Created NPC ${phase.identifierPrefix} for ${userData.username}: ${npc.agent.identifier}`);
+		}
+	}
 }
 
 main()
