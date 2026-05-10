@@ -34,10 +34,26 @@
 		name: string;
 		skin: string;
 		isFull: boolean;
+		/** Posición XZ de la entidad para calcular distancia al jugador local */
+		pos: { x: number; z: number };
 	};
+
+	/** Distancia máxima al cuadrado para transferir items (2 unidades → distSq ≤ 4) */
+	const MAX_TRANSFER_DIST_SQ = 4;
 
 	let itemState = new SvelteMap<string, InventoryItem>();
 	let transferTargets = new SvelteMap<string, TransferTarget>();
+
+	/** Posición XZ del jugador local — $state para que $derived reaccione */
+	let myPos = $state({ x: 0, z: 0 });
+
+	let nearbyTargets = $derived(
+		[...transferTargets.values()].filter((t) => {
+			const dx = myPos.x - t.pos.x;
+			const dz = myPos.z - t.pos.z;
+			return dx * dx + dz * dz <= MAX_TRANSFER_DIST_SQ;
+		}),
+	);
 
 	let roomRef: { send: (type: string, data: unknown) => void } | null = null;
 	let myEntityId: string = '';
@@ -74,82 +90,108 @@
 		// Inventory items reactivity
 		const inventoryProxy = proxy(state.inventory).items;
 
-		const detachAdd = inventoryProxy.onAdd((item, key) => {
-			itemState.set(key, {
-				type: item.type,
-				quantity: item.quantity,
-				metadata: item.metadata,
-			});
-		}, true) ?? (() => undefined);
+		const detachAdd =
+			inventoryProxy.onAdd((item, key) => {
+				itemState.set(key, {
+					type: item.type,
+					quantity: item.quantity,
+					metadata: item.metadata,
+				});
+			}, true) ?? (() => undefined);
 
-		const detachRemove = inventoryProxy.onRemove((_item, key) => {
-			itemState.delete(key);
-		}) ?? (() => undefined);
+		const detachRemove =
+			inventoryProxy.onRemove((_item, key) => {
+				itemState.delete(key);
+			}) ?? (() => undefined);
 
-		const detachChange = inventoryProxy.onChange((item, key) => {
-			itemState.set(key, {
-				type: item.type,
-				quantity: item.quantity,
-				metadata: item.metadata,
-			});
-		}) ?? (() => undefined);
+		const detachChange =
+			inventoryProxy.onChange((item, key) => {
+				itemState.set(key, {
+					type: item.type,
+					quantity: item.quantity,
+					metadata: item.metadata,
+				});
+			}) ?? (() => undefined);
+
+		// Posición del jugador local — sincronizar con $state para que $derived reaccione
+		const syncMyPos = () => {
+			const p = state.character.position;
+			myPos = { x: p.x, z: p.z };
+		};
+		syncMyPos();
+
+		const detachMyPosChange =
+			proxy(state.character).position.onChange(syncMyPos) ?? (() => undefined);
 
 		// Transfer targets: other players
 		const playersProxy = proxy(room.state).players;
 
-		const detachPlayerAdd = playersProxy.onAdd((playerState: PlayerState, entityId: string) => {
-			if (entityId === myEntityId) return;
+		const detachPlayerAdd =
+			playersProxy.onAdd((playerState: PlayerState, entityId: string) => {
+				if (entityId === myEntityId) return;
 
-			const updateTarget = () => {
-				const isFull = playerState.inventory.items.size >= playerState.inventory.capacity;
-				transferTargets.set(entityId, {
-					entityId,
-					name: entityId,
-					skin: playerState.skin,
-					isFull,
-				});
-			};
+				const updateTarget = () => {
+					const isFull =
+						playerState.inventory.items.size >= playerState.inventory.capacity;
+					const p = playerState.character.position;
+					transferTargets.set(entityId, {
+						entityId,
+						name: entityId,
+						skin: playerState.skin,
+						isFull,
+						pos: { x: p.x, z: p.z },
+					});
+				};
 
-			updateTarget();
-			proxy(playerState.inventory).items.onChange(() => updateTarget());
-			proxy(playerState.inventory).items.onAdd(() => updateTarget());
-			proxy(playerState.inventory).items.onRemove(() => updateTarget());
-		}, true) ?? (() => undefined);
+				updateTarget();
+				proxy(playerState.character).position.onChange(() => updateTarget());
+				proxy(playerState.inventory).items.onChange(() => updateTarget());
+				proxy(playerState.inventory).items.onAdd(() => updateTarget());
+				proxy(playerState.inventory).items.onRemove(() => updateTarget());
+			}, true) ?? (() => undefined);
 
-		const detachPlayerRemove = playersProxy.onRemove((_: PlayerState, entityId: string) => {
-			transferTargets.delete(entityId);
-		}) ?? (() => undefined);
+		const detachPlayerRemove =
+			playersProxy.onRemove((_: PlayerState, entityId: string) => {
+				transferTargets.delete(entityId);
+			}) ?? (() => undefined);
 
 		// Transfer targets: NPCs
 		const npcsProxy = proxy(room.state).npcs;
 
-		const detachNpcAdd = npcsProxy.onAdd((npcState: NPCState, entityId: string) => {
-			if (!npcState.hasInventory) return;
+		const detachNpcAdd =
+			npcsProxy.onAdd((npcState: NPCState, entityId: string) => {
+				if (!npcState.hasInventory) return;
 
-			const updateTarget = () => {
-				const isFull = npcState.inventory.items.size >= npcState.inventory.capacity;
-				transferTargets.set(entityId, {
-					entityId,
-					name: entityId,
-					skin: npcState.skin,
-					isFull,
-				});
-			};
+				const updateTarget = () => {
+					const isFull =
+						npcState.inventory.items.size >= npcState.inventory.capacity;
+					const p = npcState.character.position;
+					transferTargets.set(entityId, {
+						entityId,
+						name: entityId,
+						skin: npcState.skin,
+						isFull,
+						pos: { x: p.x, z: p.z },
+					});
+				};
 
-			updateTarget();
-			proxy(npcState.inventory).items.onChange(() => updateTarget());
-			proxy(npcState.inventory).items.onAdd(() => updateTarget());
-			proxy(npcState.inventory).items.onRemove(() => updateTarget());
-		}, true) ?? (() => undefined);
+				updateTarget();
+				proxy(npcState.character).position.onChange(() => updateTarget());
+				proxy(npcState.inventory).items.onChange(() => updateTarget());
+				proxy(npcState.inventory).items.onAdd(() => updateTarget());
+				proxy(npcState.inventory).items.onRemove(() => updateTarget());
+			}, true) ?? (() => undefined);
 
-		const detachNpcRemove = npcsProxy.onRemove((_: NPCState, entityId: string) => {
-			transferTargets.delete(entityId);
-		}) ?? (() => undefined);
+		const detachNpcRemove =
+			npcsProxy.onRemove((_: NPCState, entityId: string) => {
+				transferTargets.delete(entityId);
+			}) ?? (() => undefined);
 
 		return () => {
 			detachAdd();
 			detachRemove();
 			detachChange();
+			detachMyPosChange();
 			detachPlayerAdd();
 			detachPlayerRemove();
 			detachNpcAdd();
@@ -249,8 +291,8 @@
 		dragOverTarget = null;
 	}
 
-	function skinUrl(skin: string): string {
-		return `${import.meta.env.VITE_API_URL}/api/v1/skin/${skin}.png`;
+	function skinAvatarUrl(skin: string): string {
+		return `${import.meta.env.VITE_API_URL}/api/v1/skin/head/${skin}/avatar.png`;
 	}
 
 	const itemDropHandler = (id: string) => (itemDiv: HTMLDivElement) => {
@@ -312,7 +354,10 @@
 		ondrop={() => handleDrop(slotId)}
 		onclick={(e: MouseEvent) => handleSlotClick(e, slotId)}
 		oncontextmenu={(e: MouseEvent) => handleContextMenu(e, slotId)}
-		onkeydown={(e: KeyboardEvent) => { if (e.key === 'Enter') handleSlotClick(e as unknown as MouseEvent, slotId); }}
+		onkeydown={(e: KeyboardEvent) => {
+			if (e.key === 'Enter')
+				handleSlotClick(e as unknown as MouseEvent, slotId);
+		}}
 	>
 		{#if item}
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -326,7 +371,9 @@
 				{@render itemIcon(item)}
 			</div>
 			{#if item.quantity > 1}
-				<span class="absolute bottom-0 right-0 rounded bg-black/50 px-1 text-xs font-bold text-white">
+				<span
+					class="absolute right-0 bottom-0 rounded bg-black/50 px-1 text-xs font-bold text-white"
+				>
 					{item.quantity}
 				</span>
 			{/if}
@@ -346,35 +393,33 @@
 		ondrop={() => handleTargetDrop(target)}
 	>
 		<div
-			class="relative overflow-hidden rounded-md border-2 transition-colors"
-			class:border-[#8965F2]={dragOverTarget === target.entityId && !target.isFull}
+			class="relative rounded-md border-2 transition-colors"
+			class:border-[#8965F2]={dragOverTarget === target.entityId &&
+				!target.isFull}
 			class:border-transparent={dragOverTarget !== target.entityId}
 			class:cursor-not-allowed={target.isFull}
 			class:cursor-grab={!target.isFull}
-			style="
-				width: var(--skin-avatar-size, 48px);
-				height: var(--skin-avatar-size, 48px);
-			"
 		>
 			<img
-				src={skinUrl(target.skin)}
+				src={skinAvatarUrl(target.skin)}
 				alt={target.name}
-				style="
-					position: absolute;
-					width: calc(var(--skin-avatar-size, 48px) * var(--skin-avatar-scale, 2.5));
-					top: calc(var(--skin-avatar-offset-y, -4px));
-					left: calc(var(--skin-avatar-offset-x, -8px));
-					image-rendering: pixelated;
-				"
+				class="image-rendering-pixelated size-12"
 				draggable="false"
 			/>
 			{#if target.isFull}
-				<div class="absolute inset-0 flex items-center justify-center bg-black/50">
-					<span class="text-[8px] font-bold text-white leading-tight text-center">FULL</span>
+				<div
+					class="absolute inset-0 flex items-center justify-center rounded-md bg-black/50"
+				>
+					<span
+						class="text-center text-[8px] leading-tight font-bold text-white"
+						>FULL</span
+					>
 				</div>
 			{/if}
 		</div>
-		<span class="max-w-[52px] truncate text-center text-[10px] text-white/70">{target.name}</span>
+		<span class="max-w-[52px] truncate text-center text-[10px] text-white/70"
+			>{target.name}</span
+		>
 	</div>
 {/snippet}
 
@@ -398,10 +443,15 @@
 		</div>
 	</div>
 
-	{#if transferTargets.size > 0}
-		<div class="flex flex-col gap-3 rounded-lg bg-black/40 p-3 min-w-[72px] max-h-full overflow-y-auto">
-			<span class="text-center text-[10px] text-white/50 uppercase tracking-wider">Nearby</span>
-			{#each [...transferTargets.values()] as target (target.entityId)}
+	{#if nearbyTargets.length > 0}
+		<div
+			class="flex max-h-full min-w-[72px] flex-col gap-3 overflow-y-auto rounded-lg bg-black/40 p-3"
+		>
+			<span
+				class="text-center text-[10px] tracking-wider text-white/50 uppercase"
+				>Nearby</span
+			>
+			{#each nearbyTargets as target (target.entityId)}
 				{@render targetAvatar(target)}
 			{/each}
 		</div>

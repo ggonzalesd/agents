@@ -1,5 +1,6 @@
 import * as crypto from 'node:crypto';
 import type { Response, Request } from 'express';
+import sharp from 'sharp';
 
 import envConfig from '$/config/env.config';
 
@@ -97,6 +98,48 @@ export const getSkinStreamController = async (req: Request, res: Response) => {
 	res.setHeader('Content-Type', 'image/png');
 
 	res.end(buffer);
+};
+
+export const getSkinAvatarController = async (req: Request, res: Response) => {
+	const skinId = req.params.skinId;
+
+	if (typeof skinId !== 'string' || skinId.trim() === '') {
+		throw HttpError.badRequest('Skin ID is required');
+	}
+
+	const skinUrl = `${envConfig.S3_URL}/${envConfig.S3_NAME}/skins/${skinId}.png`;
+
+	const response = await fetch(skinUrl);
+
+	if (!response.ok) {
+		throw HttpError.notFound('Skin not found');
+	}
+
+	const buffer = Buffer.from(await response.arrayBuffer());
+
+	const cropConfig = {
+		left: 8,
+		top: 8,
+		width: 8,
+		height: 8,
+	}
+
+	let pipeline = sharp(buffer);
+
+	if (cropConfig.left != null && cropConfig.top != null && cropConfig.width != null && cropConfig.height != null) {
+		pipeline = pipeline.extract(cropConfig);
+	}
+
+	// Resize to 64x64 for better visibility, using nearest neighbor interpolation to keep it pixelated
+	pipeline = pipeline.resize(64, 64, {
+		kernel: sharp.kernel.nearest,
+	});
+
+	const avatar = await pipeline.png().toBuffer();
+
+	res.setHeader('Content-Type', 'image/png');
+	res.setHeader('Cache-Control', 'public, max-age=86400');
+	res.end(avatar);
 };
 
 export const getExistsController = async (req: Request, res: Response) => {

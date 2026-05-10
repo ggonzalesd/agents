@@ -34,6 +34,8 @@ router.post(
 	SkinController.saveSkinController,
 );
 
+router.get('/head/:skinId/avatar.png', SkinController.getSkinAvatarController);
+
 router.get('/rand/:hash/:username.png', SkinController.getSkinStreamController);
 
 router.get('/:username.png', SkinController.getSkinController);
