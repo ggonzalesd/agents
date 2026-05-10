@@ -582,6 +582,24 @@ async function main() {
 		].join(' '),
 	});
 	console.log(`Created LLM NPC (fase 9 con-llm, verificador): ${npcPhase9Verifier.agent.identifier}`);
+
+	const npcPhase10 = await createNPC({
+		display: 'Recolector',
+		identifier: 'gatherer-p10llm',
+		slug: `${player1.agent.identifier}-npc-10`,
+		model: 'gpt-4.1-mini',
+		skinKey: 'kanye',
+		description: [
+			'Eres un aventurero dispuesto a ayudar, pero solo si te lo piden explícitamente.',
+			'No actúes por tu cuenta. Espera a que el jugador te pida algo antes de hacer cualquier cosa.',
+			'Si el jugador te pide que rompas cajas, acércate y atácalas con attack-entity o attack-until-resolved.',
+			'Si el jugador te pide que recojas un item, muévete cerca y recógelo con pick-up.',
+			'Si el jugador te pide que le des un item, úsalo give-item-to para entregárselo.',
+			'No rompas cajas ni recojas items sin que te lo pidan primero.',
+			'Habla en español. Sé conciso.',
+		].join(' '),
+	});
+	console.log(`Created LLM NPC (fase 10 con-llm, recolector): ${npcPhase10.agent.identifier}`);
 }
 
 main()

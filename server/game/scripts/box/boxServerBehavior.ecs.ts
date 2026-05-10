@@ -5,6 +5,11 @@ import { itemServerFactory } from '$/game/prefab/item.server';
 
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { ServerDataEcs } from '../serverData.ecs';
+import {
+	WorldEventBusEcs,
+	WorldEventType,
+	type EntityDamagedPayload,
+} from '../world-event-bus.ecs';
 
 const BOX_DROP_ITEMS = ['sword', 'potion', 'cookie', 'seeds', 'coin'] as const;
 const BOX_COLLIDER_RADIUS = 0.45;
@@ -18,6 +23,7 @@ export class BoxServerBehavior extends ComponentEcs {
 	private readonly customDropItems: string[] | null;
 	private character: CharacterBodyServerEcs = null!;
 	private serverData: ServerDataEcs = null!;
+	private eventBus: WorldEventBusEcs | null = null;
 	constructor({ state, dropItems }: { state: BoxState; dropItems?: string[] }) {
 		super();
 		this.state = state;
@@ -34,6 +40,8 @@ export class BoxServerBehavior extends ComponentEcs {
 			.map((entity) => entity.getUnsafe(CharacterBodyServerEcs))
 			.unwrap('CharacterBodyServerEcs not found');
 
+		this.eventBus = this.world.get(WorldEventBusEcs).raw() ?? null;
+
 		const parent = this.world.getEntity(this.parent).unwrap('Parent not found');
 		this.serverData.state.boxes.set(parent.name, this.state);
 
@@ -42,12 +50,25 @@ export class BoxServerBehavior extends ComponentEcs {
 		});
 	}
 
-	public onHit(damage: number): void {
+	public onHit(damage: number, attackerId?: string): void {
 		const life = this.state.character.life;
 		if (life <= 0) return;
 
 		this.state.character.life = Math.max(0, life - damage);
+
+		if (this.eventBus) {
+			const payload: EntityDamagedPayload = {
+				attackerId: attackerId ?? 'unknown',
+				amount: damage,
+			};
+			this.eventBus.emit(WorldEventType.EntityDamaged, this.parent, payload);
+		}
+
 		if (this.state.character.life > 0) return;
+
+		if (this.eventBus) {
+			this.eventBus.emit(WorldEventType.EntityDeath, this.parent);
+		}
 
 		const position = this.character.body.translation();
 		this.serverData.room.broadcast('box:break', {

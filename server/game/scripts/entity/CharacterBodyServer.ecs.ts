@@ -279,7 +279,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		for (const { entity, body } of candidates) {
 			const box = entity.get(BoxServerBehavior).raw();
 			if (box) {
-				box.onHit(damage);
+				box.onHit(damage, this.parent ?? 'unknown');
 				break;
 			}
 

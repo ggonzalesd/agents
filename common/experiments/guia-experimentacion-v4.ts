@@ -102,6 +102,15 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 			'Experimento de interacción con NPCs potenciados por modelos de lenguaje.',
 		phases: [
 			{
+				key: 'request-gather-items-10',
+				componentKey: 'request-gather-items',
+				title: 'Fase 10: Pedir al NPC que consiga 3 ítems',
+				description: 'Pide al NPC que consiga 1 carne, 1 poción y 1 manzana.',
+				config: {
+					requiredItems: ['meat', 'potion', 'apple'],
+				},
+			},
+			{
 				key: 'request-deliver-info-9',
 				componentKey: 'request-deliver-info',
 				title: 'Fase 9: Solicitar al NPC que entregue información',
@@ -165,15 +174,6 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 				description:
 					'Coordínate con el NPC aliado para sobrevivir 1 minuto y medio al ataque del toro negro.',
 				config: { durationMs: 90_000 },
-			},
-			{
-				key: 'request-gather-items-10',
-				componentKey: 'request-gather-items',
-				title: 'Fase 10: Pedir al NPC que consiga 3 ítems',
-				description: 'Pide al NPC que consiga 1 carne, 1 poción y 1 manzana.',
-				config: {
-					requiredItems: ['meat', 'potion', 'apple'],
-				},
 			},
 		],
 	},
