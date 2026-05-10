@@ -74,6 +74,7 @@ export class MainRoom extends Room<GameState> {
 		this.onMessage('dialogue:cancel', this.onDialogueCancel.bind(this));
 		this.onMessage('experiment:start', this.onExperimentStart.bind(this));
 		this.onMessage('experiment:stop', this.onExperimentStop.bind(this));
+		this.onMessage('experiment:fail-phase', this.onExperimentFailPhase.bind(this));
 		this.onMessage('*', () => {});
 	}
 
@@ -201,6 +202,17 @@ export class MainRoom extends Room<GameState> {
 			.unwrap('ExperimentManagerEcs not found');
 
 		manager.stopExperiment(payload.id);
+	}
+
+	private onExperimentFailPhase(client: Client, _message: unknown): void {
+		const payload = client.userData?.payload as AuthPayload | undefined;
+		if (!payload) return;
+
+		const manager = this.worldEcs
+			.get(ExperimentManagerEcs)
+			.unwrap('ExperimentManagerEcs not found');
+
+		manager.handlePhaseFailure(payload.id, 'manual');
 	}
 
 	onUpdate(_delta: number) {

@@ -16,7 +16,6 @@
 		getMyExperimentService,
 		getActiveExperimentService,
 		profileService,
-		resetExperimentService,
 		submitExperimentFeedbackService,
 	} from '@/services/api.service';
 	import {
@@ -35,7 +34,6 @@
 	let myUserId = $state<string | null>(null);
 	let loading = $state(true);
 	let actionLoading = $state(false);
-	let nowMs = $state(Date.now());
 	let showFeedbackModal = $state(false);
 	let feedbackRating = $state(5);
 	let feedbackComment = $state('');
@@ -57,37 +55,16 @@
 			.raw();
 	}
 
-	const currentPhase = $derived.by(() => {
-		const exp = activeExperiment;
-		if (!exp || exp.currentPhaseIndex === null) return null;
-		return exp.phases.find((p) => p.phaseIndex === exp.currentPhaseIndex) ?? null;
-	});
-
-	const currentAttemptElapsedMs = $derived.by(() => {
-		if (!currentPhase) return 0;
-		if (!currentPhase.currentAttemptStartedAt) return currentPhase.currentAttemptElapsedMs;
-		const startedAt = Date.parse(currentPhase.currentAttemptStartedAt);
-		return currentPhase.currentAttemptElapsedMs + Math.max(0, nowMs - startedAt);
-	});
-
-	const currentPhaseTotalTimeMs = $derived.by(() => {
-		if (!currentPhase) return 0;
-		if (!currentPhase.currentAttemptStartedAt) return currentPhase.totalTimeMs;
-		const startedAt = Date.parse(currentPhase.currentAttemptStartedAt);
-		return currentPhase.totalTimeMs + Math.max(0, nowMs - startedAt);
-	});
-
 	const hasActiveExperiment = $derived(
 		activeExperiment?.status === 'IN_PROGRESS' ||
 			activeExperiment?.status === 'AWAITING_FEEDBACK',
 	);
 
-	function formatDuration(ms: number): string {
-		const totalSeconds = Math.floor(ms / 1000);
-		const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-		const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-		return `${minutes}:${seconds}`;
-	}
+	const currentPhase = $derived.by(() => {
+		const exp = activeExperiment;
+		if (!exp || exp.currentPhaseIndex === null) return null;
+		return exp.phases.find((p) => p.phaseIndex === exp.currentPhaseIndex) ?? null;
+	});
 
 	function sendRoomMessage(type: string, payload: Record<string, unknown> = {}) {
 		const room = getRoom();
@@ -128,20 +105,8 @@
 		sendRoomMessage('experiment:start', { experimentKey });
 	}
 
-	function handleStopExperiment(experimentKey: string) {
-		sendRoomMessage('experiment:stop', { experimentKey });
-	}
-
-	async function handleReset(experimentKey: string) {
-		actionLoading = true;
-		const res = await resetExperimentService(experimentKey);
-		actionLoading = false;
-		if (!res.ok) {
-		debugContext.error(res.error?.message ?? res.message);
-		return;
-	}
-	await refreshData();
-	debugContext.success('Experimento reseteado.');
+	function handleRepetir() {
+		sendRoomMessage('experiment:fail-phase');
 	}
 
 	async function submitFeedback() {
@@ -170,7 +135,7 @@
 	feedbackComment = '';
 	gameInputContext.setMode(InputMode.GAME);
 	debugContext.success('Feedback enviado. Experimento completado.');
-	handleStopExperiment(activeExperiment!.experimentKey);
+	sendRoomMessage('experiment:stop');
 	}
 
 	onMount(() => {
@@ -218,9 +183,6 @@
 		});
 
 		let pollInterval: ReturnType<typeof setInterval> | null = null;
-		const clockInterval = setInterval(() => {
-			nowMs = Date.now();
-		}, 1000);
 
 		profileService()
 			.then((response) => {
@@ -242,7 +204,6 @@
 			unsubPhaseMessage();
 			if (countdownInterval) clearInterval(countdownInterval);
 			if (phaseMessageTimeout) clearTimeout(phaseMessageTimeout);
-			clearInterval(clockInterval);
 			if (pollInterval) clearInterval(pollInterval);
 		};
 	});
@@ -256,7 +217,7 @@
 </script>
 
 {#if !loading}
-	<div class="pointer-events-none absolute top-0 right-0 z-20 flex max-w-md flex-col gap-2 p-3">
+	<div class="pointer-events-none absolute bottom-0 left-0 z-20 flex max-w-sm flex-col gap-2 p-3">
 		{#if isAdmin}
 			<!-- Admin: lista de experimentos activos -->
 			{#if adminExperiments.length > 0}
@@ -287,92 +248,47 @@
 		{:else}
 			<!-- Usuario: HUD del experimento activo -->
 			{#if hasActiveExperiment && activeExperiment}
-				<div class="pointer-events-auto rounded-xl border border-zinc-700/80 bg-zinc-950/90 p-4 text-zinc-100 shadow-2xl backdrop-blur-md">
-					<div class="flex items-start justify-between gap-3">
-						<div>
-							<p class="text-xs font-semibold tracking-[0.2em] text-cyan-300/80 uppercase">
-								Experimento activo
-							</p>
-							<p class="mt-1 text-sm font-semibold text-white">
-								{activeExperiment.experimentTitle}
-							</p>
-						</div>
-						<span class="rounded-full border border-emerald-500/40 bg-emerald-500/15 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-200">
-							{activeExperiment.status}
-						</span>
-					</div>
+				<div class="pointer-events-auto rounded-xl border border-zinc-700/60 bg-zinc-950/85 p-3 text-zinc-100 shadow-xl backdrop-blur-md">
+					<p class="text-[10px] font-semibold tracking-[0.18em] text-cyan-300/70 uppercase">
+						{activeExperiment.experimentTitle}
+					</p>
 
 					{#if currentPhase}
-						<div class="mt-4 space-y-1">
-							<p class="text-sm font-semibold text-white">
-								Fase {currentPhase.phaseIndex + 1} / {activeExperiment.totalPhases}
-							</p>
-							<p class="text-sm text-zinc-200">{currentPhase.title}</p>
-							<p class="text-xs leading-relaxed text-zinc-400">{currentPhase.description}</p>
-						</div>
-
-						<div class="mt-4 grid grid-cols-2 gap-2 text-xs text-zinc-300">
-							<div class="rounded-lg bg-zinc-900/90 p-3">
-								<p class="text-zinc-500">Intento actual</p>
-								<p class="mt-1 text-lg font-semibold text-white">
-									{currentPhase.currentAttemptNumber}
-								</p>
-							</div>
-							<div class="rounded-lg bg-zinc-900/90 p-3">
-								<p class="text-zinc-500">Fallos fase</p>
-								<p class="mt-1 text-lg font-semibold text-white">
-									{currentPhase.failureCount}
-								</p>
-							</div>
-							<div class="rounded-lg bg-zinc-900/90 p-3">
-								<p class="text-zinc-500">Tiempo intento</p>
-								<p class="mt-1 text-lg font-semibold text-white">
-									{formatDuration(currentAttemptElapsedMs)}
-								</p>
-							</div>
-							<div class="rounded-lg bg-zinc-900/90 p-3">
-								<p class="text-zinc-500">Tiempo fase</p>
-								<p class="mt-1 text-lg font-semibold text-white">
-									{formatDuration(currentPhaseTotalTimeMs)}
-								</p>
-							</div>
-						</div>
-					{/if}
-
-					<div class="mt-4 flex flex-wrap gap-2">
-						<button
-							class="rounded-lg bg-zinc-700/60 px-3 py-2 text-xs font-semibold text-zinc-100 hover:cursor-pointer hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
-							disabled={actionLoading}
-							onclick={() => handleStopExperiment(activeExperiment!.experimentKey)}
-						>
-							Detener
-						</button>
-						<button
-							class="rounded-lg bg-rose-500/20 px-3 py-2 text-xs font-semibold text-rose-100 hover:cursor-pointer hover:bg-rose-500/30 disabled:cursor-not-allowed disabled:opacity-50"
-							disabled={actionLoading}
-							onclick={() => handleReset(activeExperiment!.experimentKey)}
-						>
-							Reset
-						</button>
-					</div>
-
-					{#if activeExperiment.status === 'COMPLETED'}
-						<p class="mt-4 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-200">
-							Experimento completado.
+						<p class="mt-1 text-xs font-semibold text-zinc-400">
+							Fase {currentPhase.phaseIndex + 1} / {activeExperiment.totalPhases}
+						</p>
+						<p class="mt-1 text-sm font-semibold text-white leading-snug">
+							{currentPhase.title}
+						</p>
+						<p class="mt-1 text-xs leading-relaxed text-zinc-400">
+							{currentPhase.description}
+						</p>
+						<p class="mt-2 text-xs text-zinc-500">
+							Intento {currentPhase.currentAttemptNumber} · {currentPhase.failureCount} {currentPhase.failureCount === 1 ? 'fallo' : 'fallos'}
 						</p>
 					{/if}
+
+					<div class="mt-3 flex gap-2">
+						<button
+							class="rounded-lg bg-amber-500/20 px-3 py-1.5 text-xs font-semibold text-amber-200 hover:cursor-pointer hover:bg-amber-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+							disabled={actionLoading}
+							onclick={handleRepetir}
+						>
+							Repetir
+						</button>
+					</div>
 				</div>
 			{/if}
 
-			<!-- Lista de experimentos disponibles -->
-			{#if availableExperiments.length > 0}
+			<!-- Lista de experimentos disponibles (solo cuando no hay experimento activo) -->
+			{#if !hasActiveExperiment && availableExperiments.length > 0}
 				<div class="pointer-events-auto rounded-xl border border-zinc-700/80 bg-zinc-950/90 p-4 text-zinc-100 shadow-2xl backdrop-blur-md">
 					<p class="text-xs font-semibold tracking-[0.2em] text-cyan-300/80 uppercase">
 						Mis experimentos
 					</p>
 					<div class="mt-3 flex flex-col gap-2">
 						{#each availableExperiments as exp (exp.experimentKey)}
-							<div class="rounded-lg border border-zinc-700/50 bg-zinc-900/80 px-3 py-2">
+						<div class="rounded-lg border border-zinc-700/50 bg-zinc-900/80 px-3 py-2">
 								<div class="flex items-center justify-between gap-2">
 									<div class="min-w-0">
 										<p class="truncate text-sm font-semibold text-white">
@@ -393,7 +309,7 @@
 									{:else}
 										<button
 											class="shrink-0 rounded-lg bg-cyan-500/20 px-3 py-1 text-xs font-semibold text-cyan-100 hover:cursor-pointer hover:bg-cyan-500/30 disabled:cursor-not-allowed disabled:opacity-50"
-											disabled={hasActiveExperiment || actionLoading}
+											disabled={actionLoading}
 											onclick={() => handleStartExperiment(exp.experimentKey)}
 										>
 											Iniciar
