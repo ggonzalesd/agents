@@ -82,11 +82,12 @@ export class CoordinateSurviveBullPhaseEcs extends ExperimentPhaseEcs {
 			this.handlePhaseFailure('Tu guardián ha caído.');
 		});
 
-		this.onEvent(bus, WorldEventType.EntityDeath, (entityName: string) => {
+		const bullRespawnUnsub = bus.on(WorldEventType.EntityDeath, (entityName: string) => {
 			if (entityName === this.bullName) {
 				this.spawnBull(userId, basePos);
 			}
 		});
+		this.unsubs.push(bullRespawnUnsub);
 
 		this.spawnBull(userId, basePos);
 		this.spawnNpc(userId, npcName).catch((err: unknown) => {

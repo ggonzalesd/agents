@@ -1,4 +1,4 @@
-import { ComponentEcs, EntityEcs, type WorldEcs } from '#/ecs';
+import { type ComponentEcs, EntityEcs, type WorldEcs } from '#/ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 import { NPCState } from '#/state/game.state';

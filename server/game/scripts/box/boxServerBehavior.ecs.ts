@@ -61,13 +61,13 @@ export class BoxServerBehavior extends ComponentEcs {
 				attackerId: attackerId ?? 'unknown',
 				amount: damage,
 			};
-			this.eventBus.emit(WorldEventType.EntityDamaged, this.parent, payload);
+			this.eventBus.emit(WorldEventType.EntityDamaged, this.parent!, payload);
 		}
 
 		if (this.state.character.life > 0) return;
 
 		if (this.eventBus) {
-			this.eventBus.emit(WorldEventType.EntityDeath, this.parent);
+			this.eventBus.emit(WorldEventType.EntityDeath, this.parent!);
 		}
 
 		const position = this.character.body.translation();

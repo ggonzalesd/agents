@@ -10,10 +10,6 @@ import { DynamicPathfinder } from '../../world/dynamic-pathfinder';
 import type { ExperimentPhaseEcs } from '../experiment-phase.ecs';
 import { ExperimentRuntimeEcs } from '../experiment-runtime.ecs';
 import { PlaceholderExperimentPhaseEcs } from '../placeholder-experiment-phase.ecs';
-import { treeServerFactory } from '$/game/prefab/tree.server';
-import { boxServerFactory } from '$/game/prefab/box.server';
-import { itemServerFactory } from '$/game/prefab/item.server';
-import type { BoxSkin } from '#/state/box.state';
 import * as SlotAllocator from '$/services/slot-allocator.service';
 import type { ExperimentActor } from '$/services/experiment-orchestrator.service';
 

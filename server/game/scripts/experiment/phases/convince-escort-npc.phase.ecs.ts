@@ -120,9 +120,10 @@ export class ConvinceEscortNpcPhaseEcs extends ExperimentPhaseEcs {
 		this.removeFloor();
 
 		if (this.returnSlotPos) {
+			const returnPos = this.returnSlotPos;
 			this.world.getEntity(this.runtime.entityName).ifSome((entity) => {
 				entity.get(CharacterBodyServerEcs).ifSome((body) => {
-					body.setRespawnPoint(this.returnSlotPos);
+					body.setRespawnPoint(returnPos);
 					body.respawn();
 				});
 			});
