@@ -10,6 +10,7 @@
 	import type { Room } from 'colyseus.js';
 	import type { ExperimentListItem, ExperimentStateResponse } from '#/schema/experiment.schema';
 
+	import { getExperimentByKey } from '#/experiments/guia-experimentacion-v4';
 	import { ColyseusClientEcs } from '@/game/scripts/colyseus-client.ecs';
 	import {
 		getMyAvailableExperimentsService,
@@ -38,6 +39,7 @@
 	let feedbackRating = $state(5);
 	let feedbackComment = $state('');
 	let feedbackTextareaEl = $state<HTMLTextAreaElement | null>(null);
+	let feedbackLinksClicked = $state<Set<string>>(new Set());
 	let phaseCountdown = $state<number | null>(null);
 	let phaseMessage = $state<PhaseMessageEvent | null>(null);
 	let phaseMessageTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -58,6 +60,16 @@
 	const hasActiveExperiment = $derived(
 		activeExperiment?.status === 'IN_PROGRESS' ||
 			activeExperiment?.status === 'AWAITING_FEEDBACK',
+	);
+
+	const feedbackLinks = $derived(
+		activeExperiment
+			? (getExperimentByKey(activeExperiment.experimentKey)?.feedbackLinks ?? [])
+			: [],
+	);
+
+	const allFeedbackLinksClicked = $derived(
+		feedbackLinks.length === 0 || feedbackLinksClicked.size === feedbackLinks.length,
 	);
 
 	const currentPhase = $derived.by(() => {
@@ -133,6 +145,7 @@
 	showFeedbackModal = false;
 	feedbackRating = 5;
 	feedbackComment = '';
+	feedbackLinksClicked = new Set();
 	gameInputContext.setMode(InputMode.GAME);
 	debugContext.success('Feedback enviado. Experimento completado.');
 	sendRoomMessage('experiment:stop');
@@ -359,6 +372,39 @@
 				El experimento fue completado. Falta registrar tu feedback para finalizar.
 			</p>
 
+			{#if feedbackLinks.length > 0}
+				<div class="mt-5">
+					<p class="text-xs font-semibold tracking-[0.15em] text-amber-300/80 uppercase">
+						Encuestas requeridas ({feedbackLinksClicked.size}/{feedbackLinks.length})
+					</p>
+					<div class="mt-2 flex flex-col gap-2">
+						{#each feedbackLinks as link (link.href)}
+							{@const clicked = feedbackLinksClicked.has(link.href)}
+							<button
+								type="button"
+								class="flex items-center justify-between gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition hover:cursor-pointer {clicked ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20' : 'border-cyan-500/40 bg-cyan-500/10 text-cyan-100 hover:bg-cyan-500/20'}"
+								onclick={() => {
+									window.open(link.href, '_blank');
+									feedbackLinksClicked = new Set([...feedbackLinksClicked, link.href]);
+								}}
+							>
+								<span>{link.label}</span>
+								{#if clicked}
+									<span class="text-emerald-300">✓</span>
+								{:else}
+									<span class="text-cyan-300/60">↗</span>
+								{/if}
+							</button>
+						{/each}
+					</div>
+					{#if !allFeedbackLinksClicked}
+						<p class="mt-2 text-xs text-zinc-500">
+							Debes abrir todas las encuestas antes de enviar el feedback.
+						</p>
+					{/if}
+				</div>
+			{/if}
+
 			<div class="mt-5 flex gap-2">
 				{#each Array.from({ length: 5 }) as _, index}
 					<button
@@ -396,7 +442,7 @@
 				<button
 					type="button"
 					class="rounded-lg bg-cyan-500 px-4 py-2 text-sm font-semibold text-zinc-950 hover:cursor-pointer hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
-					disabled={actionLoading}
+					disabled={actionLoading || !allFeedbackLinksClicked}
 					onclick={() => {
 						void submitFeedback();
 					}}

@@ -1,5 +1,10 @@
 export const EXPERIMENT_ROOM_ID = 'main-room';
 
+export type FeedbackLink = {
+	href: string;
+	label: string;
+};
+
 export type ExperimentPhaseDefinition = {
 	key: string;
 	componentKey: string;
@@ -12,6 +17,7 @@ export type ExperimentCatalogEntry = {
 	key: string;
 	title: string;
 	description: string;
+	feedbackLinks: FeedbackLink[];
 	phases: ExperimentPhaseDefinition[];
 };
 
@@ -21,6 +27,10 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 		title: 'NPCs sin LLMs',
 		description:
 			'Experimento de interacción con NPCs clásicos sin uso de modelos de lenguaje.',
+		feedbackLinks: [
+			{ href: 'https://forms.gle/sin-llms-pre', label: 'Encuesta pre-experimento' },
+			{ href: 'https://forms.gle/sin-llms-post', label: 'Encuesta post-experimento' },
+		],
 		phases: [
 			{
 				key: 'request-gold-coin-1',
@@ -100,6 +110,10 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 		title: 'NPCs con LLMs',
 		description:
 			'Experimento de interacción con NPCs potenciados por modelos de lenguaje.',
+		feedbackLinks: [
+			{ href: 'https://forms.gle/con-llms-pre', label: 'Encuesta pre-experimento' },
+			{ href: 'https://forms.gle/con-llms-post', label: 'Encuesta post-experimento' },
+		],
 		phases: [
 			{
 				key: 'request-potion-1',
@@ -181,6 +195,10 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 		key: 'GUIA-EXPERIMENTACION-V4',
 		title: 'Guía de Experimentación V4',
 		description: 'Experimento de prueba de comportamiento en el mundo.',
+		feedbackLinks: [
+			{ href: 'https://forms.gle/guia-v4-pre', label: 'Encuesta pre-experimento' },
+			{ href: 'https://forms.gle/guia-v4-post', label: 'Encuesta post-experimento' },
+		],
 		phases: [
 			{
 				key: 'jump-or-die-1',
