@@ -1,6 +1,8 @@
 import { classicNpcServerFactoryGenerator } from '../../../prefab/classicNpc.server';
+import { floatingTextServerFactory } from '../../../prefab/floating-text.server';
 import { ClassicNpcBehaviorType } from '$/models/ClassicNPC.model';
 import { CharacterBodyServerEcs } from '../../entity/CharacterBodyServer.ecs';
+import { FloatingTextServerEcs } from '../../floating-text/floating-text.server.ecs';
 import { getSlotPosition } from '$/services/slot-allocator.service';
 import { ServerDataEcs } from '../../serverData.ecs';
 import { WorldEventBusEcs, WorldEventType } from '../../world-event-bus.ecs';
@@ -14,10 +16,12 @@ const SPAWN_OFFSET = 1.5;
 
 export class DefeatVillainNpcPhaseEcs extends ExperimentPhaseEcs {
 	private villainNpcName: string | null = null;
+	private hintName: string | null = null;
 	private resolved = false;
 
 	protected onMountPhase(): void {
 		this.resolved = false;
+		this.hintName = null;
 
 		const serverData = this.world.get(ServerDataEcs).raw();
 		if (!serverData) return;
@@ -28,6 +32,19 @@ export class DefeatVillainNpcPhaseEcs extends ExperimentPhaseEcs {
 
 		const playerPos = { x: slotPos.x - SPAWN_OFFSET, y: slotPos.y, z: slotPos.z };
 		const villainPos = { x: slotPos.x + SPAWN_OFFSET, y: slotPos.y, z: slotPos.z };
+
+		const hintId = `${VILLAIN_NPC_ID}-hint-${userId}`;
+		const hintEntity = floatingTextServerFactory({
+			world: this.world,
+			name: hintId,
+			pos: { x: slotPos.x, y: slotPos.y, z: slotPos.z },
+			text: 'Véncelo',
+			foreground: '#ffffff',
+			background: '#1a1a2e',
+			fontSize: 18,
+		});
+		this.world.addEntity(hintEntity);
+		this.hintName = hintId;
 
 		this.teleportPlayer(playerPos);
 		this.spawnVillainNpc(userId, villainPos, serverData.room);
@@ -50,6 +67,12 @@ export class DefeatVillainNpcPhaseEcs extends ExperimentPhaseEcs {
 				this.world.deleteEntity(entity);
 			});
 			this.villainNpcName = null;
+		}
+		if (this.hintName) {
+			this.world.getEntity(this.hintName).ifSome((entity) => {
+				this.world.deleteEntity(entity);
+			});
+			this.hintName = null;
 		}
 	}
 
@@ -115,6 +138,15 @@ export class DefeatVillainNpcPhaseEcs extends ExperimentPhaseEcs {
 			},
 			pathfinder,
 			room,
+			additionalComponents: {
+				[FloatingTextServerEcs.name]: new FloatingTextServerEcs(pos, {
+					text: '\u2694\uFE0F',
+					foreground: '#ff4444',
+					background: '#00000000',
+					fontSize: 28,
+					yOffset: 1,
+				}),
+			},
 		});
 
 		this.world.addEntity(npcEntity);

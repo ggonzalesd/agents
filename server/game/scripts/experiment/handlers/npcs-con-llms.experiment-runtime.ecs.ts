@@ -110,29 +110,6 @@ export class NpcsConLlmsExperimentRuntimeEcs extends ExperimentRuntimeEcs {
 		const experimentMap = mapRegistry[MapKey.ExperimentBasic];
 
 		this.world.get(MapLoaderEcs).ifSome((loader) => {
-			loader.registerInstanceFactory('tree', ({ world, name, pos }) =>
-				treeServerFactory({ world, name, pos }),
-			);
-			loader.registerInstanceFactory('box', ({ world, name, pos, metadata }) =>
-				boxServerFactory({
-					world,
-					name,
-					pos,
-					skin: (metadata.skin as BoxSkin) ?? 'box_stacked',
-				}),
-			);
-			loader.registerInstanceFactory('item', ({ world, name, pos, metadata }) =>
-				itemServerFactory({
-					world,
-					name,
-					pos,
-					stats: {
-						type: (metadata.itemType as string) ?? 'wood',
-						amount: (metadata.amount as number) ?? 1,
-					},
-					lifetime: 30_000,
-				}),
-			);
 			loader.mountMap(this.mapId!, experimentMap, position);
 		});
 

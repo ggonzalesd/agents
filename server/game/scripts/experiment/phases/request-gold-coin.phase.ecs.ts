@@ -1,6 +1,7 @@
 import { ItemState } from '#/state/inventory.state';
 
 import { classicNpcServerFactoryGenerator } from '../../../prefab/classicNpc.server';
+import { floatingTextServerFactory } from '../../../prefab/floating-text.server';
 import { ClassicNpcBehaviorType } from '$/models/ClassicNPC.model';
 import { buildGoldCoinDialogueConfig } from '../../classic-npc/dialogue/gold-coin-npc-dialogue.config';
 import { getSlotPosition } from '$/services/slot-allocator.service';
@@ -18,10 +19,12 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 	private resolved = false;
 	private coinGiven = false;
 	private npcName: string | null = null;
+	private hintName: string | null = null;
 
 	protected onMountPhase(): void {
 		this.resolved = false;
 		this.coinGiven = false;
+		this.hintName = null;
 
 		const bus = this.world.get(WorldEventBusEcs).raw();
 		if (!bus) return;
@@ -31,6 +34,20 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 
 		const entityName = this.runtime.entityName;
 		const userId = this.runtime.userId;
+
+		const slotPos = getSlotPosition(userId) ?? { x: 0, y: 0, z: 0 };
+		const hintId = `${NPC_IDENTIFIER}-hint-${userId}`;
+		const hintEntity = floatingTextServerFactory({
+			world: this.world,
+			name: hintId,
+			pos: { x: slotPos.x, y: slotPos.y, z: slotPos.z },
+			text: 'Presiona [F] para\nhablar con NPC Clásico',
+			foreground: '#ffffff',
+			background: '#000000',
+			fontSize: 18,
+		});
+		this.world.addEntity(hintEntity);
+		this.hintName = hintId;
 
 		this.onEvent(bus, WorldEventType.InventoryItemReceived, entityName, () => {
 			this.handleCoinReceived();
@@ -45,6 +62,12 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 				this.world.deleteEntity(entity);
 			});
 			this.npcName = null;
+		}
+		if (this.hintName) {
+			this.world.getEntity(this.hintName).ifSome((entity) => {
+				this.world.deleteEntity(entity);
+			});
+			this.hintName = null;
 		}
 	}
 
@@ -70,7 +93,11 @@ export class RequestGoldCoinPhaseEcs extends ExperimentPhaseEcs {
 			}
 		};
 
-		const dialogueConfig = buildGoldCoinDialogueConfig(onCoinGiven, room, onDialogueEnd);
+		const dialogueConfig = buildGoldCoinDialogueConfig(
+			onCoinGiven,
+			room,
+			onDialogueEnd,
+		);
 
 		const factory = classicNpcServerFactoryGenerator(this.world);
 		const npcEntity = factory({

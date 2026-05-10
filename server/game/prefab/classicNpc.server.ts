@@ -1,4 +1,4 @@
-import { EntityEcs, type WorldEcs } from '#/ecs';
+import { ComponentEcs, EntityEcs, type WorldEcs } from '#/ecs';
 import { RecordEcs } from '#/ecs/lib/Record.ecs';
 import type { IPathfinder } from '#/pathfinding/pathfinder.interface';
 import { NPCState } from '#/state/game.state';
@@ -33,6 +33,7 @@ export const classicNpcServerFactoryGenerator =
 		dialogueConfig,
 		room,
 		pathfinder,
+		additionalComponents,
 	}: {
 		name: string;
 		display: string;
@@ -46,6 +47,7 @@ export const classicNpcServerFactoryGenerator =
 		dialogueConfig?: DialogueConfig;
 		room?: Room;
 		pathfinder?: IPathfinder;
+		additionalComponents?: Record<string, ComponentEcs>;
 	}) => {
 		const state = new NPCState(pos, skin ?? name, life, maxLife, 'CLASSIC');
 		if (dialogueConfig) state.hasDialogue = true;
@@ -89,6 +91,7 @@ export const classicNpcServerFactoryGenerator =
 			...(pathfinder
 				? { [EntityPathfinderEcs.name]: new EntityPathfinderEcs(pathfinder) }
 				: {}),
+			...(additionalComponents ?? {}),
 		},
 	});
 	};
