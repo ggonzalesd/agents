@@ -4,6 +4,8 @@ import type { IVec3 } from '#/utils/math.util';
 
 import { CharacterBodyState } from './character-body.state';
 
+export const PICKUP_GRACE_PERIOD_MS = 300;
+
 export class ItemState extends Schema {
 	@type('string')
 	public type: string;
@@ -32,6 +34,9 @@ export class ItemEntityState extends Schema {
 
 	@type(CharacterBodyState)
 	public character: CharacterBodyState;
+
+	@type('float64')
+	public createdAtMs: number = Date.now();
 
 	constructor(
 		pos: IVec3,

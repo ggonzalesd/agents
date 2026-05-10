@@ -2,7 +2,7 @@ import {
 	BehaviorType,
 	PrismaClient,
 	Role,
-} from './../server/generated/prisma/client';
+} from '@prisma/client';
 import envConfig from './../server/config/env.config';
 
 import * as bcrypt from 'bcrypt';

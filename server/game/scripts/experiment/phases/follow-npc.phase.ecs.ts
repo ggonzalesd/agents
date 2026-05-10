@@ -27,7 +27,7 @@ const WAYPOINT_A = { x: 9, z: -10 };
 const WAYPOINT_B = { x: -11, z: -10 };
 const WAYPOINT_C = { x: -9, z: 11 };
 const WAYPOINT_D = { x: 11, z: 11 };
-const ROUTE_LAPS = 3;
+const ROUTE_LAPS = 1;
 const MAX_DISTANCE = 6;
 const DISTANCE_CHECK_INTERVAL_MS = 200;
 const PATH_CHECK_INTERVAL_MS = 500;
@@ -546,7 +546,7 @@ export class FollowNpcPhaseEcs extends ExperimentPhaseEcs {
 		this.world.addEntity(npcEntity);
 
 		npcEntity.get(MovementServerEcs).ifSome((movement) => {
-			movement.walkSpeed = 3;
+			movement.walkSpeed = 4;
 		});
 	}
 }

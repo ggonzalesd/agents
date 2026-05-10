@@ -4,7 +4,7 @@ import { Option } from '#/utils/Option';
 import type { AgentDB } from '$/models/Agent.model';
 import prisma from '$/config/prisma.config';
 import type { PrismaTransactionClient } from '$/config/prisma.config';
-import type { Prisma } from '$/generated/prisma/client';
+import type { Prisma } from '@prisma/client';
 
 function applyMetadataParsing(agent: {
 	metadata: string | { [key: string]: unknown };

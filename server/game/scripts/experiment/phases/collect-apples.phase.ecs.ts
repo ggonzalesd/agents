@@ -116,9 +116,10 @@ export class CollectApplesPhaseEcs extends ExperimentPhaseEcs {
 
 		const angle = Math.random() * Math.PI * 2;
 		const radius = 5 + Math.random() * 3;
+
 		const pos = {
 			x: basePos.x + Math.cos(angle) * radius,
-			y: basePos.y,
+			y: basePos.y - 1,
 			z: basePos.z + Math.sin(angle) * radius,
 		};
 

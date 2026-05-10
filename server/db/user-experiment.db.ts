@@ -1,4 +1,4 @@
-import type { Prisma } from '$/generated/prisma/client';
+import type { Prisma } from '@prisma/client';
 
 import { Option } from '#/utils/Option';
 import { EXPERIMENT_CATALOG } from '#/experiments/guia-experimentacion-v4';

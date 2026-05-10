@@ -1,4 +1,4 @@
-import { PrismaClient, type Prisma } from '$/generated/prisma/client';
+import { PrismaClient, type Prisma } from '@prisma/client';
 import envConfig from './env.config';
 
 export type PrismaTransactionClient = Prisma.TransactionClient;

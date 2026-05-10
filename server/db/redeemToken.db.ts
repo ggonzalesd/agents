@@ -2,7 +2,7 @@ import { Option } from '#/utils/Option';
 
 import prisma from '$/config/prisma.config';
 import type { PrismaTransactionClient } from '$/config/prisma.config';
-import type { RedeemToken } from '$/generated/prisma/client';
+import type { RedeemToken } from '@prisma/client';
 
 export const createRedeemToken = async (
 	{

@@ -2,7 +2,7 @@ import { Option } from '#/utils/Option';
 
 import prisma from '$/config/prisma.config';
 import type { PrismaTransactionClient } from '$/config/prisma.config';
-import type { RefreshToken } from '$/generated/prisma/client';
+import type { RefreshToken } from '@prisma/client';
 
 const REFRESH_TOKEN_EXPIRY_DAYS = 7;
 

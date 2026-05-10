@@ -20,7 +20,7 @@ const LABYRINTH_MAP_KEY = 'escort-labyrinth';
 const ESCORT_FLOOR_KEY = 'escort-floor';
 const FLOOR_Y = 20;
 const FLOOR_SIZE = 30;
-const PLAYER_SPAWN_OFFSET = { x: -11, z: -11 };
+const PLAYER_SPAWN_OFFSET = { x: -8, z: -11 };
 const NPC_SPAWN_OFFSET = { x: -10, z: -11 };
 const TRIGGER_OFFSET = { x: 11, z: 11 };
 

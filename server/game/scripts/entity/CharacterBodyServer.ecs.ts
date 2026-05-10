@@ -115,6 +115,7 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 	private static readonly VOID_THRESHOLD = -10;
 
 	onLoop(_delta: number): void {
+		if (!this.body) return;
 		vec3Set(this.characterState.position, this.body.translation());
 
 		if (

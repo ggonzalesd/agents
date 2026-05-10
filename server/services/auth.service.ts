@@ -2,7 +2,7 @@ import type { registerRequestSchema } from '#/schema/auth.schema';
 import { HttpError } from '#/utils/HttpError';
 
 import prisma from '$/config/prisma.config';
-import type { Role } from '$/generated/prisma/client';
+import type { Role } from '@prisma/client';
 
 import * as UserRepository from '$/db/user.db';
 

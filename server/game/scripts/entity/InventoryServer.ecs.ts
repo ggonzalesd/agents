@@ -1,7 +1,7 @@
 import { itemServerFactory } from '$/game/prefab/item.server';
 
 import { ComponentEcs } from '#/ecs';
-import { ItemState, type InventoryState } from '#/state/inventory.state';
+import { ItemState, PICKUP_GRACE_PERIOD_MS, type InventoryState } from '#/state/inventory.state';
 import type { IVec3 } from '#/utils/math.util';
 
 import { ItemServerBehavior } from '../item/itemServerBehavior.ecs';
@@ -114,6 +114,10 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 		);
 	}
 
+	private static readonly DROP_HEIGHT = 1.5;
+	private static readonly DROP_MIN_RADIUS = 1.0;
+	private static readonly DROP_MAX_RADIUS = 1.4;
+
 	public dropItem(itemId: number): void {
 		const strId = itemId.toString();
 		const item = this.inventoryState.items.get(strId);
@@ -125,14 +129,25 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 			.getEntity(this.parent)
 			.map((p) => p.getUnsafe(CharacterBodyServerEcs))
 			.ifSome((c) => {
-				spawnPosition = c.body.translation();
+				const pos = c.body.translation();
+				const rotation = c.characterState.rotationY;
+				const spread = (Math.random() - 0.5) * Math.PI * 0.5;
+				const angle = rotation + spread;
+				const radius =
+					InventoryServerEcs.DROP_MIN_RADIUS +
+					Math.random() * (InventoryServerEcs.DROP_MAX_RADIUS - InventoryServerEcs.DROP_MIN_RADIUS);
+				spawnPosition = {
+					x: pos.x + Math.cos(angle) * radius,
+					y: pos.y + InventoryServerEcs.DROP_HEIGHT,
+					z: pos.z - Math.sin(angle) * radius,
+				};
 			});
 
 		this.inventoryState.items.delete(strId);
 
 		const itemEntity = itemServerFactory({
 			world: this.world,
-			name: `item-${itemId}-${Date.now()}`,
+			name: `item-${itemId}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
 			pos: spawnPosition,
 			stats: {
 				amount: 1,
@@ -151,6 +166,8 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 
 		const itemServerBehavior = itemEntity.getUnsafe(ItemServerBehavior);
 		if (!itemServerBehavior) return;
+
+		if (Date.now() - itemServerBehavior.state.createdAtMs < PICKUP_GRACE_PERIOD_MS) return;
 
 		// Check if the itemEntity is within 2 meters of the character before picking it up
 		const characterPosition = this.world
@@ -200,6 +217,8 @@ export class InventoryServerEcs extends ComponentEcs implements IContextAI {
 
 		const itemServerBehavior = itemEntity.getUnsafe(ItemServerBehavior);
 		if (!itemServerBehavior) return false;
+
+		if (Date.now() - itemServerBehavior.state.createdAtMs < PICKUP_GRACE_PERIOD_MS) return false;
 
 		this.inventoryState.items.set(
 			newId.toString(),

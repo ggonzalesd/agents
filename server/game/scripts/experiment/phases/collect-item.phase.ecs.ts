@@ -150,7 +150,7 @@ export class CollectItemPhaseEcs extends ExperimentPhaseEcs {
 		const radius = 3 + Math.random() * (BOX_SPAWN_RADIUS - 3);
 		const pos = {
 			x: basePos.x + Math.cos(angle) * radius,
-			y: basePos.y,
+			y: basePos.y - 2,
 			z: basePos.z + Math.sin(angle) * radius,
 		};
 

@@ -139,7 +139,7 @@ export class TradeItemPhaseEcs extends ExperimentPhaseEcs {
 	): void {
 		const boxPos = {
 			x: basePos.x + 6,
-			y: basePos.y,
+			y: basePos.y - 1,
 			z: basePos.z + 2,
 		};
 

@@ -55,6 +55,7 @@ export class MovementServerEcs extends ComponentEcs {
 	}
 
 	onLoop(_delta: number): void {
+		if (!this.character?.body) return;
 		const isGround = this.isGround();
 		const umbral = isGround ? 0.25 : 0.05;
 

@@ -1,5 +1,6 @@
 import { ComponentEcs, type EntityEcs } from '#/ecs';
 import { Option } from '#/utils/Option';
+import { PICKUP_GRACE_PERIOD_MS } from '#/state/inventory.state';
 import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import { AnimalStateEcs } from '../animal/animal-state.ecs';
 import { TreeServerBehavior } from '../tree/treeServerBehavior.ecs';
@@ -241,11 +242,15 @@ export class ClassicNPCStateMachineEcs extends ComponentEcs {
 
 	private findNearestItem(maxDistance: number): TargetCandidate | null {
 		const myPos = this.character.body.translation();
+		const now = Date.now();
 		const candidates = this.world
 			.getFromEntitiesWith(CharacterBodyServerEcs)
 			.filter(({ entity }) => {
 				if (entity.name === this.parent) return false;
-				return entity.get(ItemServerBehavior).raw() != null;
+				const itemBehavior = entity.get(ItemServerBehavior).raw();
+				if (!itemBehavior) return false;
+				if (now - itemBehavior.state.createdAtMs < PICKUP_GRACE_PERIOD_MS) return false;
+				return true;
 			})
 			.map(({ entity, component }) => {
 				const targetPos = component.body.translation();

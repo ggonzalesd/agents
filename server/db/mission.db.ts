@@ -9,8 +9,8 @@ import type {
 import {
 	MissionStatus,
 	AcceptanceStatus as PrismaAcceptanceStatus,
-} from '$/generated/prisma/client';
-import type { EntityType as PrismaEntityType } from '$/generated/prisma/client';
+} from '@prisma/client';
+import type { EntityType as PrismaEntityType } from '@prisma/client';
 import prisma from '$/config/prisma.config';
 
 // ─────────────────────────────────────────────────────────────────────────────

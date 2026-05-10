@@ -21,6 +21,7 @@ esbuild
 		platform: 'node',
 
 		packages: 'external',
+		keepNames: true,
 
 		tsconfig: 'tsconfig.node.json',
 

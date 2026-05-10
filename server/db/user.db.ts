@@ -8,7 +8,7 @@ import type { UserDB } from '$/models/user.model';
 import type { AgentDB } from '$/models/Agent.model';
 import type { EntityDB } from '$/models/Entity.model';
 import type { ProfileDB } from '$/models/Profile.model';
-import type { Role } from '$/generated/prisma/client';
+import type { Role } from '@prisma/client';
 import prisma from '$/config/prisma.config';
 import type { PrismaTransactionClient } from '$/config/prisma.config';
 
