@@ -28,8 +28,14 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 		description:
 			'Experimento de interacción con NPCs clásicos sin uso de modelos de lenguaje.',
 		feedbackLinks: [
-			{ href: 'https://forms.gle/sin-llms-pre', label: 'Encuesta pre-experimento' },
-			{ href: 'https://forms.gle/sin-llms-post', label: 'Encuesta post-experimento' },
+			{
+				href: 'https://forms.gle/sin-llms-pre',
+				label: 'Encuesta pre-experimento',
+			},
+			{
+				href: 'https://forms.gle/sin-llms-post',
+				label: 'Encuesta post-experimento',
+			},
 		],
 		phases: [
 			{
@@ -111,8 +117,14 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 		description:
 			'Experimento de interacción con NPCs potenciados por modelos de lenguaje.',
 		feedbackLinks: [
-			{ href: 'https://forms.gle/con-llms-pre', label: 'Encuesta pre-experimento' },
-			{ href: 'https://forms.gle/con-llms-post', label: 'Encuesta post-experimento' },
+			{
+				href: 'https://forms.gle/con-llms-pre',
+				label: 'Encuesta pre-experimento',
+			},
+			{
+				href: 'https://forms.gle/con-llms-post',
+				label: 'Encuesta post-experimento',
+			},
 		],
 		phases: [
 			{
@@ -120,20 +132,21 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 				componentKey: 'request-potion',
 				title: 'Fase 1: Pedir una poción',
 				description:
-					'Habla con el NPC y convéncelo de que te entregue una poción.',
+					'Habla con el NPC y convéncelo de que te entregue una poción. Usa T para escribir tu mensaje al NPC. El NPC responderá y reaccionará a lo que le digas, así que puedes probar diferentes cosas para lograr que te dé la poción.',
 			},
 			{
 				key: 'provoke-defeat-npc-2',
 				componentKey: 'provoke-defeat-npc',
 				title: 'Fase 2: Provocar y vencer al NPC',
 				description:
-					'Provoca al NPC mediante el diálogo hasta que él inicie el combate. Si atacas primero, fallas.',
+					'Provoca al NPC mediante el diálogo hasta que él inicie el combate. Si atacas primero, fallas. Usa T para escribir tu mensaje al NPC. El NPC responderá y reaccionará a lo que le digas, así que puedes probar diferentes cosas para lograr que inicie el combate.',
 			},
 			{
 				key: 'hunt-animals-llm-3',
 				componentKey: 'hunt-animals-llm',
 				title: 'Fase 3: Ayudar al NPC a matar 3 venados',
-				description: 'Trabaja con el NPC cazador para eliminar 3 venados.',
+				description:
+					'Indica el NPC dónde hay venados para que él los elimine. Solo cuentan los venados que el NPC mate, no los que mates tú.',
 				config: { requiredKills: 3 },
 			},
 			{
@@ -178,13 +191,14 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 				componentKey: 'request-deliver-info',
 				title: 'Fase 9: Solicitar al NPC que entregue información',
 				description:
-					'Pide al NPC que lleve un mensaje o información a otro NPC en el escenario.',
+					'Pide al NPC que lleve un mensaje o información a otro NPC en el escenario. Haz que el primer NPC entregue la información. Luego entrega esa información al segundo NPC. Asegurate de entregar la información correctamente o fallarás la fase.',
 			},
 			{
 				key: 'request-gather-items-10',
 				componentKey: 'request-gather-items',
 				title: 'Fase 10: Pedir al NPC que consiga 3 ítems',
-				description: 'Pide al NPC que consiga 1 carne, 1 poción y 1 manzana.',
+				description:
+					'Pide al NPC que consiga 1 carne, 1 poción y 1 manzana. Es el NPC quien debe dar los ítems al jugador.',
 				config: {
 					requiredItems: ['meat', 'potion', 'apple'],
 				},
@@ -196,8 +210,14 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 		title: 'Guía de Experimentación V4',
 		description: 'Experimento de prueba de comportamiento en el mundo.',
 		feedbackLinks: [
-			{ href: 'https://forms.gle/guia-v4-pre', label: 'Encuesta pre-experimento' },
-			{ href: 'https://forms.gle/guia-v4-post', label: 'Encuesta post-experimento' },
+			{
+				href: 'https://forms.gle/guia-v4-pre',
+				label: 'Encuesta pre-experimento',
+			},
+			{
+				href: 'https://forms.gle/guia-v4-post',
+				label: 'Encuesta post-experimento',
+			},
 		],
 		phases: [
 			{

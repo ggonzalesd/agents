@@ -61,7 +61,7 @@ export class RequestGatherItemsPhaseEcs extends ExperimentPhaseEcs {
 		const boxCounterEntity = floatingTextServerFactory({
 			world: this.world,
 			name: this.boxCounterName,
-			pos: { x: slotPos.x - 2, y: slotPos.y + 4, z: slotPos.z },
+			pos: { x: slotPos.x - 2, y: slotPos.y + 2, z: slotPos.z },
 			text: `Cajas: 0 / ${REQUIRED_BOX_BREAKS}`,
 			foreground: '#ffaa00',
 			background: '#222222',
@@ -225,7 +225,7 @@ export class RequestGatherItemsPhaseEcs extends ExperimentPhaseEcs {
 		const radius = 3 + Math.random() * (BOX_SPAWN_RADIUS - 3);
 		const pos = {
 			x: basePos.x + Math.cos(angle) * radius,
-			y: basePos.y,
+			y: basePos.y - 2,
 			z: basePos.z + Math.sin(angle) * radius,
 		};
 

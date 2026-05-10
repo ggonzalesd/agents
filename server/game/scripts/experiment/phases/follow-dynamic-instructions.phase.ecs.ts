@@ -102,7 +102,7 @@ export class FollowDynamicInstructionsPhaseEcs extends ExperimentPhaseEcs {
 		const angle = Math.random() * Math.PI * 2;
 		const pos = {
 			x: slotPos.x + Math.cos(angle) * TREE_SPAWN_RADIUS,
-			y: slotPos.y,
+			y: slotPos.y - 1,
 			z: slotPos.z + Math.sin(angle) * TREE_SPAWN_RADIUS,
 		};
 
@@ -122,7 +122,7 @@ export class FollowDynamicInstructionsPhaseEcs extends ExperimentPhaseEcs {
 		const radius = 3 + Math.random() * (BOX_SPAWN_RADIUS - 3);
 		const pos = {
 			x: slotPos.x + Math.cos(angle) * radius,
-			y: slotPos.y,
+			y: slotPos.y - 2,
 			z: slotPos.z + Math.sin(angle) * radius,
 		};
 

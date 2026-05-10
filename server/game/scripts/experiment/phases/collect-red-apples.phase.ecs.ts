@@ -120,7 +120,7 @@ export class CollectRedApplesPhaseEcs extends ExperimentPhaseEcs {
 			Math.random() * (TREE_SPAWN_MAX_RADIUS - TREE_SPAWN_MIN_RADIUS);
 		const pos = {
 			x: basePos.x + Math.cos(angle) * radius,
-			y: basePos.y,
+			y: basePos.y - 1,
 			z: basePos.z + Math.sin(angle) * radius,
 		};
 
