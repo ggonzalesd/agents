@@ -11,7 +11,7 @@
 		"server:dev": "tsx --watch --tsconfig tsconfig.node.json --env-file=.env server/index.ts",
 		"server:build": "node esbuild.config.ts",
 		"check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
-		"indev": "concurrently --names \"docker,client,server\" --prefix-colors \"black.bgBlue,black.bgYellow,black.bgYellowBright\" \"docker compose up\" \"pnpm dev\" \"pnpm server:dev\"",
+		"indev": "concurrently --names \"docker,client,server\" --prefix-colors \"black.bgBlue,black.bgYellow,black.bgYellowBright\" \"docker compose up game-postgresql game-minio\" \"pnpm dev\" \"pnpm server:dev\"",
 		"lint": "echo 'Running Biome lint...' && biome lint --skip=style/noNonNullAssertion && echo 'Running Typescript type on server...' && tsc -p tsconfig.node.json --noEmit && echo 'Running Typescript on client...' && svelte-check --tsconfig ./tsconfig.app.json && echo 'Running Typescript on common...' && tsc -p tsconfig.share.json --noEmit",
 		"format": "prettier --check --write src",
 		"seed:skins": "tsx --tsconfig tsconfig.node.json --env-file=.env server/scripts/seed-skins.ts"

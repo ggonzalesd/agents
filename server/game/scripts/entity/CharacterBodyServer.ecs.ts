@@ -210,6 +210,16 @@ export class CharacterBodyServerEcs extends ComponentEcs {
 		this.config.respawnPoint = pos;
 	}
 
+	public resetLife(): void {
+		if (this.deathTimer) {
+			clearTimeout(this.deathTimer);
+			this.deathTimer = null;
+		}
+		this.isDead = false;
+		this.characterState.life = this.characterState.maxLife;
+		this.serverData.room.broadcast('agent:respawn', { id: this.parent });
+	}
+
 	public heal(amount: number): void {
 		const prev = this.characterState.life;
 		this.characterState.life = Math.min(

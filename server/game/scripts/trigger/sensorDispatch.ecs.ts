@@ -30,10 +30,6 @@ export class SensorDispatchEcs extends ComponentEcs {
 			.unwrap('EventQueue not found');
 
 		eventQueue.drainCollisionEvents((handle1, handle2, started) => {
-			console.log(
-				`Collision event: handle1=${handle1}, handle2=${handle2}, started=${started}`,
-			);
-
 			const cb1 = this.registrations.get(handle1);
 			const cb2 = this.registrations.get(handle2);
 

@@ -5,7 +5,7 @@ docker compose down -v
 docker compose down -v
 
 # Iniciar Docker Compose
-docker compose up -d
+docker compose up game-postgresql game-minio -d
 
 npx prisma migrate dev
 npx prisma db seed

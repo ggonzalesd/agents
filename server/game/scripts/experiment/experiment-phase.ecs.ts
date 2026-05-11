@@ -1,6 +1,7 @@
 import type { ExperimentPhaseDefinition } from '#/experiments/guia-experimentacion-v4';
 import { ComponentEcs } from '#/ecs';
 
+import { CharacterBodyServerEcs } from '../entity/CharacterBodyServer.ecs';
 import type { WorldEventBusEcs, WorldEventType } from '../world-event-bus.ecs';
 import type { ExperimentRuntimeEcs } from './experiment-runtime.ecs';
 
@@ -36,7 +37,16 @@ export class ExperimentPhaseEcs extends ComponentEcs {
 	public mountPhase(): void {
 		if (this._isMounted) return;
 		this._isMounted = true;
+		this.resetPlayerHealth();
 		this.onMountPhase();
+	}
+
+	private resetPlayerHealth(): void {
+		this.world.getEntity(this.runtime.entityName).ifSome((entity) => {
+			entity.get(CharacterBodyServerEcs).ifSome((body) => {
+				body.resetLife();
+			});
+		});
 	}
 
 	public unmountPhase(): void {

@@ -14,7 +14,7 @@ export const LOBBY_POSITION: SlotPosition = { x: 0, y: 2, z: 0 };
 const SLOTS_PER_ROW = 5;
 const SLOT_SPACING_X = 100;
 const SLOT_SPACING_Z = 100;
-const SLOT_START_X = 100;
+const SLOT_START_X = 200;
 const SLOT_Y = 3;
 
 const occupiedSlots = new Set<number>();
