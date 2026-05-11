@@ -624,7 +624,7 @@ export class NPCActionProcessEcs extends ComponentEcs {
 						targetPos.z - myPos.z,
 					);
 
-					if (distance > 2) {
+					if (distance > 5) {
 						this.pushNpcEvent(
 							`No pudiste dar el ítem a ${action.targetEntityId}: está demasiado lejos (${distance.toFixed(1)}m).`,
 							{

@@ -496,7 +496,7 @@ export class PlayerServerBehavior extends ComponentEcs {
 					(giverPos.y - targetPos.y) ** 2 +
 					(giverPos.z - targetPos.z) ** 2;
 
-				if (distSq > 4) break;
+				if (distSq > 25) break;
 
 				const result = this.inventory.giveItemTo(targetInventory, fromSlot);
 				if (!result.success || !result.item) break;

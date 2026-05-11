@@ -38,8 +38,8 @@
 		pos: { x: number; z: number };
 	};
 
-	/** Distancia máxima al cuadrado para transferir items (2 unidades → distSq ≤ 4) */
-	const MAX_TRANSFER_DIST_SQ = 4;
+	/** Distancia máxima al cuadrado para transferir items (5 unidades → distSq ≤ 25) */
+	const MAX_TRANSFER_DIST_SQ = 25;
 
 	let itemState = new SvelteMap<string, InventoryItem>();
 	let transferTargets = new SvelteMap<string, TransferTarget>();

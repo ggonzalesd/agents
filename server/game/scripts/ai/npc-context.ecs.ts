@@ -175,7 +175,7 @@ export class NPCContextEcs extends ComponentEcs {
 			`{"type": "pick-item", "itemId": string, "slot": i32(0...35)} // needs to be in close entities (2 meters)`,
 			`{"type": "drop-item", "slot": i32(0...9)}`,
 			`{"type": "move-item", "fromSlot": i32(0...35), "toSlot": i32(0...35)} // move or swap items between slots. Slot 0 is the equipped weapon slot`,
-			`{"type": "give-item-to", "slot": i32(0...35), "targetEntityId": string} // give an item from your inventory directly to another NPC or player. Target must be within 2 meters. Does NOT drop it on the floor.`,
+			`{"type": "give-item-to", "slot": i32(0...35), "targetEntityId": string} // give an item from your inventory directly to another NPC or player. Target must be within 5 meters. Does NOT drop it on the floor.`,
 
 			`{"type": "eat-item", "slot": i32(0...35)} // eat/use a consumable from your own inventory to heal yourself (food, potions). Only affects you.`,
 
