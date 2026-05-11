@@ -265,23 +265,33 @@ async function createClassicNPC(props: {
 }
 
 const SEED_USERS = [
+	// Cristian se encargar de Evaluar a este grupo de usuarios
 	{ username: 'angel', password: 'pass2026xdwas', display: 'Angel', identifier: 'angel-k7x2' },
 	{ username: 'aaron', password: 'pass223cdsthe', display: 'Aaron', identifier: 'aaron-m4p9' },
-	{ username: 'alejandro', password: 'passfsa2424', display: 'Alejandro', identifier: 'alejandro-r2v6' },
 	{ username: 'daniel', password: 'passasf315sa', display: 'Daniel', identifier: 'daniel-q8w3' },
-	{ username: 'paolo', password: 'pass123cgrgerh', display: 'Paolo', identifier: 'paolo-t5n7' },
 	{ username: 'tito', password: 'pass234234sa', display: 'Tito', identifier: 'tito-b1j4' },
 	{ username: 'josue', password: 'passgrm3ojm94c', display: 'Josue', identifier: 'josue-f3h8' },
+	{ username: 'alan', password: 'passlsmdf4i', display: 'Alan', identifier: 'alan-p4k8' },
 	{ username: 'nander', password: 'pass32rcfesdc', display: 'Nander', identifier: 'nander-d6c1' },
+
+	// Si se encuentras mas usuarios, usar estos de respaldo
+	{ username: 'guessman', password: 'passdfgm345234', display: 'Guessman', identifier: 'guessman-j3a6' },
+	{ username: 'guesssoldier', password: 'passsdf2345g', display: 'Guess Soldier', identifier: 'guess-soldier-z8c2' },
+	{ username: 'keeperman', password: '23fdfasas45g', display: 'Keeperman', identifier: 'keeperman-n9b4' },
+	{ username: 'jumper', password: 'asfe12efewfsd', display: 'Jumper', identifier: 'jumper-x1y2' },
+	{ username: 'star', password: 'passsdf2345g', display: 'Star', identifier: 'star-k9m3' },
+
+	// Estos Usuarios se encarga Grober
+	{ username: 'antoniosa', password: 'passsdflkc2834', display: 'Antoniosa', identifier: 'antoniosa-v6z9' },
+	{ username: 'paolo', password: 'pass123cgrgerh', display: 'Paolo', identifier: 'paolo-t5n7' },
+	{ username: 'alejandro', password: 'passfsa2424', display: 'Alejandro', identifier: 'alejandro-r2v6' },
 	{ username: 'nayeli', password: 'passsdf23rcgrg', display: 'Nayeli', identifier: 'nayeli-g9s5' },
 	{ username: 'juan', password: 'passsdff432gce', display: 'Juan', identifier: 'juan-x2m7' },
-	{ username: 'alan', password: 'passlsmdf4i', display: 'Alan', identifier: 'alan-p4k8' },
-	{ username: 'antonioba', password: 'passmk3o84hfchjo4', display: 'Antonioba', identifier: 'antonioba-w1y3' },
-	{ username: 'antoniosa', password: 'passsdflkc2834', display: 'Antoniosa', identifier: 'antoniosa-v6z9' },
 	{ username: 'ayrton', password: 'passsdkfo25234', display: 'Ayrton', identifier: 'ayrton-l4q2' },
 	{ username: 'cente', password: 'passlmfdg3345', display: 'Cente', identifier: 'cente-u7e5' },
-	{ username: 'guessman', password: 'passdfgm345234', display: 'Guessman', identifier: 'guessman-j3a6' },
+	{ username: 'antonioba', password: 'passmk3o84hfchjo4', display: 'Antonioba', identifier: 'antonioba-w1y3' },
 
+	// Usuario de Cristian para pruebas directas (sin que se lo asignen a nadie mas)
 	{ username: 'cristian', password: 'padfgdfggf2026', display: 'Cristian', identifier: 'cristian-k7x2' }
 ];
 
