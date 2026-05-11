@@ -1,6 +1,7 @@
 import prisma from '$/config/prisma.config';
 import { npcServerFactoryGenerator } from '$/game/prefab/npc.server';
 import { boxServerFactory } from '$/game/prefab/box.server';
+import { treeServerFactory } from '$/game/prefab/tree.server';
 import { floatingTextServerFactory } from '$/game/prefab/floating-text.server';
 import { getSlotPosition } from '$/services/slot-allocator.service';
 import { InventoryServerEcs } from '../../entity/InventoryServer.ecs';
@@ -26,6 +27,8 @@ const BOX_DROP_ITEMS = ['meat', 'potion', 'apple', 'sword', 'cookie', 'seeds', '
 const MAX_ACTIVE_BOXES = 6;
 const BOX_SPAWN_RADIUS = 10;
 const RESPAWN_INTERVAL_MS = 5000;
+const TREE_COUNT = 3;
+const TREE_SPAWN_RADIUS = 8;
 
 export class RequestGatherItemsPhaseEcs extends ExperimentPhaseEcs {
 	private resolved = false;
@@ -33,6 +36,7 @@ export class RequestGatherItemsPhaseEcs extends ExperimentPhaseEcs {
 	private boxCounterName: string | null = null;
 	private itemCounterName: string | null = null;
 	private readonly spawnedBoxNames: string[] = [];
+	private readonly spawnedTreeNames: string[] = [];
 	private respawnInterval: ReturnType<typeof setInterval> | null = null;
 	private boxCounter = 0;
 	private boxSpawnCounter = 0;
@@ -42,6 +46,7 @@ export class RequestGatherItemsPhaseEcs extends ExperimentPhaseEcs {
 	protected onMountPhase(): void {
 		this.resolved = false;
 		this.spawnedBoxNames.length = 0;
+		this.spawnedTreeNames.length = 0;
 		this.boxCounter = 0;
 		this.boxSpawnCounter = 0;
 		this.lastAttackerMap.clear();
@@ -136,6 +141,7 @@ export class RequestGatherItemsPhaseEcs extends ExperimentPhaseEcs {
 		);
 
 		this.startBoxRespawn(userId, slotPos);
+		this.spawnTrees(userId, slotPos);
 
 		const npcName = this.npcName;
 		if (npcName) {
@@ -179,6 +185,13 @@ export class RequestGatherItemsPhaseEcs extends ExperimentPhaseEcs {
 		}
 		this.spawnedBoxNames.length = 0;
 		this.lastAttackerMap.clear();
+
+		for (const treeName of this.spawnedTreeNames) {
+			this.world.getEntity(treeName).ifSome((entity) => {
+				this.world.deleteEntity(entity);
+			});
+		}
+		this.spawnedTreeNames.length = 0;
 	}
 
 	private clearPlayerInventory(entityName: string): void {
@@ -265,6 +278,21 @@ export class RequestGatherItemsPhaseEcs extends ExperimentPhaseEcs {
 				this.spawnSingleBox(userId, basePos);
 			}
 		}, RESPAWN_INTERVAL_MS);
+	}
+
+	private spawnTrees(userId: string, basePos: { x: number; y: number; z: number }): void {
+		for (let i = 0; i < TREE_COUNT; i++) {
+			const angle = (i / TREE_COUNT) * Math.PI * 2;
+			const pos = {
+				x: basePos.x + Math.cos(angle) * TREE_SPAWN_RADIUS,
+				y: basePos.y,
+				z: basePos.z + Math.sin(angle) * TREE_SPAWN_RADIUS,
+			};
+			const treeName = `gather-tree-${userId}-${i}`;
+			const tree = treeServerFactory({ world: this.world, name: treeName, pos });
+			this.world.addEntity(tree);
+			this.spawnedTreeNames.push(treeName);
+		}
 	}
 
 	private async spawnNpc(userId: string, npcName: string): Promise<void> {
