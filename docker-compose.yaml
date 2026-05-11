@@ -1,4 +1,24 @@
 services:
+  game-app:
+    image: node:24.6.0-bookworm
+    working_dir: /app
+    env_file: .env
+    restart: unless-stopped
+    volumes:
+      - .:/app
+      - game-node-modules:/app/node_modules
+    ports:
+      - '3000:3000'
+    depends_on:
+      - game-postgresql
+      - game-minio
+    environment:
+      DB_HOST: game-postgresql
+      DB_URL: 'postgresql://${DB_USER}:${DB_PASSWORD}@game-postgresql:5432/${DB_NAME}?schema=public'
+      S3_URL: http://game-minio:9000
+    command: >
+      sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm server:start"
+
   game-postgresql:
     image: pgvector/pgvector:pg16
     environment:
@@ -27,3 +47,4 @@ volumes:
   game-postgresql-data:
   game-minio-data:
   game-minio-config:
+  game-node-modules:

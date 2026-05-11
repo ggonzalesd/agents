@@ -1,3 +1,12 @@
+allowBuilds:
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@tailwindcss/oxide': true
+  bcrypt: true
+  esbuild: true
+  msgpackr-extract: true
+  prisma: true
+  sharp: true
 onlyBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'

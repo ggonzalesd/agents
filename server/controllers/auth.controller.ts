@@ -284,11 +284,9 @@ export const profileAuthController = async (req: Request, res: Response) => {
 		userId: user.id,
 	});
 
-	if (userWithRelations.isNone()) {
-		throw HttpError.notFound('User profile not found');
-	}
-
-	const { user: fullUser, agent, entity, profile } = userWithRelations.value;
+	const { user: fullUser, agent, entity, profile } = userWithRelations.orElseThrow(
+		HttpError.notFound('User profile not found'),
+	);
 
 	const { password: _, hash: __, ...userResult } = fullUser;
 
