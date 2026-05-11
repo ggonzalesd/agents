@@ -29,12 +29,12 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 			'Experimento de interacción con NPCs clásicos sin uso de modelos de lenguaje.',
 		feedbackLinks: [
 			{
-				href: 'https://forms.gle/sin-llms-pre',
-				label: 'Encuesta pre-experimento',
+				href: 'https://docs.google.com/forms/d/e/1FAIpQLScNR6E2nSLCjd9LIFYvdTNstOaOzi0pKGdWEftOdgOzW7q1bA/viewform?usp=header',
+				label: 'Encuesta De Satisfacción (NPCs sin LLMs)',
 			},
 			{
-				href: 'https://forms.gle/sin-llms-post',
-				label: 'Encuesta post-experimento',
+				href: 'https://docs.google.com/forms/d/e/1FAIpQLSd2GZd6-ViFASyrxAGDT9CXZBSdow9ZowN3jaQWieLju2wZlw/viewform?usp=header',
+				label: 'Experiencia de Usuario (NPCs sin LLMs)',
 			},
 		],
 		phases: [
@@ -118,12 +118,12 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 			'Experimento de interacción con NPCs potenciados por modelos de lenguaje.',
 		feedbackLinks: [
 			{
-				href: 'https://forms.gle/con-llms-pre',
-				label: 'Encuesta pre-experimento',
+				href: 'https://docs.google.com/forms/d/e/1FAIpQLSd2dWuNY5-J0ouT_BeuiBTrhvyXhSySVNVJDjk9Jl_o6_IIMg/viewform?usp=header',
+				label: 'Encuesta De Satisfacción (NPCs con LLMs)',
 			},
 			{
-				href: 'https://forms.gle/con-llms-post',
-				label: 'Encuesta post-experimento',
+				href: 'https://docs.google.com/forms/d/e/1FAIpQLSeH6fFui_cduLyEYvbTdsjqpnf8t4LYpzLE6YV6bOVLxARyhg/viewform?usp=header',
+				label: 'Experiencia de Usuario (NPCs con LLMs)',
 			},
 		],
 		phases: [
@@ -191,7 +191,7 @@ export const EXPERIMENT_CATALOG: ExperimentCatalogEntry[] = [
 				componentKey: 'request-deliver-info',
 				title: 'Fase 9: Solicitar al NPC que entregue información',
 				description:
-					'Pide al NPC que lleve un mensaje o información a otro NPC en el escenario. Haz que el primer NPC entregue la información. Luego entrega esa información al segundo NPC. Asegurate de entregar la información correctamente o fallarás la fase.',
+					'Haz que el primer NPC te dé una información confidencial. Luego entrega esa información al segundo NPC. Asegurate de entregar la información correctamente o fallarás la fase.',
 			},
 			{
 				key: 'request-gather-items-10',

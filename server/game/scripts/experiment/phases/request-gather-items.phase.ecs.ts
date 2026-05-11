@@ -4,6 +4,7 @@ import { boxServerFactory } from '$/game/prefab/box.server';
 import { treeServerFactory } from '$/game/prefab/tree.server';
 import { floatingTextServerFactory } from '$/game/prefab/floating-text.server';
 import { getSlotPosition } from '$/services/slot-allocator.service';
+import { ServerDataEcs } from '../../serverData.ecs';
 import { InventoryServerEcs } from '../../entity/InventoryServer.ecs';
 import { FloatingTextServerEcs } from '../../floating-text/floating-text.server.ecs';
 import {
@@ -191,6 +192,14 @@ export class RequestGatherItemsPhaseEcs extends ExperimentPhaseEcs {
 				this.world.deleteEntity(entity);
 			});
 		}
+
+		const serverData = this.world.get(ServerDataEcs).raw();
+		if (serverData) {
+			for (const treeName of this.spawnedTreeNames) {
+				serverData.room.broadcast('experiment:instance:remove', { id: treeName });
+			}
+		}
+
 		this.spawnedTreeNames.length = 0;
 	}
 
@@ -281,6 +290,8 @@ export class RequestGatherItemsPhaseEcs extends ExperimentPhaseEcs {
 	}
 
 	private spawnTrees(userId: string, basePos: { x: number; y: number; z: number }): void {
+		const serverData = this.world.get(ServerDataEcs).raw();
+
 		for (let i = 0; i < TREE_COUNT; i++) {
 			const angle = (i / TREE_COUNT) * Math.PI * 2;
 			const pos = {
@@ -292,6 +303,17 @@ export class RequestGatherItemsPhaseEcs extends ExperimentPhaseEcs {
 			const tree = treeServerFactory({ world: this.world, name: treeName, pos });
 			this.world.addEntity(tree);
 			this.spawnedTreeNames.push(treeName);
+
+			if (serverData) {
+				serverData.room.broadcast('experiment:instance:create', {
+					id: treeName,
+					type: 'tree',
+					x: pos.x,
+					y: pos.y,
+					z: pos.z,
+					metadata: {},
+				});
+			}
 		}
 	}
 
