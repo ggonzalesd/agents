@@ -11,6 +11,9 @@ export class PlayerState extends Schema {
 	public sessionId: string;
 
 	@type('string')
+	public name: string = '';
+
+	@type('string')
 	public skin: string = 'default';
 
 	@type(CharacterBodyState)
@@ -26,12 +29,14 @@ export class PlayerState extends Schema {
 		pos,
 		skin,
 		sessionId,
+		name,
 		life,
 		maxLife,
 	}: {
 		pos: IVec3;
 		skin?: string;
 		sessionId: string;
+		name?: string;
 		life?: number;
 		maxLife?: number;
 	}) {
@@ -39,5 +44,6 @@ export class PlayerState extends Schema {
 		this.character = new CharacterBodyState(pos, life, maxLife);
 		this.skin = skin ?? this.skin;
 		this.sessionId = sessionId;
+		this.name = name ?? this.name;
 	}
 }

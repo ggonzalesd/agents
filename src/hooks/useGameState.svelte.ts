@@ -14,7 +14,8 @@ type GameType = {
 		| 'ONLEAVE'
 		| 'ENTITYDETAILS'
 		| 'MISSIONS'
-		| 'DIALOGUE';
+		| 'DIALOGUE'
+		| 'ADMIN_TP';
 	username: string;
 	skinHash: string;
 	selectedEntityId: string | null;

@@ -1,6 +1,7 @@
 <svelte:options runes />
 
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import Button from '@/components/ui/Button.svelte';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
@@ -8,10 +9,12 @@
 	import { InputMode } from '@/utils/inputMode';
 	import { getContext } from 'svelte';
 	import closeSvgContent from '@/assets/icons/close.svg?raw';
+	import { profileService } from '@/services/api.service';
 
 	let gameState = getGameStateContext();
 	let routerContext = getRouterContext();
 	let inputs = getContext<GameInput>(GameInput.name);
+	let isAdmin = $state(false);
 
 	const onContinue = () => {
 		gameState.setPause(false);
@@ -23,6 +26,18 @@
 		inputs.setMode(InputMode.GAME);
 		routerContext.changeRoute('/profile');
 	};
+
+	const onAdminTp = () => {
+		gameState.setPause(true, 'ADMIN_TP');
+	};
+
+	onMount(() => {
+		profileService().then((response) => {
+			if (response.ok) {
+				isAdmin = response.data.user.role === 'ADMIN';
+			}
+		});
+	});
 </script>
 
 <div
@@ -32,6 +47,9 @@
 	<div class="flex flex-col gap-6">
 		<Button type="submit" onclick={onContinue}>Continuar</Button>
 		<Button type="submit" onclick={onExit}>Abandonar</Button>
+		{#if isAdmin}
+			<Button type="button" class="bg-amber-700 hover:bg-amber-600" onclick={onAdminTp}>TP Admin</Button>
+		{/if}
 	</div>
 	<div class="flex items-start justify-center">
 		<button

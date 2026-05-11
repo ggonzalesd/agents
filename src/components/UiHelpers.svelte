@@ -5,14 +5,25 @@
 	import ViewActionsContext from './ViewActionsContext.svelte';
 	import { getRouterContext } from '@/hooks/useRouter.svelte';
 	import { getGameStateContext } from '@/hooks/useGameState.svelte';
+	import { onMount } from 'svelte';
+	import { profileService } from '@/services/api.service';
 
 	const { changeRoute } = getRouterContext();
 	const gameState = getGameStateContext();
 
 	let helper = $state<'DEBUG' | 'ACTIONS'>('DEBUG');
+	let isAdmin = $state(false);
 
 	let isDisplay = $state<boolean>(true);
 	let display = $derived(isDisplay ? 'X' : '>');
+
+	onMount(() => {
+		profileService().then((response) => {
+			if (response.ok) {
+				isAdmin = response.data.user.role === 'ADMIN';
+			}
+		});
+	});
 </script>
 
 {#snippet btn(text: string, action?: () => void)}
@@ -34,6 +45,9 @@
 		<div class="w-2"></div>
 		{@render btn('📋 Missions', () => gameState.setPause(true, 'MISSIONS'))}
 		{@render btn('🎒 Inventory', () => gameState.setPause(true, 'INVENTORY'))}
+		{#if isAdmin}
+			{@render btn('⚡ TP', () => gameState.setPause(true, 'ADMIN_TP'))}
+		{/if}
 		{@render btn('👤 Profile', () => changeRoute('/profile'))}
 	{/if}
 </div>

@@ -11,6 +11,7 @@ import * as RAPIER from '@dimforge/rapier3d-compat';
 import { GameState } from '#/state/game.state';
 import type { WorldEcs } from '#/ecs/World.ecs';
 import { LOGIN_TYPE } from '#/schema/auth.schema';
+import { adminTeleportSchema } from '#/schema/admin.schema';
 import type { AuthPayload } from '$/models/Payload.model';
 
 import * as JwtService from '$/services/jwt.service';
@@ -75,6 +76,7 @@ export class MainRoom extends Room<GameState> {
 		this.onMessage('experiment:start', this.onExperimentStart.bind(this));
 		this.onMessage('experiment:stop', this.onExperimentStop.bind(this));
 		this.onMessage('experiment:fail-phase', this.onExperimentFailPhase.bind(this));
+		this.onMessage('admin:teleport', this.onAdminTeleport.bind(this));
 		this.onMessage('*', () => {});
 	}
 
@@ -213,6 +215,52 @@ export class MainRoom extends Room<GameState> {
 			.unwrap('ExperimentManagerEcs not found');
 
 		manager.handlePhaseFailure(payload.id, 'manual');
+	}
+
+	private onAdminTeleport(client: Client, message: unknown): void {
+		const payload = client.userData?.payload as AuthPayload | undefined;
+		if (!payload || payload.role !== 'ADMIN') return;
+
+		const parsed = adminTeleportSchema.safeParse(message);
+		if (!parsed.success) return;
+
+		const adminEntityId = (client.userData?.userInfo as any)?.agent?.identifier as
+			| string
+			| undefined;
+		if (!adminEntityId) return;
+
+		const adminEntity = this.worldEcs.getEntity(adminEntityId);
+		if (adminEntity.isNone()) return;
+
+		const adminCharBody = adminEntity.unwrap().get(CharacterBodyServerEcs);
+		if (adminCharBody.isNone()) return;
+
+		const adminBody = adminCharBody.unwrap();
+
+		if (parsed.data.type === 'to-origin') {
+			const origin = { x: 0, y: 2, z: 0 };
+			adminBody.body.setTranslation(origin, true);
+			adminBody.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+			adminBody.setRespawnPoint(origin);
+			return;
+		}
+
+		if (parsed.data.type === 'to-player') {
+			const targetEntityId = parsed.data.targetEntityId;
+
+			const targetEntity = this.worldEcs.getEntity(targetEntityId);
+			if (targetEntity.isNone()) return;
+
+			const targetCharBody = targetEntity.unwrap().get(CharacterBodyServerEcs);
+			if (targetCharBody.isNone()) return;
+
+			const targetPos = targetCharBody.unwrap().body.translation();
+
+			const tpPos = { x: targetPos.x, y: targetPos.y + 4, z: targetPos.z };
+			adminBody.body.setTranslation(tpPos, true);
+			adminBody.body.setLinvel({ x: 0, y: 0, z: 0 }, true);
+			adminBody.setRespawnPoint(tpPos);
+		}
 	}
 
 	onUpdate(_delta: number) {

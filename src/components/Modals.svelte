@@ -12,6 +12,7 @@
 	import EntityDetailsModal from './modals/EntityDetailsModal.svelte';
 	import MissionsModal from './modals/MissionsModal.svelte';
 	import DialogueModal from './modals/DialogueModal.svelte';
+	import AdminTpModal from './modals/AdminTpModal.svelte';
 
 	let gameState = getGameStateContext();
 	let inputs = getContext<GameInput>(GameInput.name);
@@ -58,8 +59,10 @@
 			<EntityDetailsModal />
 	{:else if $gameState.view === 'MISSIONS'}
 		<MissionsModal />
-	{:else if $gameState.view === 'DIALOGUE'}
-		<DialogueModal />
+{:else if $gameState.view === 'DIALOGUE'}
+			<DialogueModal />
+	{:else if $gameState.view === 'ADMIN_TP'}
+			<AdminTpModal />
 	{/if}
 	</div>
 {/if}

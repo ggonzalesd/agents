@@ -35,6 +35,7 @@ export const playerServerFactoryGenerator =
 			pos,
 			skin: skin ?? username,
 			sessionId,
+			name: username,
 			life,
 			maxLife,
 		});
