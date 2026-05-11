@@ -37,6 +37,20 @@ export const loginResSchema = apiResSchema.extend({
 export const profileResSchema = apiResSchema.extend({
 	data: z.object({
 		user: userDtoSchema,
+		agent: z.object({
+			identifier: z.string(),
+			display: z.string(),
+			positionX: z.number(),
+			positionY: z.number(),
+			positionZ: z.number(),
+		}),
+		entity: z.object({
+			life: z.number(),
+			maxLife: z.number(),
+			saturation: z.number(),
+			maxSaturation: z.number(),
+		}),
+		banned: z.boolean(),
 	}),
 });
 

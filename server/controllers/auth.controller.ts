@@ -280,11 +280,37 @@ export const revokeTokensController = async (req: Request, res: Response) => {
 export const profileAuthController = async (req: Request, res: Response) => {
 	const { user } = getAuth(req);
 
-	const { password: _, hash: __, ...result } = user;
+	const userWithRelations = await UserRepository.getUserById({
+		userId: user.id,
+	});
+
+	if (userWithRelations.isNone()) {
+		throw HttpError.notFound('User profile not found');
+	}
+
+	const { user: fullUser, agent, entity, profile } = userWithRelations.value;
+
+	const { password: _, hash: __, ...userResult } = fullUser;
 
 	res.json(
 		jsonResponse.ok(
-			{ user: result },
+			{
+				user: userResult,
+				agent: {
+					identifier: agent.identifier,
+					display: agent.display,
+					positionX: agent.positionX,
+					positionY: agent.positionY,
+					positionZ: agent.positionZ,
+				},
+				entity: {
+					life: entity.life,
+					maxLife: entity.maxLife,
+					saturation: entity.saturation,
+					maxSaturation: entity.maxSaturation,
+				},
+				banned: profile.banned,
+			},
 			{
 				message: 'User profile retrieved successfully',
 			},
