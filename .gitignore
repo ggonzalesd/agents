@@ -28,6 +28,7 @@ build
 *.sw?
 
 .env
+.env.prod
 
 .notes.txt
 
