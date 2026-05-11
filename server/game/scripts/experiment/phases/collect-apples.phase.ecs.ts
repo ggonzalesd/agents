@@ -2,6 +2,7 @@ import { classicNpcServerFactoryGenerator } from '../../../prefab/classicNpc.ser
 import { treeServerFactory } from '../../../prefab/tree.server';
 import { ClassicNpcBehaviorType } from '$/models/ClassicNPC.model';
 import { ClassicNPCBehaviorStateEcs } from '../../classic-npc/classic-npc-behavior-state.ecs';
+import { ClassicNpcDialogueEcs } from '../../classic-npc/dialogue/classic-npc-dialogue.ecs';
 import type { DialogueConfig } from '../../classic-npc/dialogue/dialogue.types';
 import { getSlotPosition } from '$/services/slot-allocator.service';
 import { InventoryServerEcs } from '../../entity/InventoryServer.ecs';
@@ -14,6 +15,9 @@ const NPC_IDENTIFIER = 'collect-apples-npc';
 const NPC_SKIN = 'kanye';
 const TREE_IDENTIFIER = 'collect-apples-tree';
 
+const ASK_CONV_ID = 'collect-apples-ask';
+const STATUS_CONV_ID = 'collect-apples-status';
+
 const REQUIRED_APPLES = 5;
 const INVENTORY_CHECK_INTERVAL_MS = 1000;
 
@@ -23,6 +27,9 @@ export class CollectApplesPhaseEcs extends ExperimentPhaseEcs {
 	private inventoryCheckInterval: ReturnType<typeof setInterval> | null = null;
 	private resolved = false;
 	private accepted = false;
+	private _statusNpc = 0;
+	private _statusPlayer = 0;
+	private _statusTotal = 0;
 
 	protected onMountPhase(): void {
 		this.resolved = false;
@@ -83,6 +90,28 @@ export class CollectApplesPhaseEcs extends ExperimentPhaseEcs {
 			}
 		}
 		return count;
+	}
+
+	private getPlayerAppleCount(): number {
+		const playerEntity = this.world.getEntity(this.runtime.entityName).raw();
+		if (!playerEntity) return 0;
+
+		const inventory = playerEntity.get(InventoryServerEcs).raw();
+		if (!inventory) return 0;
+
+		let count = 0;
+		for (const item of inventory.inventoryState.items.values()) {
+			if (item.type === 'green_apple') {
+				count += item.quantity;
+			}
+		}
+		return count;
+	}
+
+	private getCombinedAppleCount(): { npc: number; player: number; total: number } {
+		const npc = this.getNpcAppleCount();
+		const player = this.getPlayerAppleCount();
+		return { npc, player, total: npc + player };
 	}
 
 	private startInventoryCheck(): void {
@@ -153,7 +182,7 @@ export class CollectApplesPhaseEcs extends ExperimentPhaseEcs {
 		this.npcName = npcName;
 
 		const conv1: DialogueConfig['conversations'][number] = {
-			id: 'collect-apples-ask',
+			id: ASK_CONV_ID,
 			rootStatementId: 's_root',
 			reusable: true,
 			resumable: true,
@@ -165,6 +194,9 @@ export class CollectApplesPhaseEcs extends ExperimentPhaseEcs {
 						entity.get(ClassicNPCBehaviorStateEcs).ifSome((state) => {
 							state.setBehaviorType(ClassicNpcBehaviorType.COLLECTOR);
 						});
+						const dialogue = entity.get(ClassicNpcDialogueEcs).raw();
+						dialogue?.disableConversation(ASK_CONV_ID);
+						dialogue?.enableConversation(STATUS_CONV_ID);
 					});
 					this.startInventoryCheck();
 				} else {
@@ -217,6 +249,9 @@ export class CollectApplesPhaseEcs extends ExperimentPhaseEcs {
 			pickStrategy: 'sequential',
 			variables: () => ({
 				AMOUNT: String(REQUIRED_APPLES),
+				NPC_COUNT: String(this._statusNpc),
+				PLAYER_COUNT: String(this._statusPlayer),
+				TOTAL_COUNT: String(this._statusTotal),
 			}),
 			conversations: [
 				{
@@ -243,6 +278,39 @@ export class CollectApplesPhaseEcs extends ExperimentPhaseEcs {
 							},
 						]),
 					),
+				},
+				{
+					id: STATUS_CONV_ID,
+					rootStatementId: 's_status_root',
+					reusable: true,
+					resumable: false,
+					oneShot: false,
+					enabled: false,
+					onStart: () => {
+						const { npc, player, total } = this.getCombinedAppleCount();
+						this._statusNpc = npc;
+						this._statusPlayer = player;
+						this._statusTotal = total;
+					},
+					onEnd: () => {
+						const { total } = this.getCombinedAppleCount();
+						if (total >= REQUIRED_APPLES) {
+							this.handlePhaseSuccess();
+						}
+					},
+					statements: {
+						s_status_root: {
+							id: 's_status_root',
+							text: 'Yo tengo %NPC_COUNT% manzanas y tú tienes %PLAYER_COUNT%. En total llevamos %TOTAL_COUNT% de %AMOUNT%.',
+							options: {
+								o_ok: {
+									id: 'o_ok',
+									text: 'Entendido, seguimos.',
+									nextStatementId: null,
+								},
+							},
+						},
+					},
 				},
 			],
 		};
