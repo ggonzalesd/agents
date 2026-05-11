@@ -52,22 +52,59 @@
 	let gameInputContext = getContext<GameInput>(GameInput.name);
 	let routerContext = getRouterContext();
 	const debugContext = getDebugContext();
+	let loading = $state(false);
+
+	function tryAutoLogin() {
+		const params = new URLSearchParams(window.location.search);
+		const user = params.get('user');
+		const pass = params.get('pass');
+
+		if (user && pass) {
+			loading = true;
+			loginService({ username: user, password: pass })
+				.then((response) => {
+					if (response.ok) {
+						gameStateContext.setUsername(response.data.payload.username);
+						gameStateContext.setSkinHash(response.data.user.skin ?? '');
+						localStorage.setItem('token', response.data.token);
+						window.history.replaceState({}, '', window.location.pathname);
+						routerContext.changeRoute('/profile');
+					} else {
+						debugContext.error(response.error.message);
+						loading = false;
+					}
+				})
+				.catch(() => {
+					loading = false;
+				});
+		}
+	}
 
 	onMount(() => {
 		gameInputContext.setMode(InputMode.UI);
 
-		if (localStorage.getItem('token') == null) return;
+		if (localStorage.getItem('token') != null) {
+			profileService()
+				.then((data) => {
+					if (!data.ok) {
+						localStorage.removeItem('token');
+						tryAutoLogin();
+						return;
+					}
 
-		profileService().then((data) => {
-			if (!data.ok) return;
+					gameStateContext.setUsername(data.data.user.username);
+					gameStateContext.setSkinHash(data.data.user.skin ?? '');
+					routerContext.changeRoute('/profile');
+				})
+				.catch(() => {
+					localStorage.removeItem('token');
+					tryAutoLogin();
+				});
+			return;
+		}
 
-			gameStateContext.setUsername(data.data.user.username);
-			gameStateContext.setSkinHash(data.data.user.skin ?? '');
-			routerContext.changeRoute('/profile');
-		});
+		tryAutoLogin();
 	});
-
-	let loading = $state(false);
 
 	const onCredentialsSubmit = async (event: SubmitEvent) => {
 		event.preventDefault();
