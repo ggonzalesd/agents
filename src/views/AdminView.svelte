@@ -9,6 +9,7 @@
 	import Router from '@/components/lib/Router.svelte';
 	import CreateEditUser from '@/components/admin/users/CreateEditUser.svelte';
 	import ListUser from '@/components/admin/users/ListUser.svelte';
+	import ListExperiments from '@/components/admin/experiments/ListExperiments.svelte';
 </script>
 
 <section class="size-full min-h-screen">
@@ -66,6 +67,12 @@
 
 				<Router route="/list">
 					<ListUser />
+				</Router>
+			</Router>
+
+			<Router route="/experiments">
+				<Router route="/list">
+					<ListExperiments />
 				</Router>
 			</Router>
 		</Sidebar.Inset>

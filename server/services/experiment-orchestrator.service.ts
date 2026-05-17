@@ -59,6 +59,7 @@ const mapExperimentState = ({
 	const catalogEntry = getExperimentByKey(experiment.experimentKey);
 
 	return {
+		id: experiment.id,
 		experimentKey: experiment.experimentKey,
 		experimentTitle: catalogEntry?.title ?? experiment.experimentKey,
 		assigned,
@@ -79,6 +80,7 @@ const mapExperimentState = ({
 		phases: experiment.phases.map((phase) => {
 			const phaseDefinition = getExperimentPhaseByKey(phase.phaseKey, experiment.experimentKey);
 			return {
+				id: phase.id,
 				phaseKey: phase.phaseKey,
 				componentKey: phaseDefinition?.componentKey ?? phase.phaseKey,
 				phaseIndex: phase.phaseIndex,
@@ -679,6 +681,18 @@ export const getAvailableExperimentsForUser = async (
 
 export const getActiveExperimentsForAdmin = async (roomId: string) => {
 	const experiments = await UserExperimentRepository.getMountedExperimentsForRoom({ roomId });
+	return experiments.map((experiment) =>
+		mapExperimentState({
+			experiment,
+			viewerMode: 'ADMIN_OBSERVER',
+			assigned: false,
+			fallbackOwner: null,
+		}),
+	);
+};
+
+export const getAllExperimentsForAdmin = async () => {
+	const experiments = await UserExperimentRepository.getAllExperiments();
 	return experiments.map((experiment) =>
 		mapExperimentState({
 			experiment,

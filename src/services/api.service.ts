@@ -14,6 +14,10 @@ import {
 	experimentStateApiResponseSchema,
 	experimentListApiResponseSchema,
 	experimentAdminActiveApiResponseSchema,
+	experimentAdminAllApiResponseSchema,
+	adminAssignmentsApiResponseSchema,
+	adminDeleteAssignmentApiResponseSchema,
+	adminExcelUrlApiResponseSchema,
 	type submitExperimentFeedbackRequestSchema,
 } from '#/schema/experiment.schema';
 
@@ -509,6 +513,18 @@ export const getActiveExperimentService = async (): Promise<
 	}
 };
 
+export const getAllExperimentsAdminService = async (): Promise<
+	OkResponse<z.infer<typeof experimentAdminAllApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.get('/experiment/admin/all');
+		const body = experimentAdminAllApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
 export const submitExperimentFeedbackService = async (
 	payload: z.infer<typeof submitExperimentFeedbackRequestSchema>,
 ): Promise<
@@ -531,6 +547,122 @@ export const resetExperimentService = async (
 	try {
 		const response = await httpService.post('/experiment/me/reset', { experimentKey });
 		const body = experimentStateApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin Experiment Services
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const getAdminAssignmentsService = async (): Promise<
+	OkResponse<z.infer<typeof adminAssignmentsApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.get('/admin/experiment/assignments');
+		const body = adminAssignmentsApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const deleteAdminAssignmentService = async (
+	id: string,
+): Promise<
+	OkResponse<z.infer<typeof adminDeleteAssignmentApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.delete(`/admin/experiment/assignments/${id}`);
+		const body = adminDeleteAssignmentApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const updateAdminExperimentService = async (
+	id: string,
+	data: { status?: string; rating?: number | null; comment?: string | null },
+): Promise<
+	OkResponse<z.infer<typeof experimentAdminAllApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.patch(`/admin/experiment/experiments/${id}`, data);
+		const body = experimentAdminAllApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const resetAdminExperimentProgressService = async (
+	id: string,
+): Promise<
+	OkResponse<z.infer<typeof experimentAdminAllApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.delete(`/admin/experiment/experiments/${id}/progress`);
+		const body = experimentAdminAllApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const updateAdminPhaseService = async (
+	id: string,
+	data: { status?: string; failureCount?: number; attemptCount?: number },
+): Promise<
+	OkResponse<z.infer<typeof experimentAdminAllApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.patch(`/admin/experiment/phases/${id}`, data);
+		const body = experimentAdminAllApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const deleteAdminPhaseService = async (
+	id: string,
+): Promise<
+	OkResponse<z.infer<typeof experimentAdminAllApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.delete(`/admin/experiment/phases/${id}`);
+		const body = experimentAdminAllApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const resetAdminPhaseProgressService = async (
+	id: string,
+): Promise<
+	OkResponse<z.infer<typeof experimentAdminAllApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.delete(`/admin/experiment/phases/${id}/attempts`);
+		const body = experimentAdminAllApiResponseSchema.parse(response.data);
+		return { ok: true, message: body.message, data: body.data };
+	} catch (error) {
+		return dispatchError(error);
+	}
+};
+
+export const exportAdminExcelService = async (): Promise<
+	OkResponse<z.infer<typeof adminExcelUrlApiResponseSchema>['data']> | ErrorResponse
+> => {
+	try {
+		const response = await httpService.get('/admin/experiment/export/excel', {
+			timeout: 30000,
+		});
+		const body = adminExcelUrlApiResponseSchema.parse(response.data);
 		return { ok: true, message: body.message, data: body.data };
 	} catch (error) {
 		return dispatchError(error);

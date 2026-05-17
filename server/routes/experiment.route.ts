@@ -31,6 +31,13 @@ router.get(
 	ExperimentController.getActiveExperimentsForAdminController,
 );
 
+router.get(
+	'/admin/all',
+	AuthMiddleware.validateJwtToken(),
+	RoleMiddleware.withRoles('ADMIN'),
+	ExperimentController.getAllExperimentsForAdminController,
+);
+
 router.post(
 	'/me/feedback',
 	AuthMiddleware.validateJwtToken(),

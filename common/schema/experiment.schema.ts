@@ -40,6 +40,7 @@ export const experimentAttemptResponseSchema = z.object({
 });
 
 export const experimentPhaseResponseSchema = z.object({
+	id: z.string().uuid(),
 	phaseKey: z.string().min(1),
 	componentKey: z.string().min(1),
 	phaseIndex: z.number().int().min(0),
@@ -58,6 +59,7 @@ export const experimentPhaseResponseSchema = z.object({
 });
 
 export const experimentStateResponseSchema = z.object({
+	id: z.string().uuid(),
 	experimentKey: z.string().min(1),
 	experimentTitle: z.string().min(1),
 	assigned: z.boolean(),
@@ -113,6 +115,12 @@ export const experimentAdminActiveApiResponseSchema = experimentApiResponseSchem
 	}),
 });
 
+export const experimentAdminAllApiResponseSchema = experimentApiResponseSchema.extend({
+	data: z.object({
+		experiments: z.array(experimentStateResponseSchema.nullable()),
+	}),
+});
+
 export type ExperimentViewerMode = z.infer<typeof experimentViewerModeSchema>;
 export type ExperimentRunStatus = z.infer<typeof experimentRunStatusSchema>;
 export type ExperimentPhaseStatus = z.infer<typeof experimentPhaseStatusSchema>;
@@ -123,5 +131,55 @@ export type SubmitExperimentFeedbackRequest = z.infer<
 export type StartExperimentRequest = z.infer<typeof startExperimentRequestSchema>;
 export type ExperimentStateResponse = z.infer<typeof experimentStateResponseSchema>;
 export type ExperimentListItem = z.infer<typeof experimentListItemSchema>;
+export type ExperimentPhaseResponse = z.infer<typeof experimentPhaseResponseSchema>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin Experiment Schemas
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const adminAssignmentResponseSchema = z.object({
+	id: z.string().uuid(),
+	userId: z.string().uuid(),
+	username: z.string(),
+	role: z.enum(['USER', 'ADMIN', 'MODERATOR']),
+	experimentKey: z.string().min(1),
+	enabled: z.boolean(),
+	createdAt: z.string(),
+});
+
+export const adminExperimentUpdateSchema = z.object({
+	status: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'AWAITING_FEEDBACK', 'COMPLETED']).optional(),
+	rating: z.number().int().min(1).max(5).nullable().optional(),
+	comment: z.string().nullable().optional(),
+});
+
+export const adminPhaseUpdateSchema = z.object({
+	status: z.enum(['PENDING', 'ACTIVE', 'COMPLETED']).optional(),
+	failureCount: z.number().int().min(0).optional(),
+	attemptCount: z.number().int().min(0).optional(),
+});
+
+export const adminAssignmentsApiResponseSchema = experimentApiResponseSchema.extend({
+	data: z.object({
+		assignments: z.array(adminAssignmentResponseSchema),
+	}),
+});
+
+export const adminDeleteAssignmentApiResponseSchema = experimentApiResponseSchema.extend({
+	data: z.object({
+		deleted: z.boolean(),
+	}),
+});
+
+export const adminExcelUrlApiResponseSchema = experimentApiResponseSchema.extend({
+	data: z.object({
+		url: z.string(),
+	}),
+});
+
+export type AdminAssignmentResponse = z.infer<typeof adminAssignmentResponseSchema>;
+export type AdminExperimentUpdate = z.infer<typeof adminExperimentUpdateSchema>;
+export type AdminPhaseUpdate = z.infer<typeof adminPhaseUpdateSchema>;
+
 // Keep for backward compat
 export const EXPERIMENT_KEYS = EXPERIMENT_CATALOG.map((e) => e.key);

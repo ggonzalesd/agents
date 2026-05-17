@@ -82,6 +82,20 @@ export const getActiveExperimentsForAdminController = async (
 	);
 };
 
+export const getAllExperimentsForAdminController = async (
+	_req: Request,
+	res: Response,
+) => {
+	const experiments = await ExperimentService.getAllExperimentsForAdmin();
+
+	res.json(
+		jsonResponse.ok(
+			{ experiments },
+			{ message: 'All experiments retrieved successfully' },
+		),
+	);
+};
+
 export const submitExperimentFeedbackController = async (
 	req: Request,
 	res: Response,

@@ -1,6 +1,7 @@
 <script lang="ts" module>
 	import User from '@lucide/svelte/icons/user';
 	import BotIcon from '@lucide/svelte/icons/bot';
+	import BeakerIcon from '@lucide/svelte/icons/beaker';
 
 	// This is sample data.
 	const data = {
@@ -44,6 +45,29 @@
 					{
 						title: 'Listar',
 						url: '/admin/users/list',
+					},
+				],
+			},
+			{
+				title: 'Experiments',
+				url: '#',
+				icon: BeakerIcon,
+				items: [
+					{
+						title: 'Progreso',
+						url: '/admin/experiments/list',
+					},
+					{
+						title: 'Asignaciones',
+						url: '/admin/experiments/list?tab=assignments',
+					},
+					{
+						title: 'Jugadores',
+						url: '/admin/experiments/list?tab=players',
+					},
+					{
+						title: 'Estadísticas',
+						url: '/admin/experiments/list?tab=dashboard',
 					},
 				],
 			},

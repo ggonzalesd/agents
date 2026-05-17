@@ -146,6 +146,16 @@ export const getMountedExperiment = async (
 	return Option.of(experiment);
 };
 
+export const getAllExperiments = async (
+	tx?: PrismaTransactionClient,
+) => {
+	const db = getDb(tx);
+	return db.userExperiment.findMany({
+		include: experimentStateInclude,
+		orderBy: [{ createdAt: 'desc' }],
+	});
+};
+
 export const createExperimentForUser = async (
 	{
 		userId,
